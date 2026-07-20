@@ -100,6 +100,36 @@ Não existe tela de "criar conta" — por segurança, só você cadastra quem po
 - **Operador**: cadastra e edita, mas não apaga nada.
 - **Visualizante**: só visualiza e filtra, sem alterar nada.
 
+---
+
+## PARTE 6 — Cadastro detalhado de clientes + ícone da aba
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-clientes-detalhado.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"** (o aviso de "operação destrutiva" pode aparecer de novo — normal, pode confirmar).
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"** → arraste todos os arquivos e pastas da nova versão do projeto → confirme a substituição → **"Commit changes"**.
+5. Espere 1-2 minutos e a Vercel publica sozinha.
+
+O que mudou:
+- A tela **Clientes** agora tem o cadastro completo (projeto(s), dados pessoais, endereço residencial, dados comerciais, cônjuge, filhos, endereço da obra e observações).
+- O **ícone da aba do navegador** também foi trocado — depois de publicar, pode ser que o Chrome ainda mostre o ícone antigo por causa do cache; se isso acontecer, feche a aba e abra o site de novo, ou aperte Ctrl+Shift+R (recarregar sem cache) na página.
+
+---
+
+## PARTE 6 — Ficha completa de Clientes + ícone do site
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-clientes-v2.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**. Se aparecer o aviso de "operação destrutiva", pode confirmar — ele avisa por causa das duas colunas antigas (Documento e Contato) que estão sendo substituídas pelos novos campos.
+4. Atualize o site: no **GitHub**, clique em **"Add file"** → **"Upload files"**, arraste **todos os arquivos e pastas** da nova versão do projeto (incluindo agora a pasta `public`, que é nova) e clique em **"Commit changes"**.
+5. Espere 1-2 minutos — a Vercel publica sozinha.
+6. Sobre o ícone da aba do navegador: como o Chrome guarda o ícone antigo em cache, pode ser que você precise fechar a aba do site e abrir de novo (ou apertar Ctrl+Shift+R para forçar a atualização) para ver o ícone novo aparecer.
+
+**O que mudou na tela de Clientes:**
+- Agora tem uma ficha completa: dados pessoais, endereço residencial, dados comerciais, dados do cônjuge (com a mesma estrutura), lista de filhos (pode adicionar quantos precisar) e observações por último.
+- No topo do formulário, você pode vincular o cliente a um ou mais projetos já cadastrados, informando o endereço da obra de cada um — clique em "+ Adicionar projeto" para vincular mais de um.
+- A listagem embaixo mostra só os dados principais (nome, CPF, celular, e-mail, cidade e projetos vinculados) para não ficar poluída — os demais dados ficam guardados, mesmo não aparecendo na tabela.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
