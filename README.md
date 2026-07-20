@@ -77,6 +77,29 @@ Não existe tela de "criar conta" — por segurança, só você cadastra quem po
 - Dependendo da resposta (`admin`, `operador` ou `visualizante`), o painel mostra mais ou menos blocos de conteúdo.
 - Hoje os blocos são só um exemplo de texto — quando você quiser adicionar funções de verdade (ex: uma tabela, um formulário), me diga o que precisa que eu adiciono no código.
 
+---
+
+## PARTE 5 — Ativar o controle financeiro (Clientes, Fornecedores, Projetos, Lançamentos)
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-financeiro.sql`** (veio junto com este projeto), copie tudo e cole na tela.
+3. Clique em **"Run"**. Pode aparecer o mesmo aviso de "operação destrutiva" de antes — é normal, pode confirmar.
+4. Agora atualize o site: vá até o seu repositório no **GitHub**, clique em **"Add file"** → **"Upload files"**.
+5. Arraste **todos os arquivos e pastas** da nova versão do projeto (a que você acabou de baixar) — o GitHub vai avisar que alguns arquivos já existem e serão substituídos, isso é esperado.
+6. Role para baixo e clique em **"Commit changes"**.
+7. Não precisa fazer nada na Vercel — ela detecta a mudança no GitHub sozinha e publica a nova versão automaticamente em 1-2 minutos.
+8. Depois de esperar, abra o link do seu site de novo. Deve aparecer um novo menu no topo: **Início, Lançamentos, Clientes, Fornecedores, Projetos, Relatórios**.
+
+**O que cada tela faz:**
+- **Clientes / Fornecedores / Projetos**: cadastro simples (nome + alguns dados). Todo lançamento pode ser ligado a um cliente, um fornecedor e/ou um projeto.
+- **Lançamentos**: onde entram as entradas e saídas de dinheiro, com valor, data, status, programa de fidelidade, e o cliente/fornecedor/projeto relacionado.
+- **Relatórios**: os mesmos filtros de Lançamentos, mas com totais (entradas, saídas, saldo) e um botão para exportar tudo em CSV (abre no Excel/Google Planilhas).
+
+**Quem pode fazer o quê:**
+- **Administrador**: cadastra, edita e apaga tudo.
+- **Operador**: cadastra e edita, mas não apaga nada.
+- **Visualizante**: só visualiza e filtra, sem alterar nada.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

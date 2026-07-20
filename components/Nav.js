@@ -1,0 +1,40 @@
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { supabase } from '../lib/supabaseClient';
+
+const LINKS = [
+  { href: '/dashboard', label: 'Início' },
+  { href: '/lancamentos', label: 'Lançamentos' },
+  { href: '/clientes', label: 'Clientes' },
+  { href: '/fornecedores', label: 'Fornecedores' },
+  { href: '/projetos', label: 'Projetos' },
+  { href: '/relatorios', label: 'Relatórios' },
+];
+
+export default function Nav() {
+  const router = useRouter();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push('/login');
+  }
+
+  return (
+    <div className="dashboard-header">
+      <div className="nav-bar">
+        {LINKS.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`nav-link ${router.pathname === link.href ? 'active' : ''}`}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+      <button className="logout-btn" onClick={handleLogout}>
+        Sair
+      </button>
+    </div>
+  );
+}

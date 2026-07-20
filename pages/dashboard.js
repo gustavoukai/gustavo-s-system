@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
+import Nav from '../components/Nav';
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -60,41 +61,19 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       <div className="dashboard-inner">
-        <div className="dashboard-header">
-          <div>
-            <h1 style={{ marginBottom: 4 }}>Painel</h1>
-            <span className="role-badge">{ROLE_LABELS[role] || role}</span>
-          </div>
-          <button className="logout-btn" onClick={handleLogout}>
-            Sair
-          </button>
+        <Nav />
+
+        <div style={{ marginBottom: 18 }}>
+          <span className="role-badge">{ROLE_LABELS[role] || role}</span>
         </div>
 
         <div className="section-card">
           <h2>Bem-vindo, {profile?.email}</h2>
-          <p>Esta área é visível para qualquer pessoa que faça login no sistema.</p>
+          <p>
+            Use o menu acima para lançar entradas e saídas, cadastrar clientes, fornecedores e
+            projetos, e ver os relatórios financeiros.
+          </p>
         </div>
-
-        {(role === 'operador' || role === 'admin') && (
-          <div className="section-card">
-            <h2>Área do Operador</h2>
-            <p>
-              Este bloco só aparece para quem tem o nível &quot;Operador&quot; ou
-              &quot;Administrador&quot;. Substitua este texto pelas funções reais que esse
-              nível pode usar.
-            </p>
-          </div>
-        )}
-
-        {role === 'admin' && (
-          <div className="section-card">
-            <h2>Área do Administrador</h2>
-            <p>
-              Este bloco só aparece para quem tem o nível &quot;Administrador&quot;. É aqui
-              que entrariam funções sensíveis, como gerenciar outros usuários.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
