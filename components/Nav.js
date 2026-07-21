@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../lib/useAuth';
 
 const LINKS = [
   { href: '/dashboard', label: 'Início' },
@@ -13,6 +14,9 @@ const LINKS = [
 
 export default function Nav() {
   const router = useRouter();
+  const { role } = useAuth();
+
+  const links = role === 'admin' ? [...LINKS, { href: '/backups', label: 'Backups' }] : LINKS;
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -22,7 +26,7 @@ export default function Nav() {
   return (
     <div className="dashboard-header">
       <div className="nav-bar">
-        {LINKS.map((link) => (
+        {links.map((link) => (
           <Link
             key={link.href}
             href={link.href}

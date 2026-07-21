@@ -166,6 +166,23 @@ O que mudou:
 - Novo botão vermelho **"LIMPAR"**, ao lado de "Salvar cliente" — ele pede confirmação antes de apagar tudo que foi digitado no formulário aberto.
 - Toda vez que um cliente é salvo (novo ou editado), a data e hora ficam registradas e aparecem na lista.
 
+---
+
+## PARTE 9 — Backup automático do cadastro de clientes
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-backups.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- Sobre apagar clientes: essa permissão **já era exclusiva do Administrador** desde o começo — Operador e Visualizante nunca puderam apagar um cliente inteiro, só o Administrador. Continua assim.
+- A pergunta de confirmação do botão "LIMPAR" agora é: *"Tem certeza que quer limpar todas as informações inseridas?"*.
+- Toda vez que um cliente é salvo (novo ou editado), o sistema gera automaticamente uma **cópia de segurança** (um arquivo HTML, só leitura) com tudo que estava no cadastro naquele momento. Cada nova cópia **substitui** a anterior daquele mesmo cliente.
+- Essas cópias ficam guardadas num espaço separado e só o **Administrador** consegue vê-las, na nova aba **"Backups"** do menu (que só aparece para quem é Administrador).
+- Na tela de Backups, o Administrador vê a lista de clientes com cópia disponível, a data da última cópia, e um botão para abrir o arquivo.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

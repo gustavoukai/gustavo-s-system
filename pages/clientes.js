@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
+import { generateClienteSnapshotHtml } from '../lib/clienteSnapshot';
 
 const emptyForm = {
   nome: '',
@@ -243,7 +244,7 @@ export default function Clientes() {
   }
 
   function handleLimpar() {
-    if (!confirm('Tem certeza que quer limpar todos inseridos?')) return;
+    if (!confirm('Tem certeza que quer limpar todas as informações inseridas?')) return;
     setForm(emptyForm);
     setFilhos([]);
     setProjetosVinculados([]);
@@ -298,6 +299,18 @@ export default function Clientes() {
     if (vinculosValidos.length > 0) {
       const vinculosPayload = vinculosValidos.map((p) => ({ ...p, cliente_id: clienteId }));
       await supabase.from('cliente_projetos').insert(vinculosPayload);
+    }
+
+    try {
+      const snapshotHtml = generateClienteSnapshotHtml(payload, filhos, projetosVinculados, projetos);
+      await supabase.storage
+        .from('backups-clientes')
+        .upload(`${clienteId}.html`, snapshotHtml, {
+          contentType: 'text/html; charset=utf-8',
+          upsert: true,
+        });
+    } catch (snapshotError) {
+      // O backup é só uma cópia de segurança extra; se falhar, não impede o cadastro principal.
     }
 
     setSaving(false);
