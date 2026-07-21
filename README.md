@@ -147,6 +147,25 @@ O que mudou:
 - Adicionei o campo **Telefone** na seção "Dados comerciais", com a mesma formatação automática.
 - A cor principal do sistema agora é o azul solicitado (Pantone 315C / #00677F), no lugar do verde escuro anterior.
 
+---
+
+## PARTE 8 — Fluxo Novo/Editar, campos obrigatórios e data de cadastro
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-clientes-v4.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou na tela de Clientes:**
+- Ao entrar em "Clientes", agora aparece um botão **"+ Novo cliente"**. Os campos só aparecem depois de clicar nele.
+- Abaixo (quando o formulário não está aberto), aparece a lista de clientes já cadastrados: **Nome**, **data de cadastro/edição**, e um botão azul **"EDITAR"** que abre o cadastro daquele cliente para você alterar e salvar de novo.
+- A lista fica em ordem alfabética pelo nome.
+- **Nome** e **Celular 1** agora têm um aviso "(campo obrigatório)" — sem preencher os dois, não é possível salvar. Os demais campos continuam opcionais.
+- Se você apagar o CEP que preencheu (em qualquer endereço), os campos que foram preenchidos automaticamente (Logradouro, Bairro, Cidade, UF) são limpos junto, sem precisar apagar um por um.
+- Novo botão vermelho **"LIMPAR"**, ao lado de "Salvar cliente" — ele pede confirmação antes de apagar tudo que foi digitado no formulário aberto.
+- Toda vez que um cliente é salvo (novo ou editado), a data e hora ficam registradas e aparecem na lista.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

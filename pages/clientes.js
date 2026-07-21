@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
-import { formatCPF, formatRG, formatPhone, formatCEP, buscarEnderecoPorCep } from '../lib/masks';
+import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
 
 const emptyForm = {
   nome: '',
@@ -76,6 +76,8 @@ export default function Clientes() {
   const { loading, canEdit, canDelete } = useAuth();
   const [items, setItems] = useState([]);
   const [projetos, setProjetos] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [filhos, setFilhos] = useState([]);
   const [projetosVinculados, setProjetosVinculados] = useState([]);
@@ -85,7 +87,7 @@ export default function Clientes() {
   async function loadItems() {
     const { data } = await supabase
       .from('clientes')
-      .select('*, cliente_projetos(logradouro_obra, projetos(nome))')
+      .select('*, cliente_projetos(*, projetos(nome))')
       .order('nome');
     setItems(data || []);
   }
@@ -108,6 +110,19 @@ export default function Clientes() {
 
   function updateMaskedField(field, rawValue, maskFn) {
     updateField(field, maskFn(rawValue));
+  }
+
+  function handleCepChange(rawValue, cepField, relatedFields) {
+    updateField(cepField, formatCEP(rawValue));
+    if (onlyDigits(rawValue).length === 0) {
+      setForm((prev) => ({
+        ...prev,
+        [relatedFields.logradouro]: '',
+        [relatedFields.bairro]: '',
+        [relatedFields.cidade]: '',
+        [relatedFields.uf]: '',
+      }));
+    }
   }
 
   async function autofillCep(cepValue, fields) {
@@ -146,6 +161,23 @@ export default function Clientes() {
     setProjetosVinculados(updated);
   }
 
+  function handleCepChangeProjeto(index, rawValue) {
+    updateProjetoVinculado(index, 'cep_obra', formatCEP(rawValue));
+    if (onlyDigits(rawValue).length === 0) {
+      setProjetosVinculados((prev) => {
+        const updated = [...prev];
+        updated[index] = {
+          ...updated[index],
+          logradouro_obra: '',
+          bairro_obra: '',
+          cidade_obra: '',
+          uf_obra: '',
+        };
+        return updated;
+      });
+    }
+  }
+
   async function autofillCepProjeto(index, cepValue) {
     const endereco = await buscarEnderecoPorCep(cepValue);
     if (!endereco) return;
@@ -166,39 +198,110 @@ export default function Clientes() {
     setProjetosVinculados(projetosVinculados.filter((_, i) => i !== index));
   }
 
+  function openNewForm() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFilhos([]);
+    setProjetosVinculados([]);
+    setError('');
+    setShowForm(true);
+  }
+
+  function openEditForm(item) {
+    const formData = { ...emptyForm };
+    Object.keys(emptyForm).forEach((key) => {
+      if (item[key] !== undefined && item[key] !== null) {
+        formData[key] = item[key];
+      }
+    });
+    setForm(formData);
+    setFilhos(Array.isArray(item.filhos) ? item.filhos : []);
+    setProjetosVinculados(
+      (item.cliente_projetos || []).map((cp) => ({
+        projeto_id: cp.projeto_id || '',
+        cep_obra: cp.cep_obra || '',
+        logradouro_obra: cp.logradouro_obra || '',
+        numero_obra: cp.numero_obra || '',
+        complemento_obra: cp.complemento_obra || '',
+        bairro_obra: cp.bairro_obra || '',
+        cidade_obra: cp.cidade_obra || '',
+        uf_obra: cp.uf_obra || '',
+      }))
+    );
+    setEditingId(item.id);
+    setError('');
+    setShowForm(true);
+  }
+
+  function handleCancelar() {
+    setShowForm(false);
+    setEditingId(null);
+    setForm(emptyForm);
+    setFilhos([]);
+    setProjetosVinculados([]);
+    setError('');
+  }
+
+  function handleLimpar() {
+    if (!confirm('Tem certeza que quer limpar todos inseridos?')) return;
+    setForm(emptyForm);
+    setFilhos([]);
+    setProjetosVinculados([]);
+    setError('');
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.nome.trim()) return;
-    setSaving(true);
-    setError('');
 
-    const payload = { ...form, filhos };
-
-    const { data: novoCliente, error: insertError } = await supabase
-      .from('clientes')
-      .insert([payload])
-      .select()
-      .single();
-
-    if (insertError || !novoCliente) {
-      setSaving(false);
-      setError('Não foi possível salvar o cliente. Tente novamente.');
+    if (!form.nome.trim() || !form.celular1.trim()) {
+      setError('Preencha os campos obrigatórios: Nome e Celular 1.');
       return;
     }
 
+    setSaving(true);
+    setError('');
+
+    const payload = {
+      ...form,
+      data_nascimento: form.data_nascimento || null,
+      conjuge_data_nascimento: form.conjuge_data_nascimento || null,
+      filhos,
+      atualizado_em: new Date().toISOString(),
+    };
+
     const vinculosValidos = projetosVinculados.filter((p) => p.projeto_id);
+    let clienteId = editingId;
+
+    if (editingId) {
+      const { error: updateError } = await supabase.from('clientes').update(payload).eq('id', editingId);
+      if (updateError) {
+        setSaving(false);
+        setError('Não foi possível salvar o cliente. Tente novamente.');
+        return;
+      }
+      await supabase.from('cliente_projetos').delete().eq('cliente_id', editingId);
+    } else {
+      const { data: novoCliente, error: insertError } = await supabase
+        .from('clientes')
+        .insert([payload])
+        .select()
+        .single();
+
+      if (insertError || !novoCliente) {
+        setSaving(false);
+        setError('Não foi possível salvar o cliente. Tente novamente.');
+        return;
+      }
+      clienteId = novoCliente.id;
+    }
+
     if (vinculosValidos.length > 0) {
-      const vinculosPayload = vinculosValidos.map((p) => ({
-        ...p,
-        cliente_id: novoCliente.id,
-      }));
+      const vinculosPayload = vinculosValidos.map((p) => ({ ...p, cliente_id: clienteId }));
       await supabase.from('cliente_projetos').insert(vinculosPayload);
     }
 
     setSaving(false);
-    setForm(emptyForm);
-    setFilhos([]);
-    setProjetosVinculados([]);
+    handleCancelar();
     loadItems();
   }
 
@@ -206,6 +309,17 @@ export default function Clientes() {
     if (!confirm('Apagar este cliente e todos os vínculos de projeto dele?')) return;
     await supabase.from('clientes').delete().eq('id', id);
     loadItems();
+  }
+
+  function formatData(value) {
+    if (!value) return '—';
+    return new Date(value).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   if (loading) {
@@ -223,9 +337,24 @@ export default function Clientes() {
 
         <h1 style={{ marginBottom: 18 }}>Clientes</h1>
 
-        {canEdit && (
+        {canEdit && !showForm && (
+          <button
+            type="button"
+            onClick={openNewForm}
+            style={{ width: 'auto', padding: '10px 18px', marginBottom: 20 }}
+          >
+            + Novo cliente
+          </button>
+        )}
+
+        {canEdit && showForm && (
           <form className="section-card" onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
-            <h2 style={{ marginBottom: 4 }}>Novo cliente</h2>
+            <div className="toolbar" style={{ marginBottom: 4 }}>
+              <h2>{editingId ? 'Editar cliente' : 'Novo cliente'}</h2>
+              <button type="button" className="btn-secondary" onClick={handleCancelar}>
+                Cancelar
+              </button>
+            </div>
 
             {error && <div className="error-box">{error}</div>}
 
@@ -264,7 +393,7 @@ export default function Clientes() {
                     <label>CEP</label>
                     <input
                       value={p.cep_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'cep_obra', formatCEP(e.target.value))}
+                      onChange={(e) => handleCepChangeProjeto(index, e.target.value)}
                       onBlur={(e) => autofillCepProjeto(index, e.target.value)}
                       placeholder="00000-000"
                     />
@@ -322,7 +451,12 @@ export default function Clientes() {
             <div className="form-section-title">Dados do cliente</div>
             <div className="form-grid" style={{ marginBottom: 0 }}>
               <div style={{ gridColumn: '1 / -1' }}>
-                <label>Nome *</label>
+                <label>
+                  Nome <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                  <span style={{ fontWeight: 400, color: 'var(--muted)', fontSize: 11 }}>
+                    (campo obrigatório)
+                  </span>
+                </label>
                 <input required value={form.nome} onChange={(e) => updateField('nome', e.target.value)} />
               </div>
             </div>
@@ -354,8 +488,14 @@ export default function Clientes() {
                 />
               </div>
               <div>
-                <label>Celular 1</label>
+                <label>
+                  Celular 1 <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                  <span style={{ fontWeight: 400, color: 'var(--muted)', fontSize: 11 }}>
+                    (campo obrigatório)
+                  </span>
+                </label>
                 <input
+                  required
                   value={form.celular1}
                   onChange={(e) => updateMaskedField('celular1', e.target.value, formatPhone)}
                   placeholder="(00) 00000-0000"
@@ -392,7 +532,14 @@ export default function Clientes() {
                 <label>CEP</label>
                 <input
                   value={form.cep_residencial}
-                  onChange={(e) => updateMaskedField('cep_residencial', e.target.value, formatCEP)}
+                  onChange={(e) =>
+                    handleCepChange(e.target.value, 'cep_residencial', {
+                      logradouro: 'logradouro_residencial',
+                      bairro: 'bairro_residencial',
+                      cidade: 'cidade_residencial',
+                      uf: 'uf_residencial',
+                    })
+                  }
                   onBlur={(e) =>
                     autofillCep(e.target.value, {
                       logradouro: 'logradouro_residencial',
@@ -487,7 +634,14 @@ export default function Clientes() {
                 <label>CEP</label>
                 <input
                   value={form.cep_comercial}
-                  onChange={(e) => updateMaskedField('cep_comercial', e.target.value, formatCEP)}
+                  onChange={(e) =>
+                    handleCepChange(e.target.value, 'cep_comercial', {
+                      logradouro: 'logradouro_comercial',
+                      bairro: 'bairro_comercial',
+                      cidade: 'cidade_comercial',
+                      uf: 'uf_comercial',
+                    })
+                  }
                   onBlur={(e) =>
                     autofillCep(e.target.value, {
                       logradouro: 'logradouro_comercial',
@@ -627,7 +781,12 @@ export default function Clientes() {
                 <input
                   value={form.conjuge_cep_residencial}
                   onChange={(e) =>
-                    updateMaskedField('conjuge_cep_residencial', e.target.value, formatCEP)
+                    handleCepChange(e.target.value, 'conjuge_cep_residencial', {
+                      logradouro: 'conjuge_logradouro_residencial',
+                      bairro: 'conjuge_bairro_residencial',
+                      cidade: 'conjuge_cidade_residencial',
+                      uf: 'conjuge_uf_residencial',
+                    })
                   }
                   onBlur={(e) =>
                     autofillCep(e.target.value, {
@@ -716,7 +875,12 @@ export default function Clientes() {
                 <input
                   value={form.conjuge_cep_comercial}
                   onChange={(e) =>
-                    updateMaskedField('conjuge_cep_comercial', e.target.value, formatCEP)
+                    handleCepChange(e.target.value, 'conjuge_cep_comercial', {
+                      logradouro: 'conjuge_logradouro_comercial',
+                      bairro: 'conjuge_bairro_comercial',
+                      cidade: 'conjuge_cidade_comercial',
+                      uf: 'conjuge_uf_comercial',
+                    })
                   }
                   onBlur={(e) =>
                     autofillCep(e.target.value, {
@@ -816,54 +980,64 @@ export default function Clientes() {
               <button type="submit" disabled={saving}>
                 {saving ? 'Salvando...' : 'Salvar cliente'}
               </button>
+              <button
+                type="button"
+                onClick={handleLimpar}
+                style={{
+                  marginLeft: 24,
+                  background: 'var(--danger)',
+                  color: 'white',
+                }}
+              >
+                LIMPAR
+              </button>
             </div>
           </form>
         )}
 
-        <div className="data-table-wrap">
-          {items.length === 0 ? (
-            <p className="empty-hint">Nenhum cliente cadastrado ainda.</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>CPF</th>
-                  <th>Celular 1</th>
-                  <th>E-mail</th>
-                  <th>Cidade</th>
-                  <th>Projetos</th>
-                  <th>Observações</th>
-                  {canDelete && <th></th>}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.nome}</td>
-                    <td>{item.cpf || '—'}</td>
-                    <td>{item.celular1 || '—'}</td>
-                    <td>{item.email || '—'}</td>
-                    <td>{item.cidade_residencial || '—'}</td>
-                    <td>
-                      {item.cliente_projetos && item.cliente_projetos.length > 0
-                        ? item.cliente_projetos.map((cp) => cp.projetos?.nome).filter(Boolean).join(', ')
-                        : '—'}
-                    </td>
-                    <td>{item.observacoes || '—'}</td>
-                    {canDelete && (
-                      <td>
-                        <button className="delete-link" onClick={() => handleDelete(item.id)}>
-                          Apagar
-                        </button>
-                      </td>
-                    )}
+        {!showForm && (
+          <div className="data-table-wrap">
+            {items.length === 0 ? (
+              <p className="empty-hint">Nenhum cliente cadastrado ainda.</p>
+            ) : (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Cadastrado/editado em</th>
+                    {canEdit && <th></th>}
+                    {canDelete && <th></th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.nome}</td>
+                      <td>{formatData(item.atualizado_em || item.created_at)}</td>
+                      {canEdit && (
+                        <td>
+                          <button
+                            className="btn-editar"
+                            onClick={() => openEditForm(item)}
+                          >
+                            EDITAR
+                          </button>
+                        </td>
+                      )}
+                      {canDelete && (
+                        <td>
+                          <button className="delete-link" onClick={() => handleDelete(item.id)}>
+                            Apagar
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
