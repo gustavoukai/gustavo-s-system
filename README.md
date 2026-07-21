@@ -130,6 +130,23 @@ O que mudou:
 - No topo do formulário, você pode vincular o cliente a um ou mais projetos já cadastrados, informando o endereço da obra de cada um — clique em "+ Adicionar projeto" para vincular mais de um.
 - A listagem embaixo mostra só os dados principais (nome, CPF, celular, e-mail, cidade e projetos vinculados) para não ficar poluída — os demais dados ficam guardados, mesmo não aparecendo na tabela.
 
+---
+
+## PARTE 7 — Máscaras, CEP automático e nova cor
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-clientes-v3.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"** (confirme o aviso de "operação destrutiva" se aparecer, é o mesmo caso de antes).
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão do projeto, **"Commit changes"**.
+5. Espere 1-2 minutos — a Vercel publica sozinha.
+
+**O que mudou:**
+- O campo **Nome** agora ocupa a linha inteira, sozinho.
+- **CPF**, **RG** e todos os campos de telefone/celular: agora você só digita os números, e o sistema formata sozinho enquanto você digita.
+- **CEP** virou o primeiro campo de cada endereço (residencial, comercial, do cônjuge, e da obra de cada projeto). Ao sair do campo CEP (clicar em outro campo), o sistema busca automaticamente **Logradouro**, **Bairro**, **Cidade** e **UF** usando o serviço gratuito ViaCEP — você só preenche **Número** e **Complemento** manualmente.
+- Adicionei o campo **Telefone** na seção "Dados comerciais", com a mesma formatação automática.
+- A cor principal do sistema agora é o azul solicitado (Pantone 315C / #00677F), no lugar do verde escuro anterior.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

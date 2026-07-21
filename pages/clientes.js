@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
+import { formatCPF, formatRG, formatPhone, formatCEP, buscarEnderecoPorCep } from '../lib/masks';
 
 const emptyForm = {
   nome: '',
@@ -13,17 +14,22 @@ const emptyForm = {
   email: '',
   instagram: '',
   profissao: '',
-  endereco_residencial: '',
-  bairro_residencial: '',
   cep_residencial: '',
+  logradouro_residencial: '',
+  numero_residencial: '',
+  complemento_residencial: '',
+  bairro_residencial: '',
   cidade_residencial: '',
   uf_residencial: '',
   empresa: '',
   email_comercial: '',
   contato_comercial: '',
-  endereco_comercial: '',
-  bairro_comercial: '',
+  telefone_comercial: '',
   cep_comercial: '',
+  logradouro_comercial: '',
+  numero_comercial: '',
+  complemento_comercial: '',
+  bairro_comercial: '',
   cidade_comercial: '',
   uf_comercial: '',
   conjuge_nome: '',
@@ -35,20 +41,35 @@ const emptyForm = {
   conjuge_email: '',
   conjuge_instagram: '',
   conjuge_profissao: '',
-  conjuge_endereco_residencial: '',
-  conjuge_bairro_residencial: '',
   conjuge_cep_residencial: '',
+  conjuge_logradouro_residencial: '',
+  conjuge_numero_residencial: '',
+  conjuge_complemento_residencial: '',
+  conjuge_bairro_residencial: '',
   conjuge_cidade_residencial: '',
   conjuge_uf_residencial: '',
   conjuge_empresa: '',
   conjuge_email_comercial: '',
   conjuge_contato_comercial: '',
-  conjuge_endereco_comercial: '',
-  conjuge_bairro_comercial: '',
   conjuge_cep_comercial: '',
+  conjuge_logradouro_comercial: '',
+  conjuge_numero_comercial: '',
+  conjuge_complemento_comercial: '',
+  conjuge_bairro_comercial: '',
   conjuge_cidade_comercial: '',
   conjuge_uf_comercial: '',
   observacoes: '',
+};
+
+const emptyProjetoVinculado = {
+  projeto_id: '',
+  cep_obra: '',
+  logradouro_obra: '',
+  numero_obra: '',
+  complemento_obra: '',
+  bairro_obra: '',
+  cidade_obra: '',
+  uf_obra: '',
 };
 
 export default function Clientes() {
@@ -64,7 +85,7 @@ export default function Clientes() {
   async function loadItems() {
     const { data } = await supabase
       .from('clientes')
-      .select('*, cliente_projetos(endereco_obra, projetos(nome))')
+      .select('*, cliente_projetos(logradouro_obra, projetos(nome))')
       .order('nome');
     setItems(data || []);
   }
@@ -82,7 +103,23 @@ export default function Clientes() {
   }, [loading]);
 
   function updateField(field, value) {
-    setForm({ ...form, [field]: value });
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function updateMaskedField(field, rawValue, maskFn) {
+    updateField(field, maskFn(rawValue));
+  }
+
+  async function autofillCep(cepValue, fields) {
+    const endereco = await buscarEnderecoPorCep(cepValue);
+    if (!endereco) return;
+    setForm((prev) => ({
+      ...prev,
+      [fields.logradouro]: endereco.logradouro || prev[fields.logradouro],
+      [fields.bairro]: endereco.bairro || prev[fields.bairro],
+      [fields.cidade]: endereco.cidade || prev[fields.cidade],
+      [fields.uf]: endereco.uf || prev[fields.uf],
+    }));
   }
 
   function addFilho() {
@@ -100,16 +137,29 @@ export default function Clientes() {
   }
 
   function addProjetoVinculado() {
-    setProjetosVinculados([
-      ...projetosVinculados,
-      { projeto_id: '', endereco_obra: '', bairro_obra: '', cep_obra: '', cidade_obra: '', uf_obra: '' },
-    ]);
+    setProjetosVinculados([...projetosVinculados, { ...emptyProjetoVinculado }]);
   }
 
   function updateProjetoVinculado(index, field, value) {
     const updated = [...projetosVinculados];
     updated[index] = { ...updated[index], [field]: value };
     setProjetosVinculados(updated);
+  }
+
+  async function autofillCepProjeto(index, cepValue) {
+    const endereco = await buscarEnderecoPorCep(cepValue);
+    if (!endereco) return;
+    setProjetosVinculados((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        logradouro_obra: endereco.logradouro || updated[index].logradouro_obra,
+        bairro_obra: endereco.bairro || updated[index].bairro_obra,
+        cidade_obra: endereco.cidade || updated[index].cidade_obra,
+        uf_obra: endereco.uf || updated[index].uf_obra,
+      };
+      return updated;
+    });
   }
 
   function removeProjetoVinculado(index) {
@@ -205,11 +255,39 @@ export default function Clientes() {
                       ))}
                     </select>
                   </div>
+                </div>
+                <div className="form-section-title" style={{ fontSize: 11 }}>
+                  Endereço da obra
+                </div>
+                <div className="form-grid">
                   <div>
-                    <label>Endereço da obra</label>
+                    <label>CEP</label>
                     <input
-                      value={p.endereco_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'endereco_obra', e.target.value)}
+                      value={p.cep_obra}
+                      onChange={(e) => updateProjetoVinculado(index, 'cep_obra', formatCEP(e.target.value))}
+                      onBlur={(e) => autofillCepProjeto(index, e.target.value)}
+                      placeholder="00000-000"
+                    />
+                  </div>
+                  <div>
+                    <label>Logradouro</label>
+                    <input
+                      value={p.logradouro_obra}
+                      onChange={(e) => updateProjetoVinculado(index, 'logradouro_obra', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Número</label>
+                    <input
+                      value={p.numero_obra}
+                      onChange={(e) => updateProjetoVinculado(index, 'numero_obra', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Complemento</label>
+                    <input
+                      value={p.complemento_obra}
+                      onChange={(e) => updateProjetoVinculado(index, 'complemento_obra', e.target.value)}
                     />
                   </div>
                   <div>
@@ -217,13 +295,6 @@ export default function Clientes() {
                     <input
                       value={p.bairro_obra}
                       onChange={(e) => updateProjetoVinculado(index, 'bairro_obra', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>CEP</label>
-                    <input
-                      value={p.cep_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'cep_obra', e.target.value)}
                     />
                   </div>
                   <div>
@@ -247,20 +318,32 @@ export default function Clientes() {
               + Adicionar projeto
             </button>
 
-            {/* DADOS DO CLIENTE */}
+            {/* NOME (linha inteira) */}
             <div className="form-section-title">Dados do cliente</div>
-            <div className="form-grid">
-              <div>
+            <div className="form-grid" style={{ marginBottom: 0 }}>
+              <div style={{ gridColumn: '1 / -1' }}>
                 <label>Nome *</label>
                 <input required value={form.nome} onChange={(e) => updateField('nome', e.target.value)} />
               </div>
+            </div>
+            <div className="form-grid">
               <div>
                 <label>CPF</label>
-                <input value={form.cpf} onChange={(e) => updateField('cpf', e.target.value)} />
+                <input
+                  value={form.cpf}
+                  onChange={(e) => updateMaskedField('cpf', e.target.value, formatCPF)}
+                  placeholder="000.000.000-00"
+                  inputMode="numeric"
+                />
               </div>
               <div>
                 <label>RG</label>
-                <input value={form.rg} onChange={(e) => updateField('rg', e.target.value)} />
+                <input
+                  value={form.rg}
+                  onChange={(e) => updateMaskedField('rg', e.target.value, formatRG)}
+                  placeholder="00.000.000-0"
+                  inputMode="numeric"
+                />
               </div>
               <div>
                 <label>Data de nascimento</label>
@@ -272,11 +355,21 @@ export default function Clientes() {
               </div>
               <div>
                 <label>Celular 1</label>
-                <input value={form.celular1} onChange={(e) => updateField('celular1', e.target.value)} />
+                <input
+                  value={form.celular1}
+                  onChange={(e) => updateMaskedField('celular1', e.target.value, formatPhone)}
+                  placeholder="(00) 00000-0000"
+                  inputMode="numeric"
+                />
               </div>
               <div>
                 <label>Celular 2</label>
-                <input value={form.celular2} onChange={(e) => updateField('celular2', e.target.value)} />
+                <input
+                  value={form.celular2}
+                  onChange={(e) => updateMaskedField('celular2', e.target.value, formatPhone)}
+                  placeholder="(00) 00000-0000"
+                  inputMode="numeric"
+                />
               </div>
               <div>
                 <label>E-mail</label>
@@ -296,10 +389,40 @@ export default function Clientes() {
             <div className="form-section-title">Endereço residencial</div>
             <div className="form-grid">
               <div>
-                <label>Endereço</label>
+                <label>CEP</label>
                 <input
-                  value={form.endereco_residencial}
-                  onChange={(e) => updateField('endereco_residencial', e.target.value)}
+                  value={form.cep_residencial}
+                  onChange={(e) => updateMaskedField('cep_residencial', e.target.value, formatCEP)}
+                  onBlur={(e) =>
+                    autofillCep(e.target.value, {
+                      logradouro: 'logradouro_residencial',
+                      bairro: 'bairro_residencial',
+                      cidade: 'cidade_residencial',
+                      uf: 'uf_residencial',
+                    })
+                  }
+                  placeholder="00000-000"
+                />
+              </div>
+              <div>
+                <label>Logradouro</label>
+                <input
+                  value={form.logradouro_residencial}
+                  onChange={(e) => updateField('logradouro_residencial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Número</label>
+                <input
+                  value={form.numero_residencial}
+                  onChange={(e) => updateField('numero_residencial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Complemento</label>
+                <input
+                  value={form.complemento_residencial}
+                  onChange={(e) => updateField('complemento_residencial', e.target.value)}
                 />
               </div>
               <div>
@@ -307,13 +430,6 @@ export default function Clientes() {
                 <input
                   value={form.bairro_residencial}
                   onChange={(e) => updateField('bairro_residencial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>CEP</label>
-                <input
-                  value={form.cep_residencial}
-                  onChange={(e) => updateField('cep_residencial', e.target.value)}
                 />
               </div>
               <div>
@@ -347,6 +463,15 @@ export default function Clientes() {
                 />
               </div>
               <div>
+                <label>Telefone</label>
+                <input
+                  value={form.telefone_comercial}
+                  onChange={(e) => updateMaskedField('telefone_comercial', e.target.value, formatPhone)}
+                  placeholder="(00) 0000-0000"
+                  inputMode="numeric"
+                />
+              </div>
+              <div>
                 <label>Contato</label>
                 <input
                   value={form.contato_comercial}
@@ -359,10 +484,40 @@ export default function Clientes() {
             <div className="form-section-title">Endereço comercial</div>
             <div className="form-grid">
               <div>
-                <label>Endereço</label>
+                <label>CEP</label>
                 <input
-                  value={form.endereco_comercial}
-                  onChange={(e) => updateField('endereco_comercial', e.target.value)}
+                  value={form.cep_comercial}
+                  onChange={(e) => updateMaskedField('cep_comercial', e.target.value, formatCEP)}
+                  onBlur={(e) =>
+                    autofillCep(e.target.value, {
+                      logradouro: 'logradouro_comercial',
+                      bairro: 'bairro_comercial',
+                      cidade: 'cidade_comercial',
+                      uf: 'uf_comercial',
+                    })
+                  }
+                  placeholder="00000-000"
+                />
+              </div>
+              <div>
+                <label>Logradouro</label>
+                <input
+                  value={form.logradouro_comercial}
+                  onChange={(e) => updateField('logradouro_comercial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Número</label>
+                <input
+                  value={form.numero_comercial}
+                  onChange={(e) => updateField('numero_comercial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Complemento</label>
+                <input
+                  value={form.complemento_comercial}
+                  onChange={(e) => updateField('complemento_comercial', e.target.value)}
                 />
               </div>
               <div>
@@ -370,13 +525,6 @@ export default function Clientes() {
                 <input
                   value={form.bairro_comercial}
                   onChange={(e) => updateField('bairro_comercial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>CEP</label>
-                <input
-                  value={form.cep_comercial}
-                  onChange={(e) => updateField('cep_comercial', e.target.value)}
                 />
               </div>
               <div>
@@ -409,12 +557,19 @@ export default function Clientes() {
                 <label>CPF</label>
                 <input
                   value={form.conjuge_cpf}
-                  onChange={(e) => updateField('conjuge_cpf', e.target.value)}
+                  onChange={(e) => updateMaskedField('conjuge_cpf', e.target.value, formatCPF)}
+                  placeholder="000.000.000-00"
+                  inputMode="numeric"
                 />
               </div>
               <div>
                 <label>RG</label>
-                <input value={form.conjuge_rg} onChange={(e) => updateField('conjuge_rg', e.target.value)} />
+                <input
+                  value={form.conjuge_rg}
+                  onChange={(e) => updateMaskedField('conjuge_rg', e.target.value, formatRG)}
+                  placeholder="00.000.000-0"
+                  inputMode="numeric"
+                />
               </div>
               <div>
                 <label>Data de nascimento</label>
@@ -428,14 +583,18 @@ export default function Clientes() {
                 <label>Celular 1</label>
                 <input
                   value={form.conjuge_celular1}
-                  onChange={(e) => updateField('conjuge_celular1', e.target.value)}
+                  onChange={(e) => updateMaskedField('conjuge_celular1', e.target.value, formatPhone)}
+                  placeholder="(00) 00000-0000"
+                  inputMode="numeric"
                 />
               </div>
               <div>
                 <label>Celular 2</label>
                 <input
                   value={form.conjuge_celular2}
-                  onChange={(e) => updateField('conjuge_celular2', e.target.value)}
+                  onChange={(e) => updateMaskedField('conjuge_celular2', e.target.value, formatPhone)}
+                  placeholder="(00) 00000-0000"
+                  inputMode="numeric"
                 />
               </div>
               <div>
@@ -464,10 +623,42 @@ export default function Clientes() {
             <div className="form-section-title">Endereço residencial do cônjuge</div>
             <div className="form-grid">
               <div>
-                <label>Endereço</label>
+                <label>CEP</label>
                 <input
-                  value={form.conjuge_endereco_residencial}
-                  onChange={(e) => updateField('conjuge_endereco_residencial', e.target.value)}
+                  value={form.conjuge_cep_residencial}
+                  onChange={(e) =>
+                    updateMaskedField('conjuge_cep_residencial', e.target.value, formatCEP)
+                  }
+                  onBlur={(e) =>
+                    autofillCep(e.target.value, {
+                      logradouro: 'conjuge_logradouro_residencial',
+                      bairro: 'conjuge_bairro_residencial',
+                      cidade: 'conjuge_cidade_residencial',
+                      uf: 'conjuge_uf_residencial',
+                    })
+                  }
+                  placeholder="00000-000"
+                />
+              </div>
+              <div>
+                <label>Logradouro</label>
+                <input
+                  value={form.conjuge_logradouro_residencial}
+                  onChange={(e) => updateField('conjuge_logradouro_residencial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Número</label>
+                <input
+                  value={form.conjuge_numero_residencial}
+                  onChange={(e) => updateField('conjuge_numero_residencial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Complemento</label>
+                <input
+                  value={form.conjuge_complemento_residencial}
+                  onChange={(e) => updateField('conjuge_complemento_residencial', e.target.value)}
                 />
               </div>
               <div>
@@ -475,13 +666,6 @@ export default function Clientes() {
                 <input
                   value={form.conjuge_bairro_residencial}
                   onChange={(e) => updateField('conjuge_bairro_residencial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>CEP</label>
-                <input
-                  value={form.conjuge_cep_residencial}
-                  onChange={(e) => updateField('conjuge_cep_residencial', e.target.value)}
                 />
               </div>
               <div>
@@ -528,10 +712,42 @@ export default function Clientes() {
             <div className="form-section-title">Endereço comercial do cônjuge</div>
             <div className="form-grid">
               <div>
-                <label>Endereço</label>
+                <label>CEP</label>
                 <input
-                  value={form.conjuge_endereco_comercial}
-                  onChange={(e) => updateField('conjuge_endereco_comercial', e.target.value)}
+                  value={form.conjuge_cep_comercial}
+                  onChange={(e) =>
+                    updateMaskedField('conjuge_cep_comercial', e.target.value, formatCEP)
+                  }
+                  onBlur={(e) =>
+                    autofillCep(e.target.value, {
+                      logradouro: 'conjuge_logradouro_comercial',
+                      bairro: 'conjuge_bairro_comercial',
+                      cidade: 'conjuge_cidade_comercial',
+                      uf: 'conjuge_uf_comercial',
+                    })
+                  }
+                  placeholder="00000-000"
+                />
+              </div>
+              <div>
+                <label>Logradouro</label>
+                <input
+                  value={form.conjuge_logradouro_comercial}
+                  onChange={(e) => updateField('conjuge_logradouro_comercial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Número</label>
+                <input
+                  value={form.conjuge_numero_comercial}
+                  onChange={(e) => updateField('conjuge_numero_comercial', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Complemento</label>
+                <input
+                  value={form.conjuge_complemento_comercial}
+                  onChange={(e) => updateField('conjuge_complemento_comercial', e.target.value)}
                 />
               </div>
               <div>
@@ -539,13 +755,6 @@ export default function Clientes() {
                 <input
                   value={form.conjuge_bairro_comercial}
                   onChange={(e) => updateField('conjuge_bairro_comercial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>CEP</label>
-                <input
-                  value={form.conjuge_cep_comercial}
-                  onChange={(e) => updateField('conjuge_cep_comercial', e.target.value)}
                 />
               </div>
               <div>
