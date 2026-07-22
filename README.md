@@ -199,6 +199,19 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Endereço residencial do cônjuge**: removido do formulário, como pedido.
 - **Lembrete de aniversário**: a tela **Início** agora mostra um aviso para **todos os usuários** (qualquer nível) sempre que o aniversário de um cliente, cônjuge ou filho(a) estiver a 10, 5, 2 dias ou for hoje. Como expliquei, isso aparece dentro do site (não por e-mail), para continuar 100% gratuito e simples.
 
+---
+
+## PARTE 11 — Backup em PDF (em vez de HTML)
+
+1. Não precisa rodar nada no Supabase dessa vez.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão (incluindo o `package.json` atualizado), **"Commit changes"**.
+3. Espere 1-2 minutos — a Vercel instala a nova biblioteca de PDF sozinha durante a publicação.
+
+**O que mudou:**
+- O backup gerado ao salvar um cliente agora é um **arquivo PDF**, simples, no formato "Rótulo: valor", uma informação por linha — sem cores, sem tabela.
+- Na tela **Backups** (só para Administrador), o botão "Abrir" agora abre esse PDF.
+- Sobre o lembrete de aniversário: ele já está funcionando — só dispara nos dias combinados (10, 5, 2 e o próprio dia). Se quiser testar rapidinho, edite um cliente e coloque a data de nascimento como a de **hoje**.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

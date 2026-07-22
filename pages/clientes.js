@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
-import { generateClienteSnapshotHtml } from '../lib/clienteSnapshot';
+import { generateClientePdfBlob } from '../lib/clienteSnapshot';
 
 const emptyForm = {
   nome: '',
@@ -302,11 +302,11 @@ export default function Clientes() {
     }
 
     try {
-      const snapshotHtml = generateClienteSnapshotHtml(payload, filhos, projetosVinculados, projetos);
+      const pdfBlob = generateClientePdfBlob(payload, filhos, projetosVinculados, projetos);
       await supabase.storage
         .from('backups-clientes')
-        .upload(`${clienteId}.html`, snapshotHtml, {
-          contentType: 'text/html; charset=utf-8',
+        .upload(`${clienteId}.pdf`, pdfBlob, {
+          contentType: 'application/pdf',
           upsert: true,
         });
     } catch (snapshotError) {

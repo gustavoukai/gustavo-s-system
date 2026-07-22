@@ -19,7 +19,7 @@ export default function Backups() {
 
     const combinado = (clientes || [])
       .map((c) => {
-        const arquivo = arquivosPorNome.get(`${c.id}.html`);
+        const arquivo = arquivosPorNome.get(`${c.id}.pdf`);
         if (!arquivo) return null;
         return {
           clienteId: c.id,
@@ -42,7 +42,7 @@ export default function Backups() {
   async function handleAbrir(clienteId) {
     const { data, error } = await supabase.storage
       .from('backups-clientes')
-      .createSignedUrl(`${clienteId}.html`, 60);
+      .createSignedUrl(`${clienteId}.pdf`, 60);
     if (error || !data) {
       alert('Não foi possível abrir esse backup agora. Tente novamente.');
       return;
