@@ -183,6 +183,22 @@ O que mudou:
 - Essas cópias ficam guardadas num espaço separado e só o **Administrador** consegue vê-las, na nova aba **"Backups"** do menu (que só aparece para quem é Administrador).
 - Na tela de Backups, o Administrador vê a lista de clientes com cópia disponível, a data da última cópia, e um botão para abrir o arquivo.
 
+---
+
+## PARTE 10 — Correções e lembrete de aniversário
+
+Essa atualização não precisa de nenhum SQL novo. Só siga:
+
+1. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+2. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Backup**: agora mostra **todos os campos**, mesmo os que estão em branco (marcados com "—"), e a seção "Projetos vinculados" (que não estava aparecendo por um bug) já aparece corretamente. Ficou mais fácil de usar para recadastrar um cliente do zero, se precisar.
+- **RG**: agora aceita a letra **X** como último caractere (comum em alguns RGs), além dos números.
+- **Bug do Enter**: corrigido — apertar Enter dentro de qualquer campo do formulário de cliente não envia mais o cadastro sem querer. Só o botão "Salvar cliente" salva.
+- **Endereço residencial do cônjuge**: removido do formulário, como pedido.
+- **Lembrete de aniversário**: a tela **Início** agora mostra um aviso para **todos os usuários** (qualquer nível) sempre que o aniversário de um cliente, cônjuge ou filho(a) estiver a 10, 5, 2 dias ou for hoje. Como expliquei, isso aparece dentro do site (não por e-mail), para continuar 100% gratuito e simples.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

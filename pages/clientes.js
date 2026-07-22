@@ -361,7 +361,14 @@ export default function Clientes() {
         )}
 
         {canEdit && showForm && (
-          <form className="section-card" onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
+          <form
+            className="section-card"
+            onSubmit={handleSubmit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.preventDefault();
+            }}
+            style={{ marginBottom: 24 }}
+          >
             <div className="toolbar" style={{ marginBottom: 4 }}>
               <h2>{editingId ? 'Editar cliente' : 'Novo cliente'}</h2>
               <button type="button" className="btn-secondary" onClick={handleCancelar}>
@@ -488,8 +495,8 @@ export default function Clientes() {
                 <input
                   value={form.rg}
                   onChange={(e) => updateMaskedField('rg', e.target.value, formatRG)}
-                  placeholder="00.000.000-0"
-                  inputMode="numeric"
+                  placeholder="00.000.000-0 (aceita X)"
+                  inputMode="text"
                 />
               </div>
               <div>
@@ -734,8 +741,8 @@ export default function Clientes() {
                 <input
                   value={form.conjuge_rg}
                   onChange={(e) => updateMaskedField('conjuge_rg', e.target.value, formatRG)}
-                  placeholder="00.000.000-0"
-                  inputMode="numeric"
+                  placeholder="00.000.000-0 (aceita X)"
+                  inputMode="text"
                 />
               </div>
               <div>
@@ -783,75 +790,6 @@ export default function Clientes() {
                 <input
                   value={form.conjuge_profissao}
                   onChange={(e) => updateField('conjuge_profissao', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="form-section-title">Endereço residencial do cônjuge</div>
-            <div className="form-grid">
-              <div>
-                <label>CEP</label>
-                <input
-                  value={form.conjuge_cep_residencial}
-                  onChange={(e) =>
-                    handleCepChange(e.target.value, 'conjuge_cep_residencial', {
-                      logradouro: 'conjuge_logradouro_residencial',
-                      bairro: 'conjuge_bairro_residencial',
-                      cidade: 'conjuge_cidade_residencial',
-                      uf: 'conjuge_uf_residencial',
-                    })
-                  }
-                  onBlur={(e) =>
-                    autofillCep(e.target.value, {
-                      logradouro: 'conjuge_logradouro_residencial',
-                      bairro: 'conjuge_bairro_residencial',
-                      cidade: 'conjuge_cidade_residencial',
-                      uf: 'conjuge_uf_residencial',
-                    })
-                  }
-                  placeholder="00000-000"
-                />
-              </div>
-              <div>
-                <label>Logradouro</label>
-                <input
-                  value={form.conjuge_logradouro_residencial}
-                  onChange={(e) => updateField('conjuge_logradouro_residencial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>Número</label>
-                <input
-                  value={form.conjuge_numero_residencial}
-                  onChange={(e) => updateField('conjuge_numero_residencial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>Complemento</label>
-                <input
-                  value={form.conjuge_complemento_residencial}
-                  onChange={(e) => updateField('conjuge_complemento_residencial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>Bairro</label>
-                <input
-                  value={form.conjuge_bairro_residencial}
-                  onChange={(e) => updateField('conjuge_bairro_residencial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>Cidade</label>
-                <input
-                  value={form.conjuge_cidade_residencial}
-                  onChange={(e) => updateField('conjuge_cidade_residencial', e.target.value)}
-                />
-              </div>
-              <div>
-                <label>UF</label>
-                <input
-                  value={form.conjuge_uf_residencial}
-                  onChange={(e) => updateField('conjuge_uf_residencial', e.target.value)}
                 />
               </div>
             </div>
