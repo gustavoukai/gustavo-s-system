@@ -212,6 +212,29 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - Na tela **Backups** (só para Administrador), o botão "Abrir" agora abre esse PDF.
 - Sobre o lembrete de aniversário: ele já está funcionando — só dispara nos dias combinados (10, 5, 2 e o próprio dia). Se quiser testar rapidinho, edite um cliente e coloque a data de nascimento como a de **hoje**.
 
+---
+
+## PARTE 12 — Cadastro completo de Fornecedores
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-fornecedores-v2.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"** (confirme o aviso de "operação destrutiva" se aparecer).
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que tem agora na tela de Fornecedores:**
+- Botão **"+ Novo Fornecedor"**, que revela o formulário completo (Fornecedor, Categoria, Status com cor e explicação, CPF, CNPJ, Razão Social, Vendedor + telefone, Financeiro + telefone, NF, Programa de Fidelidade, Dados bancários, Observações).
+- Botão vermelho **LIMPAR**, com confirmação.
+- Backup em PDF gerado a cada cadastro/edição, igual ao de Clientes.
+- Lista abaixo (quando o formulário está fechado): Fornecedor, Vendedor + telefone, Financeiro + telefone, data de cadastro/edição, botão azul Editar, e Apagar (só para Administrador) — em ordem alfabética.
+- Campo de **busca**, que procura em qualquer campo preenchido do fornecedor.
+- Filtros em sequência: botão **"Todos"** (limpa busca e filtros), depois **Categoria**, depois **Programa de Fidelidade** — cada um com "Todos" primeiro e as opções em ordem alfabética.
+- A aba **Backups** agora tem duas listas separadas: Clientes e Fornecedores.
+
+**Um detalhe pendente**: você mencionou que vai mandar a lista completa de **Programas de Fidelidade** — deixei esse campo já pronto no formulário, mas com a lista vazia por enquanto (aparece um aviso "Aguardando a lista..."). Assim que você me mandar os nomes, eu preencho.
+
+**Sobre CPF e CNPJ**: você escreveu que os dois deveriam seguir "o mesmo padrão usado para telefones" — presumi que isso foi só uma repetição de frase ao escrever rápido, e apliquei o formato padrão de CPF (000.000.000-00) e CNPJ (00.000.000/0000-00) — os mesmos formatos usados no Brasil e semelhantes ao que já existe para o CPF de Clientes. Se era mesmo para formatar como telefone, me avisa que eu ajusto.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

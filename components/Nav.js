@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 
 const LINKS = [
-  { href: '/dashboard', label: 'Início' },
+  { href: '/dashboard', label: 'Home' },
   { href: '/lancamentos', label: 'Lançamentos' },
   { href: '/clientes', label: 'Clientes' },
   { href: '/fornecedores', label: 'Fornecedores' },
