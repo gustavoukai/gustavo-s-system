@@ -15,8 +15,10 @@ const CATEGORIAS = [
   'Snooker e Jogos',
 ].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
-// Lista ainda não enviada pelo cliente — adicionar aqui quando ele mandar a lista completa.
-const PROGRAMAS_FIDELIDADE = [];
+// Programa de Fidelidade: seleção múltipla, ou nenhum, se o fornecedor não participar.
+const PROGRAMAS_FIDELIDADE = ['Gabriel PRO', 'We.Brasil', 'Club&Casa', 'ID - D&D'].sort((a, b) =>
+  a.localeCompare(b, 'pt-BR')
+);
 
 const STATUS_OPTIONS = [
   { codigo: 'AP', texto: 'OK, ALTO PADRÃO', cor: '#0d4d2e', corTexto: '#ffffff' },

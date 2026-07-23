@@ -235,6 +235,18 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 
 **Sobre CPF e CNPJ**: você escreveu que os dois deveriam seguir "o mesmo padrão usado para telefones" — presumi que isso foi só uma repetição de frase ao escrever rápido, e apliquei o formato padrão de CPF (000.000.000-00) e CNPJ (00.000.000/0000-00) — os mesmos formatos usados no Brasil e semelhantes ao que já existe para o CPF de Clientes. Se era mesmo para formatar como telefone, me avisa que eu ajusto.
 
+---
+
+## PARTE 13 — Programas de fidelidade e título das páginas
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Programa de Fidelidade**: a lista já está carregada (Gabriel PRO, We.Brasil, Club&Casa, ID - D&D). Você pode marcar quantos quiser, ou nenhum.
+- **Título da aba do navegador**: agora muda sozinho conforme a página (ex: "Clientes — Sistema Financeiro", "Fornecedores — Sistema Financeiro"). Usei "Sistema Financeiro" como nome provisório — me diga o nome que você quer (do seu escritório, por exemplo) que eu troco rapidinho.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
