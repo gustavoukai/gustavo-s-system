@@ -15,12 +15,12 @@ const TITULOS = {
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
-  const titulo = TITULOS[router.pathname] || 'Sistema Financeiro';
+  const titulo = TITULOS[router.pathname] || 'Taneli Ukai';
 
   return (
     <>
       <Head>
-        <title>{titulo} — Sistema Financeiro</title>
+        <title>{titulo} - Taneli Ukai</title>
       </Head>
       <Component {...pageProps} />
     </>

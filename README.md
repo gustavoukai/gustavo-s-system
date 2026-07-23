@@ -247,6 +247,21 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Programa de Fidelidade**: a lista já está carregada (Gabriel PRO, We.Brasil, Club&Casa, ID - D&D). Você pode marcar quantos quiser, ou nenhum.
 - **Título da aba do navegador**: agora muda sozinho conforme a página (ex: "Clientes — Sistema Financeiro", "Fornecedores — Sistema Financeiro"). Usei "Sistema Financeiro" como nome provisório — me diga o nome que você quer (do seu escritório, por exemplo) que eu troco rapidinho.
 
+---
+
+## PARTE 14 — Identidade visual (logo, cores e rodapé)
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão (incluindo a pasta `public`, com os logos), **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Logo**: aparece fixo no topo de cada página, à esquerda do menu (ícone), e também na tela de login (logo horizontal).
+- **Cores**: troquei a paleta do sistema para as cores oficiais do seu manual — Azul Taneli (#297480), Cinza Ukai, Chumbo e Branco.
+- **Rodapé**: adicionei o elemento gráfico do manual no rodapé de todas as páginas.
+- **Ícone da aba do navegador**: agora é o ícone real da marca.
+- **Título das páginas**: agora segue o padrão "Tema - Taneli Ukai" (ex: "Clientes - Taneli Ukai", "Fornecedores - Taneli Ukai").
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

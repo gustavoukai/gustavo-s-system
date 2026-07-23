@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
+import Rodape from '../components/Rodape';
 
 function formatData(value) {
   if (!value) return '—';
@@ -156,6 +157,8 @@ export default function Backups() {
           carregando={carregandoLista}
           onAbrir={(id) => abrirBackup('backups-fornecedores', id)}
         />
+
+        <Rodape />
       </div>
     </div>
   );

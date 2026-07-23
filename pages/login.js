@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
+import Rodape from '../components/Rodape';
 
 export default function Login() {
   const router = useRouter();
@@ -31,8 +32,13 @@ export default function Login() {
 
   return (
     <div className="page-center">
+      <div style={{ width: '100%', maxWidth: 380 }}>
       <form className="card" onSubmit={handleSubmit}>
-        <div className="brand-mark" />
+        <img
+          src="/logo-horizontal.png"
+          alt="Taneli Ukai"
+          style={{ width: '100%', maxWidth: 200, marginBottom: 22 }}
+        />
         <h1>Entrar no sistema</h1>
         <p className="subtitle">Use o e-mail e a senha cadastrados por quem administra o sistema.</p>
 
@@ -62,6 +68,8 @@ export default function Login() {
           {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
+      <Rodape />
+      </div>
     </div>
   );
 }

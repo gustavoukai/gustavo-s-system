@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
+import Rodape from '../components/Rodape';
 
 export default function Projetos() {
   const { loading, canEdit, canDelete } = useAuth();
@@ -114,6 +115,8 @@ export default function Projetos() {
             </table>
           )}
         </div>
+
+        <Rodape />
       </div>
     </div>
   );

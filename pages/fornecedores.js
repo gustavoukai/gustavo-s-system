@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
+import Rodape from '../components/Rodape';
 import { formatCPF, formatCNPJ, formatPhone } from '../lib/masks';
 import { generateFornecedorPdfBlob } from '../lib/fornecedorSnapshot';
 
@@ -596,6 +597,8 @@ export default function Fornecedores() {
             </div>
           </>
         )}
+
+        <Rodape />
       </div>
     </div>
   );

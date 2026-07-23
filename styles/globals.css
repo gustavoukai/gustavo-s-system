@@ -1,12 +1,12 @@
 :root {
-  --bg: #f2f5f6;
-  --ink: #16211d;
-  --muted: #5b6b6c;
+  --bg: #f3f5f5;
+  --ink: #333333;
+  --muted: #8c8f91;
   --card: #ffffff;
-  --primary: #00677f;
-  --primary-dark: #004b5c;
-  --accent: #c98f4e;
-  --border: #dfe6e6;
+  --primary: #297480;
+  --primary-dark: #1d545c;
+  --accent: #8c8f91;
+  --border: #e0e2e2;
   --danger: #a03b3b;
 }
 
@@ -132,12 +132,49 @@ button:disabled {
   margin-bottom: 28px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.nav-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.app-footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.app-footer img {
+  max-width: 320px;
+  width: 100%;
+  height: auto;
+  opacity: 0.55;
+  display: inline-block;
+}
+
+.app-footer p {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.03em;
 }
 
 .role-badge {
   display: inline-block;
   background: var(--accent);
-  color: #3a2a12;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
   padding: 3px 10px;

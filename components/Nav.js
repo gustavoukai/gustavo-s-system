@@ -25,16 +25,21 @@ export default function Nav() {
 
   return (
     <div className="dashboard-header">
-      <div className="nav-bar">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`nav-link ${router.pathname === link.href ? 'active' : ''}`}
-          >
-            {link.label}
-          </Link>
-        ))}
+      <div className="nav-left">
+        <Link href="/dashboard">
+          <img src="/logo-icone.png" alt="Taneli Ukai" className="nav-logo" />
+        </Link>
+        <div className="nav-bar" style={{ marginBottom: 0 }}>
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`nav-link ${router.pathname === link.href ? 'active' : ''}`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
       </div>
       <button className="logout-btn" onClick={handleLogout}>
         Sair

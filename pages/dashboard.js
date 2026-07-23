@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import Nav from '../components/Nav';
 import { getLembretesAniversario } from '../lib/aniversarios';
+import Rodape from '../components/Rodape';
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -92,6 +93,8 @@ export default function Dashboard() {
             projetos, e ver os relatórios financeiros.
           </p>
         </div>
+
+        <Rodape />
       </div>
     </div>
   );

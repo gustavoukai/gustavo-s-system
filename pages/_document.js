@@ -4,8 +4,8 @@ export default function Document() {
   return (
     <Html lang="pt-BR">
       <Head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <title>Sistema Financeiro</title>
+        <link rel="icon" href="/logo-icone.png" type="image/png" />
+        <title>Taneli Ukai</title>
       </Head>
       <body>
         <Main />

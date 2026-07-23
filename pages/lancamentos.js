@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
+import Rodape from '../components/Rodape';
 
 const STATUS_OPTIONS = ['pendente', 'pago', 'cancelado'];
 
@@ -367,6 +368,8 @@ export default function Lancamentos() {
             </table>
           )}
         </div>
+
+        <Rodape />
       </div>
     </div>
   );

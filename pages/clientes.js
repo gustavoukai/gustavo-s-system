@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
+import Rodape from '../components/Rodape';
 import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
 import { generateClientePdfBlob } from '../lib/clienteSnapshot';
 
@@ -989,6 +990,8 @@ export default function Clientes() {
             )}
           </div>
         )}
+
+        <Rodape />
       </div>
     </div>
   );
