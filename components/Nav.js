@@ -27,7 +27,7 @@ export default function Nav() {
     <div className="dashboard-header">
       <div className="nav-left">
         <Link href="/dashboard">
-          <img src="/logo-icone.png" alt="Taneli Ukai" className="nav-logo" />
+          <img src="/logo-horizontal.png" alt="Taneli Ukai" className="nav-logo" />
         </Link>
         <div className="nav-bar" style={{ marginBottom: 0 }}>
           {links.map((link) => (

@@ -144,7 +144,7 @@ button:disabled {
 }
 
 .nav-logo {
-  height: 32px;
+  height: 30px;
   width: auto;
   display: block;
 }
@@ -157,7 +157,7 @@ button:disabled {
 }
 
 .app-footer img {
-  max-width: 320px;
+  max-width: 100%;
   width: 100%;
   height: auto;
   opacity: 0.55;
@@ -166,8 +166,8 @@ button:disabled {
 
 .app-footer p {
   margin-top: 10px;
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 13px;
+  color: #55585a;
   letter-spacing: 0.03em;
 }
 

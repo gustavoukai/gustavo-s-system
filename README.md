@@ -262,6 +262,22 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Ícone da aba do navegador**: agora é o ícone real da marca.
 - **Título das páginas**: agora segue o padrão "Tema - Taneli Ukai" (ex: "Clientes - Taneli Ukai", "Fornecedores - Taneli Ukai").
 
+---
+
+## PARTE 15 — Ajustes visuais + cadastro completo de Projetos
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-projetos-v2.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"** (confirme o aviso de "operação destrutiva" se aparecer).
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Menu**: agora mostra a logo horizontal (ícone + "taneli ukai"), maior, seguida dos botões.
+- **Rodapé**: o grafismo ficou bem maior (quase a largura toda da página), e o texto abaixo agora é "taneli ukai arquitetura", um pouco maior e num cinza mais escuro.
+- **Projetos**: agora funciona igual a Clientes e Fornecedores — botão "+ Novo Projeto", formulário com Nome, Número (4 ou 5 dígitos, formato AANN/AANNN), Cliente (escolha única, entre os já cadastrados), Endereço da obra (com CEP automático, igual ao de Clientes) e Observações. Botão LIMPAR com confirmação.
+- **Lista de projetos**: mostra Número, Nome, data de cadastro/edição, Editar e Apagar (Administrador) — ordenada do número mais recente para o mais antigo (ex: 2613, 2608, 2411, 2407, 2305, 2301, 2202).
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
