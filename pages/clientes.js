@@ -63,17 +63,6 @@ const emptyForm = {
   observacoes: '',
 };
 
-const emptyProjetoVinculado = {
-  projeto_id: '',
-  cep_obra: '',
-  logradouro_obra: '',
-  numero_obra: '',
-  complemento_obra: '',
-  bairro_obra: '',
-  cidade_obra: '',
-  uf_obra: '',
-};
-
 export default function Clientes() {
   const { loading, canEdit, canDelete } = useAuth();
   const [items, setItems] = useState([]);
@@ -82,21 +71,24 @@ export default function Clientes() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [filhos, setFilhos] = useState([]);
-  const [projetosVinculados, setProjetosVinculados] = useState([]);
+  const [projetosSelecionados, setProjetosSelecionados] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   async function loadItems() {
     const { data } = await supabase
       .from('clientes')
-      .select('*, cliente_projetos(*, projetos(nome))')
+      .select('*, projetos(id, numero_projeto, nome)')
       .order('nome');
     setItems(data || []);
   }
 
   async function loadProjetos() {
-    const { data } = await supabase.from('projetos').select('id, nome').order('nome');
-    setProjetos(data || []);
+    const { data } = await supabase.from('projetos').select('id, numero_projeto, nome, cliente_id');
+    const ordenados = (data || []).sort(
+      (a, b) => Number(b.numero_projeto || 0) - Number(a.numero_projeto || 0)
+    );
+    setProjetos(ordenados);
   }
 
   useEffect(() => {
@@ -153,58 +145,17 @@ export default function Clientes() {
     setFilhos(filhos.filter((_, i) => i !== index));
   }
 
-  function addProjetoVinculado() {
-    setProjetosVinculados([...projetosVinculados, { ...emptyProjetoVinculado }]);
-  }
-
-  function updateProjetoVinculado(index, field, value) {
-    const updated = [...projetosVinculados];
-    updated[index] = { ...updated[index], [field]: value };
-    setProjetosVinculados(updated);
-  }
-
-  function handleCepChangeProjeto(index, rawValue) {
-    updateProjetoVinculado(index, 'cep_obra', formatCEP(rawValue));
-    if (onlyDigits(rawValue).length === 0) {
-      setProjetosVinculados((prev) => {
-        const updated = [...prev];
-        updated[index] = {
-          ...updated[index],
-          logradouro_obra: '',
-          bairro_obra: '',
-          cidade_obra: '',
-          uf_obra: '',
-        };
-        return updated;
-      });
-    }
-  }
-
-  async function autofillCepProjeto(index, cepValue) {
-    const endereco = await buscarEnderecoPorCep(cepValue);
-    if (!endereco) return;
-    setProjetosVinculados((prev) => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        logradouro_obra: endereco.logradouro || updated[index].logradouro_obra,
-        bairro_obra: endereco.bairro || updated[index].bairro_obra,
-        cidade_obra: endereco.cidade || updated[index].cidade_obra,
-        uf_obra: endereco.uf || updated[index].uf_obra,
-      };
-      return updated;
-    });
-  }
-
-  function removeProjetoVinculado(index) {
-    setProjetosVinculados(projetosVinculados.filter((_, i) => i !== index));
+  function toggleProjeto(projetoId) {
+    setProjetosSelecionados((prev) =>
+      prev.includes(projetoId) ? prev.filter((id) => id !== projetoId) : [...prev, projetoId]
+    );
   }
 
   function openNewForm() {
     setEditingId(null);
     setForm(emptyForm);
     setFilhos([]);
-    setProjetosVinculados([]);
+    setProjetosSelecionados([]);
     setError('');
     setShowForm(true);
   }
@@ -218,18 +169,7 @@ export default function Clientes() {
     });
     setForm(formData);
     setFilhos(Array.isArray(item.filhos) ? item.filhos : []);
-    setProjetosVinculados(
-      (item.cliente_projetos || []).map((cp) => ({
-        projeto_id: cp.projeto_id || '',
-        cep_obra: cp.cep_obra || '',
-        logradouro_obra: cp.logradouro_obra || '',
-        numero_obra: cp.numero_obra || '',
-        complemento_obra: cp.complemento_obra || '',
-        bairro_obra: cp.bairro_obra || '',
-        cidade_obra: cp.cidade_obra || '',
-        uf_obra: cp.uf_obra || '',
-      }))
-    );
+    setProjetosSelecionados((item.projetos || []).map((p) => p.id));
     setEditingId(item.id);
     setError('');
     setShowForm(true);
@@ -240,7 +180,7 @@ export default function Clientes() {
     setEditingId(null);
     setForm(emptyForm);
     setFilhos([]);
-    setProjetosVinculados([]);
+    setProjetosSelecionados([]);
     setError('');
   }
 
@@ -248,7 +188,7 @@ export default function Clientes() {
     if (!confirm('Tem certeza que quer limpar todas as informações inseridas?')) return;
     setForm(emptyForm);
     setFilhos([]);
-    setProjetosVinculados([]);
+    setProjetosSelecionados([]);
     setError('');
   }
 
@@ -271,7 +211,6 @@ export default function Clientes() {
       atualizado_em: new Date().toISOString(),
     };
 
-    const vinculosValidos = projetosVinculados.filter((p) => p.projeto_id);
     let clienteId = editingId;
 
     if (editingId) {
@@ -281,7 +220,6 @@ export default function Clientes() {
         setError('Não foi possível salvar o cliente. Tente novamente.');
         return;
       }
-      await supabase.from('cliente_projetos').delete().eq('cliente_id', editingId);
     } else {
       const { data: novoCliente, error: insertError } = await supabase
         .from('clientes')
@@ -297,13 +235,16 @@ export default function Clientes() {
       clienteId = novoCliente.id;
     }
 
-    if (vinculosValidos.length > 0) {
-      const vinculosPayload = vinculosValidos.map((p) => ({ ...p, cliente_id: clienteId }));
-      await supabase.from('cliente_projetos').insert(vinculosPayload);
+    // Sincroniza os projetos vinculados: primeiro desvincula tudo que apontava
+    // para este cliente, depois vincula somente os que estão marcados agora.
+    await supabase.from('projetos').update({ cliente_id: null }).eq('cliente_id', clienteId);
+    if (projetosSelecionados.length > 0) {
+      await supabase.from('projetos').update({ cliente_id: clienteId }).in('id', projetosSelecionados);
     }
 
     try {
-      const pdfBlob = generateClientePdfBlob(payload, filhos, projetosVinculados, projetos);
+      const projetosVinculadosParaPdf = projetos.filter((p) => projetosSelecionados.includes(p.id));
+      const pdfBlob = generateClientePdfBlob(payload, filhos, projetosVinculadosParaPdf);
       await supabase.storage
         .from('backups-clientes')
         .upload(`${clienteId}.pdf`, pdfBlob, {
@@ -381,92 +322,24 @@ export default function Clientes() {
 
             {/* PROJETOS VINCULADOS */}
             <div className="form-section-title">Projetos vinculados</div>
-            {projetosVinculados.map((p, index) => (
-              <div className="repeatable-block" key={index}>
-                <button
-                  type="button"
-                  className="btn-remove"
-                  onClick={() => removeProjetoVinculado(index)}
-                >
-                  Remover
-                </button>
-                <div className="form-grid">
-                  <div>
-                    <label>Projeto</label>
-                    <select
-                      value={p.projeto_id}
-                      onChange={(e) => updateProjetoVinculado(index, 'projeto_id', e.target.value)}
-                    >
-                      <option value="">Selecione...</option>
-                      {projetos.map((proj) => (
-                        <option key={proj.id} value={proj.id}>
-                          {proj.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="form-section-title" style={{ fontSize: 11 }}>
-                  Endereço da obra
-                </div>
-                <div className="form-grid">
-                  <div>
-                    <label>CEP</label>
+            {projetos.length === 0 ? (
+              <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 18 }}>
+                Nenhum projeto cadastrado ainda.
+              </p>
+            ) : (
+              <div className="checkbox-group">
+                {projetos.map((proj) => (
+                  <label key={proj.id} className="checkbox-item">
                     <input
-                      value={p.cep_obra}
-                      onChange={(e) => handleCepChangeProjeto(index, e.target.value)}
-                      onBlur={(e) => autofillCepProjeto(index, e.target.value)}
-                      placeholder="00000-000"
+                      type="checkbox"
+                      checked={projetosSelecionados.includes(proj.id)}
+                      onChange={() => toggleProjeto(proj.id)}
                     />
-                  </div>
-                  <div>
-                    <label>Logradouro</label>
-                    <input
-                      value={p.logradouro_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'logradouro_obra', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>Número</label>
-                    <input
-                      value={p.numero_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'numero_obra', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>Complemento</label>
-                    <input
-                      value={p.complemento_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'complemento_obra', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>Bairro</label>
-                    <input
-                      value={p.bairro_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'bairro_obra', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>Cidade</label>
-                    <input
-                      value={p.cidade_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'cidade_obra', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label>UF</label>
-                    <input
-                      value={p.uf_obra}
-                      onChange={(e) => updateProjetoVinculado(index, 'uf_obra', e.target.value)}
-                    />
-                  </div>
-                </div>
+                    {proj.numero_projeto} - {proj.nome}
+                  </label>
+                ))}
               </div>
-            ))}
-            <button type="button" className="btn-add" onClick={addProjetoVinculado}>
-              + Adicionar projeto
-            </button>
+            )}
 
             {/* NOME (linha inteira) */}
             <div className="form-section-title">Dados do cliente</div>

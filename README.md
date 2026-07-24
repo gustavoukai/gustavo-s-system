@@ -278,6 +278,20 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Projetos**: agora funciona igual a Clientes e Fornecedores — botão "+ Novo Projeto", formulário com Nome, Número (4 ou 5 dígitos, formato AANN/AANNN), Cliente (escolha única, entre os já cadastrados), Endereço da obra (com CEP automático, igual ao de Clientes) e Observações. Botão LIMPAR com confirmação.
 - **Lista de projetos**: mostra Número, Nome, data de cadastro/edição, Editar e Apagar (Administrador) — ordenada do número mais recente para o mais antigo (ex: 2613, 2608, 2411, 2407, 2305, 2301, 2202).
 
+---
+
+## PARTE 16 — Vínculo entre Cliente e Projeto nos dois sentidos
+
+1. Não precisa rodar nada no Supabase dessa vez.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- Agora existe **um único vínculo** entre cliente e projeto (o mesmo dos dois lados): se você escolhe o cliente na tela de Projetos, esse projeto passa a aparecer marcado na ficha daquele cliente — e vice-versa.
+- Na ficha do **Cliente**, a seção "Projetos vinculados" agora é só uma lista de caixinhas para marcar (sem endereço, como você pediu), mostrando **Número - Nome do projeto**, na mesma ordem da página de Projetos (do número mais recente para o mais antigo).
+- Marcar/desmarcar um projeto ali já atualiza o mesmo vínculo usado na tela de Projetos.
+- A lista de Clientes na tela de Projetos continua em ordem alfabética, como já estava certo.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
