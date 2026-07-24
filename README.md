@@ -292,6 +292,18 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - Marcar/desmarcar um projeto ali já atualiza o mesmo vínculo usado na tela de Projetos.
 - A lista de Clientes na tela de Projetos continua em ordem alfabética, como já estava certo.
 
+---
+
+## PARTE 17 — Ícone de status em Fornecedores + menu expansível em Clientes
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Fornecedores**: na lista, entre o nome do fornecedor e o do vendedor, agora aparece um ícone: **check verde** (AP ou MP), **triângulo amarelo de alerta** (R), ou **X vermelho** (X ou NE).
+- **Clientes**: o campo "Projetos vinculados" agora é um menu expansível — clique nele pra abrir a lista de projetos e marcar os que quiser, igual ao campo de Cliente na tela de Projetos, só que permitindo mais de um marcado.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

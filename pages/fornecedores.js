@@ -207,6 +207,43 @@ export default function Fornecedores() {
     return { backgroundColor: opcao.cor, color: opcao.corTexto };
   }
 
+  function renderStatusIcon(codigo) {
+    if (codigo === 'AP' || codigo === 'MP') {
+      return (
+        <span
+          className="status-icon"
+          title={STATUS_OPTIONS.find((s) => s.codigo === codigo)?.texto}
+          style={{ backgroundColor: '#1e6b3a', color: '#ffffff' }}
+        >
+          ✓
+        </span>
+      );
+    }
+    if (codigo === 'R') {
+      return (
+        <span
+          className="status-icon"
+          title={STATUS_OPTIONS.find((s) => s.codigo === codigo)?.texto}
+          style={{ backgroundColor: '#e8b93a', color: '#4a3a06', borderRadius: '4px' }}
+        >
+          ⚠
+        </span>
+      );
+    }
+    if (codigo === 'X' || codigo === 'NE') {
+      return (
+        <span
+          className="status-icon"
+          title={STATUS_OPTIONS.find((s) => s.codigo === codigo)?.texto}
+          style={{ backgroundColor: '#a03b3b', color: '#ffffff' }}
+        >
+          ✕
+        </span>
+      );
+    }
+    return null;
+  }
+
   const statusSelecionado = STATUS_OPTIONS.find((s) => s.codigo === form.status);
 
   const itemsFiltrados = items.filter((item) => {
@@ -555,6 +592,7 @@ export default function Fornecedores() {
                   <thead>
                     <tr>
                       <th>Fornecedor</th>
+                      <th></th>
                       <th>Vendedor</th>
                       <th>Financeiro</th>
                       <th>Cadastrado/editado em</th>
@@ -566,6 +604,7 @@ export default function Fornecedores() {
                     {itemsFiltrados.map((item) => (
                       <tr key={item.id}>
                         <td>{item.nome}</td>
+                        <td>{renderStatusIcon(item.status)}</td>
                         <td>
                           {item.vendedor || '—'}
                           {item.telefone_vendedor ? ` — ${item.telefone_vendedor}` : ''}

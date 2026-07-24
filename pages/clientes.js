@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
 import { generateClientePdfBlob } from '../lib/clienteSnapshot';
 
@@ -322,24 +323,15 @@ export default function Clientes() {
 
             {/* PROJETOS VINCULADOS */}
             <div className="form-section-title">Projetos vinculados</div>
-            {projetos.length === 0 ? (
-              <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 18 }}>
-                Nenhum projeto cadastrado ainda.
-              </p>
-            ) : (
-              <div className="checkbox-group">
-                {projetos.map((proj) => (
-                  <label key={proj.id} className="checkbox-item">
-                    <input
-                      type="checkbox"
-                      checked={projetosSelecionados.includes(proj.id)}
-                      onChange={() => toggleProjeto(proj.id)}
-                    />
-                    {proj.numero_projeto} - {proj.nome}
-                  </label>
-                ))}
-              </div>
-            )}
+            <MultiSelectDropdown
+              options={projetos.map((proj) => ({
+                value: proj.id,
+                label: `${proj.numero_projeto} - ${proj.nome}`,
+              }))}
+              selected={projetosSelecionados}
+              onToggle={toggleProjeto}
+              placeholder="Selecione os projetos..."
+            />
 
             {/* NOME (linha inteira) */}
             <div className="form-section-title">Dados do cliente</div>
