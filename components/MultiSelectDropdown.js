@@ -17,9 +17,10 @@ export default function MultiSelectDropdown({ options, selected, onToggle, place
   const resumo =
     selected.length === 0
       ? placeholder
-      : selected.length === 1
-      ? options.find((o) => o.value === selected[0])?.label || `1 selecionado`
-      : `${selected.length} selecionados`;
+      : options
+          .filter((o) => selected.includes(o.value))
+          .map((o) => o.label)
+          .join(', ');
 
   return (
     <div className="dropdown-select" ref={ref}>

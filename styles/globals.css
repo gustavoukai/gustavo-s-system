@@ -526,8 +526,15 @@ table.data-table {
   font-size: 14px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 10px;
   color: var(--ink);
+  line-height: 1.4;
+}
+
+.dropdown-select-trigger span:first-child {
+  white-space: normal;
+  word-break: break-word;
 }
 
 .dropdown-select-trigger:hover {
