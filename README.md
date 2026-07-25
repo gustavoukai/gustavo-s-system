@@ -326,6 +326,19 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 **O que mudou:**
 - A lista de **Categorias** no cadastro e no filtro de Fornecedores agora tem todos os itens que você mandou (removi as poucas repetições, como "Vidraçaria" e "Tapetes" que vieram duplicadas), em ordem alfabética.
 
+---
+
+## PARTE 20 — Ajustes no cadastro de Fornecedores
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Telefone do vendedor**: não é mais obrigatório.
+- **NF**: o rótulo agora é "Exige emissão de NF?".
+- **Categoria**: virou um menu expansível (clique para abrir e marcar), igual ao campo de Projetos vinculados em Clientes — em vez dos quadradinhos sempre visíveis.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

@@ -5,6 +5,7 @@ import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import { formatCPF, formatCNPJ, formatPhone } from '../lib/masks';
 import { generateFornecedorPdfBlob } from '../lib/fornecedorSnapshot';
+import MultiSelectDropdown from '../components/MultiSelectDropdown';
 
 const CATEGORIAS = [
   'Acabamentos',
@@ -190,8 +191,8 @@ export default function Fornecedores() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!form.nome.trim() || categorias.length === 0 || !form.telefone_vendedor.trim()) {
-      setError('Preencha os campos obrigatórios: Fornecedor, Categoria e Telefone do vendedor.');
+    if (!form.nome.trim() || categorias.length === 0) {
+      setError('Preencha os campos obrigatórios: Fornecedor e Categoria.');
       return;
     }
 
@@ -404,18 +405,12 @@ export default function Fornecedores() {
                   (campo obrigatório — selecione uma ou mais)
                 </span>
               </label>
-              <div className="checkbox-group">
-                {CATEGORIAS.map((cat) => (
-                  <label key={cat} className="checkbox-item">
-                    <input
-                      type="checkbox"
-                      checked={categorias.includes(cat)}
-                      onChange={() => toggleCategoria(cat)}
-                    />
-                    {cat}
-                  </label>
-                ))}
-              </div>
+              <MultiSelectDropdown
+                options={CATEGORIAS.map((cat) => ({ value: cat, label: cat }))}
+                selected={categorias}
+                onToggle={toggleCategoria}
+                placeholder="Selecione as categorias..."
+              />
             </div>
 
             <div style={{ marginTop: 18 }}>
@@ -474,14 +469,8 @@ export default function Fornecedores() {
                 <input value={form.vendedor} onChange={(e) => updateField('vendedor', e.target.value)} />
               </div>
               <div>
-                <label>
-                  Telefone <span style={{ color: 'var(--danger)' }}>*</span>{' '}
-                  <span style={{ fontWeight: 400, color: 'var(--muted)', fontSize: 11 }}>
-                    (campo obrigatório)
-                  </span>
-                </label>
+                <label>Telefone</label>
                 <input
-                  required
                   value={form.telefone_vendedor}
                   onChange={(e) => updateField('telefone_vendedor', formatPhone(e.target.value))}
                   placeholder="(00) 00000-0000"
@@ -509,7 +498,7 @@ export default function Fornecedores() {
 
             <div className="form-section-title">Outras informações</div>
             <div style={{ marginBottom: 18 }}>
-              <label>NF</label>
+              <label>Exige emissão de NF?</label>
               <div className="checkbox-group">
                 <label className="checkbox-item">
                   <input
