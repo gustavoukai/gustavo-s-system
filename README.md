@@ -315,6 +315,17 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 **O que mudou:**
 - No campo "Projetos vinculados" da ficha de Cliente, agora aparecem escritos, direto no campo (sem precisar clicar para abrir), todos os projetos já vinculados àquele cliente.
 
+---
+
+## PARTE 19 — Lista completa de categorias de Fornecedores
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- A lista de **Categorias** no cadastro e no filtro de Fornecedores agora tem todos os itens que você mandou (removi as poucas repetições, como "Vidraçaria" e "Tapetes" que vieram duplicadas), em ordem alfabética.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
