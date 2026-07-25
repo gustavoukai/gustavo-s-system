@@ -77,9 +77,16 @@ const CATEGORIAS = [
 ].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
 // Programa de Fidelidade: seleção múltipla, ou nenhum, se o fornecedor não participar.
-const PROGRAMAS_FIDELIDADE = ['Gabriel PRO', 'We.Brasil', 'Club&Casa', 'ID - D&D'].sort((a, b) =>
-  a.localeCompare(b, 'pt-BR')
-);
+const PROGRAMAS_FIDELIDADE = [
+  'Gabriel PRO',
+  'We.Brasil',
+  'Club&Casa',
+  'ID - D&D',
+  'Fast Shop Pro',
+  'Telhanorte Pro',
+  'Dexco',
+  'Hunter Douglas',
+].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
 const STATUS_OPTIONS = [
   { codigo: 'AP', texto: 'OK, ALTO PADRÃO', cor: '#0d4d2e', corTexto: '#ffffff' },
@@ -423,7 +430,7 @@ export default function Fornecedores() {
                 <option value="">Selecione...</option>
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s.codigo} value={s.codigo}>
-                    {s.codigo}
+                    {s.codigo}: {s.texto}
                   </option>
                 ))}
               </select>
@@ -523,24 +530,12 @@ export default function Fornecedores() {
 
             <div>
               <label>Programa de Fidelidade</label>
-              {PROGRAMAS_FIDELIDADE.length === 0 ? (
-                <p style={{ fontSize: 12, color: 'var(--muted)' }}>
-                  Aguardando a lista de programas de fidelidade para carregar aqui.
-                </p>
-              ) : (
-                <div className="checkbox-group">
-                  {PROGRAMAS_FIDELIDADE.map((programa) => (
-                    <label key={programa} className="checkbox-item">
-                      <input
-                        type="checkbox"
-                        checked={programasFidelidade.includes(programa)}
-                        onChange={() => toggleFidelidade(programa)}
-                      />
-                      {programa}
-                    </label>
-                  ))}
-                </div>
-              )}
+              <MultiSelectDropdown
+                options={PROGRAMAS_FIDELIDADE.map((p) => ({ value: p, label: p }))}
+                selected={programasFidelidade}
+                onToggle={toggleFidelidade}
+                placeholder="Selecione os programas de fidelidade..."
+              />
             </div>
 
             <div className="form-section-title">Dados bancários</div>
