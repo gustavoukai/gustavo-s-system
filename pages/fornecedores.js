@@ -35,6 +35,7 @@ const CATEGORIAS = [
   'Estruturas Metálicas',
   'Fechamentos de Vidro',
   'Ferragens',
+  'Galeria de Arte',
   'Içamento',
   'Iluminação',
   'Instalação Eletros',
@@ -63,7 +64,7 @@ const CATEGORIAS = [
   'Projeto – Cliente',
   'Quadros e Molduras',
   'Rede de Proteção',
-  'Reembolso Cliente',
+  'Reembolso - Cliente',
   'Revestimentos',
   'Serralheria',
   'Sistemas de Aquecimento',
@@ -74,6 +75,7 @@ const CATEGORIAS = [
   'Telefonia e Internet',
   'Tintas',
   'Vidraçaria',
+  'Energia Solar',
 ].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
 // Programa de Fidelidade: seleção múltipla, ou nenhum, se o fornecedor não participar.
@@ -94,6 +96,7 @@ const STATUS_OPTIONS = [
   { codigo: 'R', texto: 'ORÇAR COM RESSALVAS', cor: '#f3e6a3', corTexto: '#16211d' },
   { codigo: 'X', texto: 'NÃO ORÇAR', cor: '#f3c9c9', corTexto: '#16211d' },
   { codigo: 'NE', texto: 'FORNECEDOR NÃO EXISTE MAIS', cor: '#d9c6ee', corTexto: '#16211d' },
+  { codigo: 'NU', texto: 'NUNCA UTILIZADO', cor: '#f7d2ab', corTexto: '#5a3a12' },
 ];
 
 const emptyForm = {
@@ -122,6 +125,8 @@ export default function Fornecedores() {
   const [form, setForm] = useState(emptyForm);
   const [categorias, setCategorias] = useState([]);
   const [programasFidelidade, setProgramasFidelidade] = useState([]);
+  const [trabalhouEm, setTrabalhouEm] = useState([]);
+  const [projetos, setProjetos] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -134,8 +139,19 @@ export default function Fornecedores() {
     setItems(data || []);
   }
 
+  async function loadProjetos() {
+    const { data } = await supabase.from('projetos').select('id, numero_projeto, nome');
+    const ordenados = (data || []).sort(
+      (a, b) => Number(b.numero_projeto || 0) - Number(a.numero_projeto || 0)
+    );
+    setProjetos(ordenados);
+  }
+
   useEffect(() => {
-    if (!loading) loadItems();
+    if (!loading) {
+      loadItems();
+      loadProjetos();
+    }
   }, [loading]);
 
   function updateField(field, value) {
@@ -159,6 +175,7 @@ export default function Fornecedores() {
     setForm(emptyForm);
     setCategorias([]);
     setProgramasFidelidade([]);
+    setTrabalhouEm([]);
     setError('');
     setShowForm(true);
   }
@@ -173,6 +190,7 @@ export default function Fornecedores() {
     setForm(formData);
     setCategorias(Array.isArray(item.categorias) ? item.categorias : []);
     setProgramasFidelidade(Array.isArray(item.programas_fidelidade) ? item.programas_fidelidade : []);
+    setTrabalhouEm(Array.isArray(item.trabalhou_em) ? item.trabalhou_em : []);
     setEditingId(item.id);
     setError('');
     setShowForm(true);
@@ -184,6 +202,7 @@ export default function Fornecedores() {
     setForm(emptyForm);
     setCategorias([]);
     setProgramasFidelidade([]);
+    setTrabalhouEm([]);
     setError('');
   }
 
@@ -192,6 +211,7 @@ export default function Fornecedores() {
     setForm(emptyForm);
     setCategorias([]);
     setProgramasFidelidade([]);
+    setTrabalhouEm([]);
     setError('');
   }
 
@@ -210,6 +230,7 @@ export default function Fornecedores() {
       ...form,
       categorias,
       programas_fidelidade: programasFidelidade,
+      trabalhou_em: trabalhouEm,
       atualizado_em: new Date().toISOString(),
     };
 
@@ -238,7 +259,8 @@ export default function Fornecedores() {
 
     try {
       const statusLabel = STATUS_OPTIONS.find((s) => s.codigo === payload.status)?.texto;
-      const pdfBlob = generateFornecedorPdfBlob(payload, statusLabel);
+      const projetosTrabalhados = projetos.filter((p) => trabalhouEm.includes(p.id));
+      const pdfBlob = generateFornecedorPdfBlob(payload, statusLabel, projetosTrabalhados);
       await supabase.storage
         .from('backups-fornecedores')
         .upload(`${fornecedorId}.pdf`, pdfBlob, { contentType: 'application/pdf', upsert: true });
@@ -275,36 +297,43 @@ export default function Fornecedores() {
   }
 
   function renderStatusIcon(codigo) {
-    if (codigo === 'AP' || codigo === 'MP') {
+    const label = STATUS_OPTIONS.find((s) => s.codigo === codigo)?.texto;
+
+    if (codigo === 'AP') {
       return (
-        <span
-          className="status-icon"
-          title={STATUS_OPTIONS.find((s) => s.codigo === codigo)?.texto}
-          style={{ backgroundColor: '#1e6b3a', color: '#ffffff' }}
-        >
+        <span className="status-icon" title={label} style={{ backgroundColor: '#1e6b3a', color: '#ffffff' }}>
+          ✓
+        </span>
+      );
+    }
+    if (codigo === 'MP') {
+      return (
+        <span className="status-icon" title={label} style={{ backgroundColor: '#a8d8a8', color: '#16211d' }}>
           ✓
         </span>
       );
     }
     if (codigo === 'R') {
       return (
-        <span
-          className="status-icon"
-          title={STATUS_OPTIONS.find((s) => s.codigo === codigo)?.texto}
-          style={{ backgroundColor: '#e8b93a', color: '#4a3a06', borderRadius: '4px' }}
-        >
-          ⚠
-        </span>
+        <svg width="20" height="20" viewBox="0 0 20 20" title={label} style={{ flexShrink: 0 }}>
+          <polygon points="10,2 18.5,17 1.5,17" fill="#e8b93a" />
+          <text x="10" y="15.5" fontSize="10" fontWeight="700" fill="#4a3a06" textAnchor="middle">
+            !
+          </text>
+        </svg>
       );
     }
     if (codigo === 'X' || codigo === 'NE') {
       return (
-        <span
-          className="status-icon"
-          title={STATUS_OPTIONS.find((s) => s.codigo === codigo)?.texto}
-          style={{ backgroundColor: '#a03b3b', color: '#ffffff' }}
-        >
+        <span className="status-icon" title={label} style={{ backgroundColor: '#a03b3b', color: '#ffffff' }}>
           ✕
+        </span>
+      );
+    }
+    if (codigo === 'NU') {
+      return (
+        <span className="status-icon" title={label} style={{ backgroundColor: '#e8821e', color: '#ffffff' }}>
+          ?
         </span>
       );
     }
@@ -417,6 +446,7 @@ export default function Fornecedores() {
                 selected={categorias}
                 onToggle={toggleCategoria}
                 placeholder="Selecione as categorias..."
+                searchable
               />
             </div>
 
@@ -560,6 +590,19 @@ export default function Fornecedores() {
                 />
               </div>
             </div>
+
+            <div className="form-section-title">Trabalhou em</div>
+            <MultiSelectDropdown
+              options={projetos.map((proj) => ({
+                value: proj.id,
+                label: `${proj.numero_projeto} - ${proj.nome}`,
+              }))}
+              selected={trabalhouEm}
+              onToggle={(id) =>
+                setTrabalhouEm((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]))
+              }
+              placeholder="Selecione os projetos..."
+            />
 
             <div className="form-section-title">Observações</div>
             <div className="form-grid">

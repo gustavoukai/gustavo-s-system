@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
-export default function MultiSelectDropdown({ options, selected, onToggle, placeholder }) {
+export default function MultiSelectDropdown({ options, selected, onToggle, placeholder, searchable }) {
   const [open, setOpen] = useState(false);
+  const [busca, setBusca] = useState('');
   const ref = useRef(null);
 
   useEffect(() => {
@@ -14,6 +15,10 @@ export default function MultiSelectDropdown({ options, selected, onToggle, place
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!open) setBusca('');
+  }, [open]);
+
   const resumo =
     selected.length === 0
       ? placeholder
@@ -21,6 +26,10 @@ export default function MultiSelectDropdown({ options, selected, onToggle, place
           .filter((o) => selected.includes(o.value))
           .map((o) => o.label)
           .join(', ');
+
+  const opcoesFiltradas = searchable
+    ? options.filter((opt) => opt.label.toLowerCase().includes(busca.toLowerCase()))
+    : options;
 
   return (
     <div className="dropdown-select" ref={ref}>
@@ -30,12 +39,22 @@ export default function MultiSelectDropdown({ options, selected, onToggle, place
       </button>
       {open && (
         <div className="dropdown-select-panel">
-          {options.length === 0 ? (
+          {searchable && (
+            <input
+              type="text"
+              className="dropdown-select-search"
+              placeholder="Buscar..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              autoFocus
+            />
+          )}
+          {opcoesFiltradas.length === 0 ? (
             <p className="empty-hint" style={{ padding: 10 }}>
-              Nenhuma opção disponível.
+              Nenhuma opção encontrada.
             </p>
           ) : (
-            options.map((opt) => (
+            opcoesFiltradas.map((opt) => (
               <label key={opt.value} className="dropdown-select-option">
                 <input
                   type="checkbox"

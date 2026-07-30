@@ -351,6 +351,25 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Programa de Fidelidade**: adicionei Fast Shop Pro, Telhanorte Pro, Dexco e Hunter Douglas à lista (agora com 8 no total), e o campo virou menu expansível, igual ao de Categoria.
 - **Status**: as opções do menu agora mostram o significado ao lado da sigla (ex: "AP: OK, ALTO PADRÃO").
 
+---
+
+## PARTE 22 — Status NU, campo "Trabalhou em" e mais ajustes
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-fornecedores-v3.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Novo status "NU - NUNCA UTILIZADO"**: cor laranja pastel no menu, ícone de interrogação laranja na lista.
+- **Ícone do status R**: agora é um triângulo amarelo de verdade (com "!" dentro), não mais um quadrado.
+- **Ícone do status MP**: virou verde clarinho (pastel), diferente do AP, que continua verde escuro.
+- **Novo campo "Trabalhou em"**: antes de Observações, no cadastro de Fornecedores — menu expansível com os projetos cadastrados, do mais recente para o mais antigo, permitindo marcar mais de um.
+- **Categoria "Reembolso Cliente"** virou **"Reembolso - Cliente"**.
+- **Duas categorias novas**: Galeria de Arte e Energia Solar.
+- **Busca dentro do menu de Categoria**: agora tem uma caixinha para digitar e filtrar as opções na hora.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
