@@ -8,7 +8,8 @@ const TITULOS = {
   '/clientes': 'Clientes',
   '/fornecedores': 'Fornecedores',
   '/projetos': 'Projetos',
-  '/lancamentos': 'Lançamentos',
+  '/contas-a-pagar': 'Contas a Pagar',
+  '/cobrancas': 'Cobranças',
   '/relatorios': 'Relatórios',
   '/backups': 'Backups',
 };

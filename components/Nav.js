@@ -5,7 +5,8 @@ import { useAuth } from '../lib/useAuth';
 
 const LINKS = [
   { href: '/dashboard', label: 'Home' },
-  { href: '/lancamentos', label: 'Lançamentos' },
+  { href: '/contas-a-pagar', label: 'Contas a Pagar' },
+  { href: '/cobrancas', label: 'Cobranças' },
   { href: '/clientes', label: 'Clientes' },
   { href: '/fornecedores', label: 'Fornecedores' },
   { href: '/projetos', label: 'Projetos' },

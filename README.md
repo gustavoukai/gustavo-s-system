@@ -370,6 +370,23 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Duas categorias novas**: Galeria de Arte e Energia Solar.
 - **Busca dentro do menu de Categoria**: agora tem uma caixinha para digitar e filtrar as opções na hora.
 
+---
+
+## PARTE 23 — Contas a Pagar (no lugar de Lançamentos)
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-contas-a-pagar.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- O menu agora tem **"Contas a Pagar"** e **"Cobranças"** no lugar de "Lançamentos" (Cobranças ainda é só uma página avisando que vem por aí — você vai me detalhar depois).
+- Em **Contas a Pagar**: escolha o **Ano** (com botão **"+ Criar ano"** pra ir adicionando os próximos) e depois o **Mês** — aí aparece a legenda dos status e a lista das contas daquele mês.
+- **Nova conta**: formulário com todos os campos que você pediu — Pagamento, Referência (Mês corrente / Mês anterior / Parcela no formato 00/00), Recebedor, Pagador, Dia do vencimento, Status, Data do pagamento (só digita os números, formata sozinho), Valor pago e Valor previsto (só digita os números — vira "R$ X,00" automaticamente), Observações.
+- **Recorrência mensal**: ao cadastrar uma conta nova, escolha quantos meses repetir (1 a 14) — ela é criada automaticamente nos meses seguintes também, cada uma podendo ser editada depois separadamente.
+- **Memória de valores**: os campos Pagamento, Recebedor e Pagador vão guardando o que você já digitou antes — comece a digitar de novo e vão aparecer sugestões pra escolher.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
