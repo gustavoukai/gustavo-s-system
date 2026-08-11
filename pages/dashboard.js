@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import Nav from '../components/Nav';
 import { getLembretesAniversario } from '../lib/aniversarios';
+import { getContasProximasDoVencimento, mensagemVencimento } from '../lib/contasPagarLembretes';
 import Rodape from '../components/Rodape';
 
 const ROLE_LABELS = {
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lembretes, setLembretes] = useState([]);
+  const [contasProximas, setContasProximas] = useState([]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -44,6 +46,11 @@ export default function Dashboard() {
         .from('clientes')
         .select('nome, data_nascimento, conjuge_nome, conjuge_data_nascimento, filhos');
       setLembretes(getLembretesAniversario(clientes));
+
+      const { data: contas } = await supabase
+        .from('contas_pagar')
+        .select('id, pagamento, ano, mes, dia_vencimento, status, valor_previsto');
+      setContasProximas(getContasProximasDoVencimento(contas));
 
       setLoading(false);
     }
@@ -74,6 +81,22 @@ export default function Dashboard() {
         <div style={{ marginBottom: 18 }}>
           <span className="role-badge">{ROLE_LABELS[role] || role}</span>
         </div>
+
+        {contasProximas.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
+            <h2>💰 Contas a pagar nos próximos 7 dias</h2>
+            {contasProximas.map((conta) => (
+              <p key={conta.id} style={{ margin: '6px 0' }}>
+                {conta.pagamento || '(sem descrição)'}
+                {conta.valor_previsto != null
+                  ? ` — ${Number(conta.valor_previsto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+                  : ''}{' '}
+                {mensagemVencimento(conta.diffDias)} ({String(conta.dia_vencimento).padStart(2, '0')}/
+                {String(conta.mes).padStart(2, '0')})
+              </p>
+            ))}
+          </div>
+        )}
 
         {lembretes.length > 0 && (
           <div className="section-card" style={{ borderLeft: '4px solid var(--accent)' }}>

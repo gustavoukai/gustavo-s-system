@@ -420,6 +420,17 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - O campo de valor **não muda visualmente** ao apertar Enter — isso é intencional: ele mostra só os números que você digita, e a conversão para "R$ X,00" some na linha logo abaixo ("= R$ 1.351,00"), sem mexer no que você está digitando.
 - A **Referência** ("Mês corrente"/"Mês anterior") também não muda visualmente no formulário — ela continua mostrando o nome da opção escolhida ali. A conversão para o mês/ano de verdade (ex: "julho/25") só aparece **na lista**, depois de salvo.
 
+---
+
+## PARTE 26 — Lembrete de contas a pagar na Home
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- A tela **Home** agora mostra um aviso com todas as contas a pagar que vencem nos próximos 7 dias (incluindo hoje), ordenadas da mais urgente para a mais distante.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
