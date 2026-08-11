@@ -387,6 +387,22 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Recorrência mensal**: ao cadastrar uma conta nova, escolha quantos meses repetir (1 a 14) — ela é criada automaticamente nos meses seguintes também, cada uma podendo ser editada depois separadamente.
 - **Memória de valores**: os campos Pagamento, Recebedor e Pagador vão guardando o que você já digitou antes — comece a digitar de novo e vão aparecer sugestões pra escolher.
 
+---
+
+## PARTE 24 — Correção do valor + referência automática + cores de status
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-contas-a-pagar-v2.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Valor pago / Valor previsto**: corrigido o bug dos zeros se multiplicando. Agora o campo só aceita os números que você digitar (ex: `1351`), e logo abaixo aparece uma prévia de como vai ficar (ex: "= R$ 1.351,00"). Backspace também funciona normalmente agora.
+- **Ordem da lista**: por dia de vencimento; havendo empate no mesmo dia, por ordem alfabética do nome do pagamento.
+- **Referência automática**: ao escolher "Mês corrente" ou "Mês anterior", a lista mostra o mês e ano de verdade (ex: "julho/25"), calculado com base no mês da conta.
+- **Cores dos status**: atualizadas conforme você pediu (aberto laranja pastel, agendado verde claro, débito lilás, pago azul claro, reembolso vermelho vivo, não pago cinza claro, info amarelo pastel, indefinido cinza médio).
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

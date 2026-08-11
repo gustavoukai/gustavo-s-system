@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
-import { formatParcela, formatDataCurta, formatValorReais, parseValorReais } from '../lib/masks';
+import { formatParcela, formatDataCurta, formatValorReais } from '../lib/masks';
 
 const MESES = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -11,17 +11,33 @@ const MESES = [
 ];
 
 const STATUS_OPTIONS = [
-  { codigo: 'aberto', texto: 'Pagamento em aberto', cor: '#e6ecec', corTexto: '#333333' },
-  { codigo: 'agendado', texto: 'Pagamento agendado', cor: '#cfe3f5', corTexto: '#1c3f5e' },
+  { codigo: 'aberto', texto: 'Pagamento em aberto', cor: '#f7d2ab', corTexto: '#5a3a12' },
+  { codigo: 'agendado', texto: 'Pagamento agendado', cor: '#c2e8c6', corTexto: '#1e6b3a' },
   { codigo: 'débito', texto: 'Pagamento programado em débito automático na c/c', cor: '#dcd0f0', corTexto: '#3a2a5e' },
-  { codigo: 'pago', texto: 'Pagamento efetuado', cor: '#c7e6cf', corTexto: '#1e6b3a' },
-  { codigo: 'reembolso', texto: 'Pagamento efetuado passível de reembolso', cor: '#f7d2ab', corTexto: '#5a3a12' },
-  { codigo: 'não pago', texto: 'Pagamento não efetuado ou isento', cor: '#f3c9c9', corTexto: '#a03b3b' },
+  { codigo: 'pago', texto: 'Pagamento efetuado', cor: '#bcdcf2', corTexto: '#1c3f5e' },
+  { codigo: 'reembolso', texto: 'Pagamento efetuado passível de reembolso', cor: '#d9342b', corTexto: '#ffffff' },
+  { codigo: 'não pago', texto: 'Pagamento não efetuado ou isento', cor: '#e6e6e6', corTexto: '#4a4a4a' },
   { codigo: 'info', texto: 'Completar informação', cor: '#f3e6a3', corTexto: '#5a4a06' },
-  { codigo: 'indefinido', texto: 'Pagamento indefinido', cor: '#e0e0e0', corTexto: '#4a4a4a' },
+  { codigo: 'indefinido', texto: 'Pagamento indefinido', cor: '#b5b5b5', corTexto: '#ffffff' },
 ];
 
 const REFERENCIA_OPCOES = ['Mês corrente', 'Mês anterior', 'Parcela'];
+
+function labelReferencia(item) {
+  if (item.referencia_tipo === 'parcela') return item.referencia || '—';
+  if (!item.referencia_tipo) return item.referencia || '—';
+
+  let ano = item.ano;
+  let mes = item.mes;
+  if (item.referencia_tipo === 'anterior') {
+    mes -= 1;
+    if (mes < 1) {
+      mes = 12;
+      ano -= 1;
+    }
+  }
+  return `${MESES[mes - 1].toLowerCase()}/${String(ano).slice(-2)}`;
+}
 
 const emptyForm = {
   pagamento: '',
@@ -73,7 +89,8 @@ export default function ContasAPagar() {
       .select('*')
       .eq('ano', anoSelecionado)
       .eq('mes', mesSelecionado)
-      .order('dia_vencimento', { ascending: true, nullsFirst: true });
+      .order('dia_vencimento', { ascending: true, nullsFirst: true })
+      .order('pagamento', { ascending: true });
     setItems(data || []);
   }
 
@@ -124,11 +141,11 @@ export default function ContasAPagar() {
   function openEditForm(item) {
     let referenciaTipo = 'Mês corrente';
     let parcela = '';
-    if (item.referencia === 'Mês corrente' || item.referencia === 'Mês anterior') {
-      referenciaTipo = item.referencia;
-    } else if (item.referencia) {
+    if (item.referencia_tipo === 'anterior') {
+      referenciaTipo = 'Mês anterior';
+    } else if (item.referencia_tipo === 'parcela') {
       referenciaTipo = 'Parcela';
-      parcela = item.referencia;
+      parcela = item.referencia || '';
     }
 
     setForm({
@@ -140,9 +157,8 @@ export default function ContasAPagar() {
       dia_vencimento: item.dia_vencimento || '',
       status: item.status || '',
       data_pagamento: item.data_pagamento || '',
-      valor_pago: item.valor_pago != null ? formatValorReais(String(Math.round(item.valor_pago))) : '',
-      valor_previsto:
-        item.valor_previsto != null ? formatValorReais(String(Math.round(item.valor_previsto))) : '',
+      valor_pago: item.valor_pago != null ? String(Math.round(item.valor_pago)) : '',
+      valor_previsto: item.valor_previsto != null ? String(Math.round(item.valor_previsto)) : '',
       observacoes: item.observacoes || '',
       recorrencia: 1,
     });
@@ -169,18 +185,21 @@ export default function ContasAPagar() {
     setSaving(true);
     setError('');
 
-    const referencia = form.referenciaTipo === 'Parcela' ? form.parcela : form.referenciaTipo;
+    const referenciaTipoSalvo =
+      form.referenciaTipo === 'Mês corrente' ? 'corrente' : form.referenciaTipo === 'Mês anterior' ? 'anterior' : 'parcela';
+    const referencia = form.referenciaTipo === 'Parcela' ? form.parcela : null;
 
     const basePayload = {
       pagamento: form.pagamento || null,
+      referencia_tipo: referenciaTipoSalvo,
       referencia: referencia || null,
       recebedor: form.recebedor || null,
       pagador: form.pagador || null,
       dia_vencimento: form.dia_vencimento ? parseInt(form.dia_vencimento, 10) : null,
       status: form.status || null,
       data_pagamento: form.data_pagamento || null,
-      valor_pago: form.valor_pago ? parseValorReais(form.valor_pago) : null,
-      valor_previsto: form.valor_previsto ? parseValorReais(form.valor_previsto) : null,
+      valor_pago: form.valor_pago ? parseInt(form.valor_pago, 10) : null,
+      valor_previsto: form.valor_previsto ? parseInt(form.valor_previsto, 10) : null,
       observacoes: form.observacoes || null,
       atualizado_em: new Date().toISOString(),
     };
@@ -463,20 +482,30 @@ export default function ContasAPagar() {
                     <label>Valor pago</label>
                     <input
                       value={form.valor_pago}
-                      onChange={(e) => updateField('valor_pago', formatValorReais(e.target.value))}
-                      placeholder="R$ 0,00"
+                      onChange={(e) => updateField('valor_pago', e.target.value.replace(/\D/g, ''))}
+                      placeholder="Só os números. Ex: 1351"
                       inputMode="numeric"
                     />
+                    {form.valor_pago && (
+                      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
+                        = {formatValorReais(form.valor_pago)}
+                      </p>
+                    )}
                   </div>
 
                   <div>
                     <label>Valor previsto</label>
                     <input
                       value={form.valor_previsto}
-                      onChange={(e) => updateField('valor_previsto', formatValorReais(e.target.value))}
-                      placeholder="R$ 0,00"
+                      onChange={(e) => updateField('valor_previsto', e.target.value.replace(/\D/g, ''))}
+                      placeholder="Só os números. Ex: 1351"
                       inputMode="numeric"
                     />
+                    {form.valor_previsto && (
+                      <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
+                        = {formatValorReais(form.valor_previsto)}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -547,7 +576,7 @@ export default function ContasAPagar() {
                       {items.map((item) => (
                         <tr key={item.id}>
                           <td>{item.pagamento || '—'}</td>
-                          <td>{item.referencia || '—'}</td>
+                          <td>{labelReferencia(item)}</td>
                           <td>{item.recebedor || '—'}</td>
                           <td>{item.pagador || '—'}</td>
                           <td>{item.dia_vencimento ? String(item.dia_vencimento).padStart(2, '0') : '—'}</td>
