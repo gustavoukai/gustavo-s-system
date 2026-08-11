@@ -18,7 +18,7 @@ const STATUS_OPTIONS = [
   { codigo: 'reembolso', texto: 'Pagamento efetuado passível de reembolso', cor: '#d9342b', corTexto: '#ffffff' },
   { codigo: 'não pago', texto: 'Pagamento não efetuado ou isento', cor: '#e6e6e6', corTexto: '#4a4a4a' },
   { codigo: 'info', texto: 'Completar informação', cor: '#f3e6a3', corTexto: '#5a4a06' },
-  { codigo: 'indefinido', texto: 'Pagamento indefinido', cor: '#b5b5b5', corTexto: '#ffffff' },
+  { codigo: 'indefinido', texto: 'Pagamento indefinido', cor: '#b5b5b5', corTexto: '#232323' },
 ];
 
 const REFERENCIA_OPCOES = ['Mês corrente', 'Mês anterior', 'Parcela'];
@@ -211,7 +211,7 @@ export default function ContasAPagar() {
         .eq('id', editingId);
       if (updateError) {
         setSaving(false);
-        setError('Não foi possível salvar. Tente novamente.');
+        setError(`Não foi possível salvar: ${updateError.message}`);
         return;
       }
     } else {
@@ -241,7 +241,7 @@ export default function ContasAPagar() {
       const { error: insertError } = await supabase.from('contas_pagar').insert(registros);
       if (insertError) {
         setSaving(false);
-        setError('Não foi possível salvar. Tente novamente.');
+        setError(`Não foi possível salvar: ${insertError.message}`);
         return;
       }
     }
@@ -527,9 +527,10 @@ export default function ContasAPagar() {
                       onChange={(e) => updateField('recorrencia', e.target.value)}
                       style={{ maxWidth: 200 }}
                     >
-                      {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
+                      <option value={1}>Não repetir</option>
+                      {Array.from({ length: 13 }, (_, i) => i + 2).map((n) => (
                         <option key={n} value={n}>
-                          {n} {n === 1 ? 'mês' : 'meses'}
+                          {n} meses
                         </option>
                       ))}
                     </select>

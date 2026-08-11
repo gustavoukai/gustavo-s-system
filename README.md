@@ -403,6 +403,23 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - **Referência automática**: ao escolher "Mês corrente" ou "Mês anterior", a lista mostra o mês e ano de verdade (ex: "julho/25"), calculado com base no mês da conta.
 - **Cores dos status**: atualizadas conforme você pediu (aberto laranja pastel, agendado verde claro, débito lilás, pago azul claro, reembolso vermelho vivo, não pago cinza claro, info amarelo pastel, indefinido cinza médio).
 
+---
+
+## PARTE 25 — Ajustes finos em Contas a Pagar
+
+1. Não precisa rodar SQL novo — **mas confirme que você já rodou o `supabase-setup-contas-a-pagar-v2.sql`** da Parte 24. Esse é o motivo mais provável do erro ao salvar (o sistema tentou usar uma coluna que só existe depois desse script).
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Mensagem de erro mais clara**: agora, se o salvamento falhar, aparece o motivo real (não só "tente novamente"), o que ajuda a identificar o problema na hora.
+- **Recorrência**: "Não repetir" agora é a primeira opção, para cadastrar uma conta avulsa sem repetição.
+- **Status "indefinido"**: texto escurecido para ficar legível sobre o cinza.
+
+**Sobre suas duas dúvidas:**
+- O campo de valor **não muda visualmente** ao apertar Enter — isso é intencional: ele mostra só os números que você digita, e a conversão para "R$ X,00" some na linha logo abaixo ("= R$ 1.351,00"), sem mexer no que você está digitando.
+- A **Referência** ("Mês corrente"/"Mês anterior") também não muda visualmente no formulário — ela continua mostrando o nome da opção escolhida ali. A conversão para o mês/ano de verdade (ex: "julho/25") só aparece **na lista**, depois de salvo.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
