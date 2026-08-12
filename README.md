@@ -431,6 +431,23 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 **O que mudou:**
 - A tela **Home** agora mostra um aviso com todas as contas a pagar que vencem nos próximos 7 dias (incluindo hoje), ordenadas da mais urgente para a mais distante.
 
+---
+
+## PARTE 27 — Cobranças
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-cobrancas.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**Como usar:**
+- Entre em **Cobranças** → escolha **"Lista por Projeto"** ou **"Lista por Fornecedor"**.
+- **Por Projeto**: mostra todos os projetos (mais recente primeiro) — clique em "Abrir" num deles pra ver as cobranças daquele projeto e cadastrar novas ali dentro.
+- **Por Fornecedor**: mostra todos os fornecedores em ordem alfabética — clique em "Abrir" pra ver todas as cobranças daquele fornecedor, de qualquer projeto (essa tela é só consulta, não cadastra).
+- Ao cadastrar uma cobrança nova: escolha **Cliente** ou um **Fornecedor**, a Categoria muda de acordo com a escolha, o campo **Parcela** já cria uma cobrança pra cada parcela automaticamente (com o % calculado sozinho), e depois os grupos **Pedido**, **Pagamento**, **Nota Fiscal** e **Programa de Fidelidade** (esse último já vem preenchido com o programa do fornecedor escolhido).
+- Cada cobrança aparece na lista dentro de uma caixa colorida conforme o status do Pagamento.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

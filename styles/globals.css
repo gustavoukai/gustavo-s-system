@@ -602,3 +602,25 @@ table.data-table {
   font-weight: 700;
   flex-shrink: 0;
 }
+
+.cobranca-box {
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.cobranca-box h3 {
+  margin: 0 0 2px 0;
+  font-size: 15px;
+}
+
+.field-highlight-red {
+  background-color: #f9d6d6 !important;
+  border-color: #d9342b !important;
+}
+
+.field-highlight-amber {
+  background-color: #fbe2b8 !important;
+  border-color: #e8821e !important;
+}
