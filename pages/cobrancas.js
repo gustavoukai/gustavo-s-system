@@ -212,6 +212,8 @@ export default function Cobrancas() {
       atualizado_em: new Date().toISOString(),
     };
 
+    let idsParaSincronizar = [];
+
     if (editingId) {
       const { error: updateError } = await supabase.from('cobrancas').update(basePayload).eq('id', editingId);
       if (updateError) {
@@ -219,6 +221,7 @@ export default function Cobrancas() {
         setError(`Não foi possível salvar: ${updateError.message}`);
         return;
       }
+      idsParaSincronizar = [editingId];
     } else {
       const {
         data: { session },
@@ -238,17 +241,79 @@ export default function Cobrancas() {
         });
       }
 
-      const { error: insertError } = await supabase.from('cobrancas').insert(registros);
+      const { data: inseridos, error: insertError } = await supabase.from('cobrancas').insert(registros).select('id');
       if (insertError) {
         setSaving(false);
         setError(`Não foi possível salvar: ${insertError.message}`);
         return;
       }
+      idsParaSincronizar = (inseridos || []).map((r) => r.id);
+    }
+
+    try {
+      const { data: linhasCompletas } = await supabase
+        .from('cobrancas')
+        .select('*')
+        .in('id', idsParaSincronizar);
+      for (const linha of linhasCompletas || []) {
+        await sincronizarRecebimento(linha);
+      }
+    } catch (syncError) {
+      // A sincronização com Recebimentos não deve travar o cadastro principal.
     }
 
     setSaving(false);
     handleCancelar();
     loadCobrancasPorProjeto(projetoAtual.id);
+  }
+
+  // Sempre que uma cobrança é salva com status "PAGO" + valor + data preenchidos,
+  // cria (ou atualiza) o recebimento correspondente. Se deixar de atender a condição,
+  // o recebimento automático é removido.
+  async function sincronizarRecebimento(cobranca) {
+    const condicaoAtendida =
+      cobranca.pagamento_status === 'PAGO' && cobranca.pagamento_valor != null && !!cobranca.pagamento_data;
+
+    if (!condicaoAtendida) {
+      await supabase.from('recebimentos').delete().eq('cobranca_id', cobranca.id);
+      return;
+    }
+
+    const partesData = (cobranca.pagamento_data || '').split('/');
+    if (partesData.length !== 3) return;
+    const anoCurto = parseInt(partesData[2], 10);
+    const ano = anoCurto < 100 ? 2000 + anoCurto : anoCurto;
+    const mes = parseInt(partesData[1], 10);
+    if (!ano || !mes) return;
+
+    const { data: existente } = await supabase
+      .from('recebimentos')
+      .select('id')
+      .eq('cobranca_id', cobranca.id)
+      .maybeSingle();
+
+    const payload = {
+      cobranca_id: cobranca.id,
+      ano,
+      mes,
+      data: cobranca.pagamento_data,
+      projeto_id: cobranca.projeto_id,
+      fornecedor_tipo: cobranca.fornecedor_tipo,
+      fornecedor_id: cobranca.fornecedor_id,
+      categoria: cobranca.categoria,
+      parcela_atual: cobranca.parcela_atual,
+      parcela_total: cobranca.parcela_total,
+      percentual: cobranca.percentual,
+      valor: cobranca.pagamento_valor,
+      nf_numero: cobranca.nf_numero,
+      atualizado_em: new Date().toISOString(),
+    };
+
+    if (existente) {
+      await supabase.from('recebimentos').update(payload).eq('id', existente.id);
+    } else {
+      await supabase.from('recebimentos').insert([payload]);
+    }
   }
 
   async function handleDelete(id) {

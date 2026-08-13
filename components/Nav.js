@@ -7,6 +7,7 @@ const LINKS = [
   { href: '/dashboard', label: 'Home' },
   { href: '/contas-a-pagar', label: 'Contas a Pagar' },
   { href: '/cobrancas', label: 'Cobranças' },
+  { href: '/recebimentos', label: 'Recebimentos' },
   { href: '/clientes', label: 'Clientes' },
   { href: '/fornecedores', label: 'Fornecedores' },
   { href: '/projetos', label: 'Projetos' },

@@ -10,6 +10,7 @@ const TITULOS = {
   '/projetos': 'Projetos',
   '/contas-a-pagar': 'Contas a Pagar',
   '/cobrancas': 'Cobranças',
+  '/recebimentos': 'Recebimentos',
   '/relatorios': 'Relatórios',
   '/backups': 'Backups',
 };

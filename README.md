@@ -448,6 +448,22 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - Ao cadastrar uma cobrança nova: escolha **Cliente** ou um **Fornecedor**, a Categoria muda de acordo com a escolha, o campo **Parcela** já cria uma cobrança pra cada parcela automaticamente (com o % calculado sozinho), e depois os grupos **Pedido**, **Pagamento**, **Nota Fiscal** e **Programa de Fidelidade** (esse último já vem preenchido com o programa do fornecedor escolhido).
 - Cada cobrança aparece na lista dentro de uma caixa colorida conforme o status do Pagamento.
 
+---
+
+## PARTE 28 — Recebimentos (automáticos a partir de Cobranças pagas)
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-recebimentos.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**Como funciona:**
+- Nova aba **"Recebimentos"** no menu.
+- Toda vez que você salvar uma cobrança com status **"PAGO"** e os campos **Valor** e **Data** (do subgrupo Pagamento) preenchidos, um recebimento aparece sozinho nessa tela — não precisa fazer nada manualmente. Se você tirar o status "PAGO" ou apagar o valor/data depois, o recebimento some junto.
+- Na tela, escolha o **Ano** e depois um ou mais **Meses** — os recebimentos aparecem separados por mês, do mais recente pro mais antigo, com o total somado no fim de cada mês.
+- Cada recebimento mostra Data, Projeto, Fornecedor/Cliente, Categoria, Parcela, %, Recebedor, Valor, Nº NF e Observações — tudo preenchido sozinho a partir da cobrança. Os campos **Recebedor** e **Observações** ficam em branco (são só seus, pra preencher manualmente) — clique em **Editar** pra completá-los ou ajustar qualquer outro campo, se precisar.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
