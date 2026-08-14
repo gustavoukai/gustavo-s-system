@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
+import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
@@ -25,7 +26,8 @@ const emptyEdit = {
 };
 
 export default function Recebimentos() {
-  const { loading, canEdit } = useAuth();
+  const { loading, canEdit, role } = useAuth();
+  useBloqueiaVisualizante(role, loading);
   const [anos, setAnos] = useState([]);
   const [anoSelecionado, setAnoSelecionado] = useState('');
   const [mesesSelecionados, setMesesSelecionados] = useState([]);

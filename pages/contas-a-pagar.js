@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
+import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import { formatParcela, formatDataCurta, formatValorReais } from '../lib/masks';
@@ -55,7 +56,8 @@ const emptyForm = {
 };
 
 export default function ContasAPagar() {
-  const { loading, canEdit, canDelete } = useAuth();
+  const { loading, canEdit, canDelete, role } = useAuth();
+  useBloqueiaVisualizante(role, loading);
   const [anos, setAnos] = useState([]);
   const [anoSelecionado, setAnoSelecionado] = useState('');
   const [mesSelecionado, setMesSelecionado] = useState('');

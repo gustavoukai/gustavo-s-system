@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
+import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 
 const STATUS_OPTIONS = ['pendente', 'pago', 'cancelado'];
 
 export default function Relatorios() {
-  const { loading } = useAuth();
+  const { loading, role } = useAuth();
+  useBloqueiaVisualizante(role, loading);
   const [items, setItems] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);

@@ -3,23 +3,28 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 
-const LINKS = [
+const LINKS_BASE = [
   { href: '/dashboard', label: 'Home' },
-  { href: '/contas-a-pagar', label: 'Contas a Pagar' },
-  { href: '/cobrancas', label: 'Cobranças' },
-  { href: '/recebimentos', label: 'Recebimentos' },
+  { href: '/dados-escritorio', label: 'Dados do Escritório' },
+  { href: '/projetos', label: 'Projetos' },
   { href: '/clientes', label: 'Clientes' },
   { href: '/fornecedores', label: 'Fornecedores' },
-  { href: '/projetos', label: 'Projetos' },
+  { href: '/cobrancas', label: 'Cobranças' },
+];
+
+// Só quem pode operar/administrar vê estas três (visualizante não).
+const LINKS_RESTRITOS = [
+  { href: '/contas-a-pagar', label: 'Contas a Pagar' },
+  { href: '/recebimentos', label: 'Recebimentos' },
   { href: '/relatorios', label: 'Relatórios' },
-  { href: '/dados-escritorio', label: 'Dados do Escritório' },
 ];
 
 export default function Nav() {
   const router = useRouter();
   const { role } = useAuth();
 
-  const links = role === 'admin' ? [...LINKS, { href: '/backups', label: 'Backups' }] : LINKS;
+  let links = role === 'visualizante' ? LINKS_BASE : [...LINKS_BASE, ...LINKS_RESTRITOS];
+  if (role === 'admin') links = [...links, { href: '/backups', label: 'Backups' }];
 
   async function handleLogout() {
     await supabase.auth.signOut();

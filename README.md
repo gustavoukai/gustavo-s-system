@@ -482,6 +482,26 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - Três novos avisos na **Home**: cobranças com previsão de pagamento nos próximos 7 dias; cobranças com previsão vencida há até 5 dias que ainda não foram marcadas como "Pago"; e cobranças cadastradas hoje (com quem cadastrou, projeto e fornecedor/cliente).
 - Nova seção **"Checklist Financeiro"** na Home, ainda em branco — você me passa os detalhes quando quiser.
 
+---
+
+## PARTE 30 — Nome de usuário, boas-vindas semanal, aviso até ser visto, menu reordenado
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-parte30.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. **Cadastre o nome de cada usuário**: no Supabase, vá em **"Table Editor"** → tabela **`profiles`** → clique na célula da coluna **`nome`** na linha de cada usuário e digite o nome e sobrenome dele (ex: "Gustavo Ukai"). É o mesmo lugar onde você já ajusta o `role` de cada um.
+5. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+6. Espere 1-2 minutos.
+
+**O que mudou:**
+- Corrigido o texto da conta bancária de pessoa física para **"PARA PAGAMENTO SEM NF"**.
+- A mensagem de **boas-vindas** agora aparece primeiro que todos os outros avisos na Home, e só uma vez por semana, por usuário (some sozinha depois disso e volta a aparecer só depois de 7 dias).
+- Onde tinha o e-mail do usuário (mensagem de boas-vindas, aviso de cobrança cadastrada), agora aparece o **nome** cadastrado (se ainda não tiver nome cadastrado, continua mostrando o e-mail).
+- O aviso de **"nova cobrança cadastrada"** agora não some mais sozinho — ele fica na Home até alguém com nível Operador ou Admin clicar em **"✔ Marcar como visto"**.
+- Menu reordenado: Home, Dados do Escritório, Projetos, Clientes, Fornecedores, Cobranças, Contas a Pagar, Recebimentos, Relatórios e Backups (por último, só pra admin).
+- O nível **Visualizante** não vê mais as seções de Contas a Pagar, Recebimentos e Relatórios (nem no menu, nem digitando o endereço direto), e não recebe mais os avisos de pagamentos e cobranças na Home (o de aniversário continua aparecendo pra todo mundo).
+- Conferido: todas as ações de apagar do sistema já pedem confirmação antes de excluir — isso já estava certo.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

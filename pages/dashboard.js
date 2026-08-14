@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import Nav from '../components/Nav';
 import { getLembretesAniversario } from '../lib/aniversarios';
 import { getContasProximasDoVencimento, mensagemVencimento } from '../lib/contasPagarLembretes';
-import { getCobrancasComPrevisaoProxima, getCobrancasAtrasadas, getCobrancasNovasHoje } from '../lib/cobrancasLembretes';
+import { getCobrancasComPrevisaoProxima, getCobrancasAtrasadas, getCobrancasNovasNaoLidas } from '../lib/cobrancasLembretes';
 import Rodape from '../components/Rodape';
 
 const ROLE_LABELS = {
@@ -12,6 +12,8 @@ const ROLE_LABELS = {
   operador: 'Operador',
   visualizante: 'Visualizante',
 };
+
+const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export default function Dashboard() {
   const router = useRouter();
@@ -22,6 +24,7 @@ export default function Dashboard() {
   const [cobrancasProximas, setCobrancasProximas] = useState([]);
   const [cobrancasAtrasadas, setCobrancasAtrasadas] = useState([]);
   const [cobrancasNovas, setCobrancasNovas] = useState([]);
+  const [mostrarBoasVindas, setMostrarBoasVindas] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -36,14 +39,28 @@ export default function Dashboard() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('email, role')
+        .select('email, role, nome')
         .eq('id', session.user.id)
         .single();
 
-      if (error || !data) {
-        setProfile({ email: session.user.email, role: 'visualizante' });
-      } else {
-        setProfile(data);
+      const perfilAtual = error || !data ? { email: session.user.email, role: 'visualizante' } : data;
+      setProfile(perfilAtual);
+      const roleAtual = perfilAtual.role || 'visualizante';
+
+      // Boas-vindas: mostra só se fizer mais de 7 dias desde a última vez.
+      const { data: visita } = await supabase
+        .from('visitas_usuario')
+        .select('ultima_boas_vindas')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      const deveMostrarBoasVindas =
+        !visita?.ultima_boas_vindas || Date.now() - new Date(visita.ultima_boas_vindas).getTime() > SETE_DIAS_MS;
+      setMostrarBoasVindas(deveMostrarBoasVindas);
+      if (deveMostrarBoasVindas) {
+        await supabase
+          .from('visitas_usuario')
+          .upsert({ user_id: session.user.id, ultima_boas_vindas: new Date().toISOString() });
       }
 
       const { data: clientes } = await supabase
@@ -51,24 +68,29 @@ export default function Dashboard() {
         .select('nome, data_nascimento, conjuge_nome, conjuge_data_nascimento, filhos');
       setLembretes(getLembretesAniversario(clientes));
 
-      const { data: contas } = await supabase
-        .from('contas_pagar')
-        .select('id, pagamento, ano, mes, dia_vencimento, status, valor_previsto');
-      setContasProximas(getContasProximasDoVencimento(contas));
+      // Avisos de pagamentos/cobranças não aparecem pra quem só visualiza.
+      if (roleAtual !== 'visualizante') {
+        const { data: contas } = await supabase
+          .from('contas_pagar')
+          .select('id, pagamento, ano, mes, dia_vencimento, status, valor_previsto');
+        setContasProximas(getContasProximasDoVencimento(contas));
 
-      const { data: cobrancasData } = await supabase
-        .from('cobrancas')
-        .select('id, pagamento_previsao, pagamento_status, fornecedor_tipo, created_by, created_at, projetos(numero_projeto, nome), fornecedores(nome)');
+        const { data: cobrancasData } = await supabase
+          .from('cobrancas')
+          .select(
+            'id, pagamento_previsao, pagamento_status, fornecedor_tipo, created_by, created_at, aviso_lido, projetos(numero_projeto, nome), fornecedores(nome)'
+          );
 
-      const { data: perfis } = await supabase.from('profiles').select('id, email');
-      const mapaEmails = {};
-      (perfis || []).forEach((p) => {
-        mapaEmails[p.id] = p.email;
-      });
+        const { data: perfis } = await supabase.from('profiles').select('id, email, nome');
+        const mapaNomes = {};
+        (perfis || []).forEach((p) => {
+          mapaNomes[p.id] = p.nome || p.email;
+        });
 
-      setCobrancasProximas(getCobrancasComPrevisaoProxima(cobrancasData));
-      setCobrancasAtrasadas(getCobrancasAtrasadas(cobrancasData));
-      setCobrancasNovas(getCobrancasNovasHoje(cobrancasData, mapaEmails));
+        setCobrancasProximas(getCobrancasComPrevisaoProxima(cobrancasData));
+        setCobrancasAtrasadas(getCobrancasAtrasadas(cobrancasData));
+        setCobrancasNovas(getCobrancasNovasNaoLidas(cobrancasData, mapaNomes));
+      }
 
       setLoading(false);
     }
@@ -81,6 +103,11 @@ export default function Dashboard() {
     router.push('/login');
   }
 
+  async function marcarAvisoComoVisto(id) {
+    await supabase.from('cobrancas').update({ aviso_lido: true }).eq('id', id);
+    setCobrancasNovas((prev) => prev.filter((c) => c.id !== id));
+  }
+
   if (loading) {
     return (
       <div className="page-center">
@@ -90,6 +117,8 @@ export default function Dashboard() {
   }
 
   const role = profile?.role || 'visualizante';
+  const nomeExibicao = profile?.nome || profile?.email;
+  const canEdit = role === 'admin' || role === 'operador';
 
   return (
     <div className="dashboard">
@@ -99,6 +128,16 @@ export default function Dashboard() {
         <div style={{ marginBottom: 18 }}>
           <span className="role-badge">{ROLE_LABELS[role] || role}</span>
         </div>
+
+        {mostrarBoasVindas && (
+          <div className="section-card">
+            <h2>Bem-vindo, {nomeExibicao}</h2>
+            <p>
+              Use o menu acima para lançar entradas e saídas, cadastrar clientes, fornecedores e
+              projetos, e ver os relatórios financeiros.
+            </p>
+          </div>
+        )}
 
         {contasProximas.length > 0 && (
           <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
@@ -151,11 +190,16 @@ export default function Dashboard() {
 
         {cobrancasNovas.length > 0 && (
           <div className="section-card" style={{ borderLeft: '4px solid var(--accent)' }}>
-            <h2>🆕 Novas cobranças cadastradas hoje</h2>
+            <h2>🆕 Novas cobranças cadastradas</h2>
             {cobrancasNovas.map((c) => (
-              <p key={c.id} style={{ margin: '6px 0' }}>
-                {c.texto}
-              </p>
+              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '6px 0' }}>
+                <p style={{ margin: 0 }}>{c.texto}</p>
+                {canEdit && (
+                  <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }} onClick={() => marcarAvisoComoVisto(c.id)}>
+                    ✔ Marcar como visto
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -163,14 +207,6 @@ export default function Dashboard() {
         <div className="section-card">
           <h2>Checklist Financeiro</h2>
           <p style={{ color: 'var(--muted)' }}>Em breve.</p>
-        </div>
-
-        <div className="section-card">
-          <h2>Bem-vindo, {profile?.email}</h2>
-          <p>
-            Use o menu acima para lançar entradas e saídas, cadastrar clientes, fornecedores e
-            projetos, e ver os relatórios financeiros.
-          </p>
         </div>
 
         <Rodape />
