@@ -42,6 +42,8 @@ export default function Cobrancas() {
   const [projetoAtual, setProjetoAtual] = useState(null);
   const [fornecedorAtual, setFornecedorAtual] = useState(null);
   const [cobrancas, setCobrancas] = useState([]);
+  const [periodoInicio, setPeriodoInicio] = useState('');
+  const [periodoFim, setPeriodoFim] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -90,6 +92,40 @@ export default function Cobrancas() {
       (a, b) => Number(b.projetos?.numero_projeto || 0) - Number(a.projetos?.numero_projeto || 0)
     );
     setCobrancas(ordenadas);
+  }
+
+  function parseDataCurtaParaData(str) {
+    if (!str) return null;
+    const partes = str.split('/');
+    if (partes.length !== 3) return null;
+    const [d, m, a] = partes;
+    const ano = Number(a) < 100 ? 2000 + Number(a) : Number(a);
+    const data = new Date(ano, Number(m) - 1, Number(d));
+    return isNaN(data.getTime()) ? null : data;
+  }
+
+  async function loadCobrancasPorPeriodo(inicio, fim) {
+    if (!inicio || !fim) {
+      setCobrancas([]);
+      return;
+    }
+    const { data } = await supabase
+      .from('cobrancas')
+      .select(
+        '*, projetos(numero_projeto, nome), fornecedores(nome, categorias, vendedor, telefone_vendedor, financeiro, telefone_financeiro)'
+      )
+      .not('pagamento_previsao', 'is', null);
+
+    const dataInicio = new Date(inicio + 'T00:00:00');
+    const dataFim = new Date(fim + 'T23:59:59');
+
+    const filtradas = (data || []).filter((item) => {
+      const previsao = parseDataCurtaParaData(item.pagamento_previsao);
+      return previsao && previsao >= dataInicio && previsao <= dataFim;
+    });
+
+    filtradas.sort((a, b) => parseDataCurtaParaData(a.pagamento_previsao) - parseDataCurtaParaData(b.pagamento_previsao));
+    setCobrancas(filtradas);
   }
 
   function abrirProjeto(projeto) {
@@ -326,19 +362,34 @@ export default function Cobrancas() {
   const categoriaOpcoes =
     form.fornecedorSelecao === 'Cliente' ? CATEGORIA_CLIENTE : CATEGORIA_FORNECEDOR;
 
+  function AlertaTriangulo({ title }) {
+    return (
+      <svg width="18" height="18" viewBox="0 0 20 20" title={title} style={{ flexShrink: 0, verticalAlign: 'middle' }}>
+        <polygon points="10,2 18.5,17 1.5,17" fill="#e8b93a" />
+        <text x="10" y="15.5" fontSize="10" fontWeight="700" fill="#4a3a06" textAnchor="middle">
+          !
+        </text>
+      </svg>
+    );
+  }
+
   function CobrancaBox({ item, mostrarFornecedorInfo }) {
     const style = statusCor(item.pagamento_status);
+    const statusInfo = PAGAMENTO_STATUS_OPTIONS.find((s) => s.codigo === item.pagamento_status);
+    const ehClienteAssessoria = item.fornecedor_tipo === 'cliente' && item.categoria === 'Assessoria';
+    const nfIncompleta = item.nf === 'sim' && !item.nf_numero && !item.nf_emissao;
+
     return (
       <div className="cobranca-box" style={{ backgroundColor: style.backgroundColor, color: style.color }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
-          <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
             {mostrarFornecedorInfo && (
-              <h3>
+              <h3 style={{ fontSize: 19 }}>
                 {item.fornecedor_tipo === 'cliente' ? 'Cliente' : item.fornecedores?.nome || '(fornecedor)'}
               </h3>
             )}
             {mostrarFornecedorInfo && item.fornecedor_tipo === 'fornecedor' && item.fornecedores && (
-              <p style={{ margin: '2px 0', fontSize: 12 }}>
+              <p style={{ margin: 0, fontSize: 12 }}>
                 {(item.fornecedores.categorias || []).join(', ')}
                 {item.fornecedores.vendedor ? ` · Vendedor: ${item.fornecedores.vendedor}` : ''}
                 {item.fornecedores.telefone_vendedor ? ` (${item.fornecedores.telefone_vendedor})` : ''}
@@ -346,15 +397,6 @@ export default function Cobrancas() {
                 {item.fornecedores.telefone_financeiro ? ` (${item.fornecedores.telefone_financeiro})` : ''}
               </p>
             )}
-            {view === 'fornecedor' && item.projetos && (
-              <p style={{ margin: '2px 0', fontSize: 12 }}>
-                Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}
-              </p>
-            )}
-            <p style={{ margin: '2px 0', fontWeight: 700 }}>
-              Categoria: {item.categoria} — Parcela {formatParcelaLabel(item.parcela_atual, item.parcela_total)}
-              {item.percentual != null ? ` (${item.percentual}%)` : ''}
-            </p>
           </div>
           {canEdit && (
             <div style={{ display: 'flex', gap: 6 }}>
@@ -370,20 +412,53 @@ export default function Cobrancas() {
           )}
         </div>
 
+        {view === 'fornecedor' && item.projetos && (
+          <p style={{ margin: '2px 0', fontSize: 12 }}>
+            Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}
+          </p>
+        )}
+        {view === 'periodo' && item.projetos && (
+          <p style={{ margin: '2px 0', fontSize: 12 }}>
+            Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}
+          </p>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 6 }}>
+          <p style={{ margin: 0, fontWeight: 700 }}>
+            Categoria: {item.categoria} — Parcela {formatParcelaLabel(item.parcela_atual, item.parcela_total)}
+            {item.percentual != null ? ` (${item.percentual}%)` : ''}
+          </p>
+          {item.pagamento_status && (
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>
+              Pagamento status: {item.pagamento_status}
+              {statusInfo && (
+                <span style={{ fontWeight: 400, fontSize: 12, marginLeft: 8 }}>— {statusInfo.texto}</span>
+              )}
+            </p>
+          )}
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '4px 16px', marginTop: 8, fontSize: 13 }}>
-          <div><strong>Pedido salvo:</strong> {item.pedido_salvo || '—'}</div>
-          <div><strong>Pedido nº:</strong> {item.pedido_numero || '—'}</div>
-          <div><strong>Pedido data:</strong> {item.pedido_data || '—'}</div>
+          {!ehClienteAssessoria && <div><strong>Pedido salvo:</strong> {item.pedido_salvo || '—'}</div>}
+          {!ehClienteAssessoria && <div><strong>Pedido nº:</strong> {item.pedido_numero || '—'}</div>}
+          {!ehClienteAssessoria && <div><strong>Pedido data:</strong> {item.pedido_data || '—'}</div>}
           <div><strong>Pedido valor:</strong> {item.pedido_valor != null ? `R$ ${Number(item.pedido_valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}</div>
           <div><strong>Pagamento valor:</strong> {item.pagamento_valor != null ? `R$ ${Number(item.pagamento_valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}</div>
-          <div><strong>Pagamento status:</strong> {item.pagamento_status || '—'}</div>
           <div><strong>Pagamento data:</strong> {item.pagamento_data || '—'}</div>
           <div><strong>Pagamento previsão:</strong> {item.pagamento_previsao || '—'}</div>
-          <div><strong>NF:</strong> {item.nf || '—'}</div>
+          <div>
+            <strong>NF:</strong> {item.nf || '—'} {nfIncompleta && <AlertaTriangulo title="NF marcada como Sim, mas número e emissão ainda não foram preenchidos" />}
+          </div>
           <div><strong>NF nº:</strong> {item.nf_numero || '—'}</div>
           <div><strong>NF emissão:</strong> {item.nf_emissao || '—'}</div>
           <div><strong>NF envio:</strong> {item.nf_envio || '—'}</div>
-          <div><strong>Fidelidade:</strong> {item.fidelidade_programa || '—'} {item.fidelidade_status ? `(${item.fidelidade_status})` : ''} {item.fidelidade_status === 'Creditado' && ' ✅'}</div>
+          {!ehClienteAssessoria && (
+            <div>
+              <strong>Fidelidade:</strong> {item.fidelidade_programa || '—'} {item.fidelidade_status ? `(${item.fidelidade_status})` : ''}
+              {item.fidelidade_status === 'Lançar' && <AlertaTriangulo title="Programa de fidelidade ainda não lançado" />}
+              {item.fidelidade_status === 'Creditado' && ' ✅'}
+            </div>
+          )}
         </div>
         {item.observacoes && (
           <p style={{ marginTop: 8, fontSize: 13 }}>
@@ -410,15 +485,21 @@ export default function Cobrancas() {
         {view === 'menu' && (
           <>
             <h1 style={{ marginBottom: 18 }}>Cobranças</h1>
-            <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               <button style={{ width: 'auto', padding: '14px 24px' }} onClick={() => setView('projetos')}>
-                Lista por Projeto
+                Ver por Projeto
               </button>
               <button
                 style={{ width: 'auto', padding: '14px 24px', background: 'var(--primary-dark)' }}
                 onClick={() => setView('fornecedores')}
               >
-                Lista por Fornecedor
+                Ver por Fornecedor
+              </button>
+              <button
+                style={{ width: 'auto', padding: '14px 24px', background: 'var(--accent)' }}
+                onClick={() => setView('periodo')}
+              >
+                Ver por Período
               </button>
             </div>
           </>
@@ -789,6 +870,51 @@ export default function Cobrancas() {
               <p className="empty-hint">Nenhuma cobrança cadastrada com este fornecedor.</p>
             ) : (
               cobrancas.map((item) => <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo={false} />)
+            )}
+          </>
+        )}
+
+        {view === 'periodo' && (
+          <>
+            <div className="toolbar">
+              <h1>Cobranças por Período</h1>
+              <button className="btn-secondary" onClick={voltarParaMenu}>
+                Voltar
+              </button>
+            </div>
+
+            <div className="filters-bar" style={{ alignItems: 'flex-end' }}>
+              <div>
+                <label>Previsão de pagamento — de</label>
+                <input
+                  type="date"
+                  value={periodoInicio}
+                  onChange={(e) => setPeriodoInicio(e.target.value)}
+                />
+              </div>
+              <div>
+                <label>até</label>
+                <input type="date" value={periodoFim} onChange={(e) => setPeriodoFim(e.target.value)} />
+              </div>
+              <div>
+                <button
+                  type="button"
+                  style={{ width: 'auto', padding: '10px 18px' }}
+                  onClick={() => loadCobrancasPorPeriodo(periodoInicio, periodoFim)}
+                >
+                  Buscar
+                </button>
+              </div>
+            </div>
+
+            {cobrancas.length === 0 ? (
+              <p className="empty-hint">
+                {periodoInicio && periodoFim
+                  ? 'Nenhuma cobrança com previsão de pagamento nesse período.'
+                  : 'Escolha o período e clique em Buscar.'}
+              </p>
+            ) : (
+              cobrancas.map((item) => <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />)
             )}
           </>
         )}

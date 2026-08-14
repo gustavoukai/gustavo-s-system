@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import Nav from '../components/Nav';
 import { getLembretesAniversario } from '../lib/aniversarios';
 import { getContasProximasDoVencimento, mensagemVencimento } from '../lib/contasPagarLembretes';
+import { getCobrancasComPrevisaoProxima, getCobrancasAtrasadas, getCobrancasNovasHoje } from '../lib/cobrancasLembretes';
 import Rodape from '../components/Rodape';
 
 const ROLE_LABELS = {
@@ -18,6 +19,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [lembretes, setLembretes] = useState([]);
   const [contasProximas, setContasProximas] = useState([]);
+  const [cobrancasProximas, setCobrancasProximas] = useState([]);
+  const [cobrancasAtrasadas, setCobrancasAtrasadas] = useState([]);
+  const [cobrancasNovas, setCobrancasNovas] = useState([]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -51,6 +55,20 @@ export default function Dashboard() {
         .from('contas_pagar')
         .select('id, pagamento, ano, mes, dia_vencimento, status, valor_previsto');
       setContasProximas(getContasProximasDoVencimento(contas));
+
+      const { data: cobrancasData } = await supabase
+        .from('cobrancas')
+        .select('id, pagamento_previsao, pagamento_status, fornecedor_tipo, created_by, created_at, projetos(numero_projeto, nome), fornecedores(nome)');
+
+      const { data: perfis } = await supabase.from('profiles').select('id, email');
+      const mapaEmails = {};
+      (perfis || []).forEach((p) => {
+        mapaEmails[p.id] = p.email;
+      });
+
+      setCobrancasProximas(getCobrancasComPrevisaoProxima(cobrancasData));
+      setCobrancasAtrasadas(getCobrancasAtrasadas(cobrancasData));
+      setCobrancasNovas(getCobrancasNovasHoje(cobrancasData, mapaEmails));
 
       setLoading(false);
     }
@@ -108,6 +126,44 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+
+        {cobrancasProximas.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
+            <h2>📋 Cobranças com previsão nos próximos 7 dias</h2>
+            {cobrancasProximas.map((c) => (
+              <p key={c.id} style={{ margin: '6px 0' }}>
+                {c.texto}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {cobrancasAtrasadas.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--danger)' }}>
+            <h2>⚠️ Cobranças com previsão vencida, ainda não pagas</h2>
+            {cobrancasAtrasadas.map((c) => (
+              <p key={c.id} style={{ margin: '6px 0' }}>
+                {c.texto}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {cobrancasNovas.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--accent)' }}>
+            <h2>🆕 Novas cobranças cadastradas hoje</h2>
+            {cobrancasNovas.map((c) => (
+              <p key={c.id} style={{ margin: '6px 0' }}>
+                {c.texto}
+              </p>
+            ))}
+          </div>
+        )}
+
+        <div className="section-card">
+          <h2>Checklist Financeiro</h2>
+          <p style={{ color: 'var(--muted)' }}>Em breve.</p>
+        </div>
 
         <div className="section-card">
           <h2>Bem-vindo, {profile?.email}</h2>

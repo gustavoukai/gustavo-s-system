@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/fornecedores', label: 'Fornecedores' },
   { href: '/projetos', label: 'Projetos' },
   { href: '/relatorios', label: 'Relatórios' },
+  { href: '/dados-escritorio', label: 'Dados do Escritório' },
 ];
 
 export default function Nav() {

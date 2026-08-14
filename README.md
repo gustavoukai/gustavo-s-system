@@ -464,6 +464,24 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - Na tela, escolha o **Ano** e depois um ou mais **Meses** — os recebimentos aparecem separados por mês, do mais recente pro mais antigo, com o total somado no fim de cada mês.
 - Cada recebimento mostra Data, Projeto, Fornecedor/Cliente, Categoria, Parcela, %, Recebedor, Valor, Nº NF e Observações — tudo preenchido sozinho a partir da cobrança. Os campos **Recebedor** e **Observações** ficam em branco (são só seus, pra preencher manualmente) — clique em **Editar** pra completá-los ou ajustar qualquer outro campo, se precisar.
 
+---
+
+## PARTE 29 — Layout de Cobranças, "Ver por Período", Dados do Escritório, avisos na Home
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-dados-escritorio.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Caixa de cada cobrança**: nome do fornecedor maior; categoria do fornecedor + vendedor + financeiro aparecem ao lado do nome; status do pagamento maior, com o significado dele escrito do lado; aviso (triângulo amarelo) se a fidelidade estiver como "Lançar", ou se a NF estiver marcada como "Sim" mas número e emissão ainda vazios.
+- Cobranças de **Cliente + Assessoria** não mostram mais os campos Pedido salvo, Pedido nº, Pedido data e Fidelidade (não fazem sentido nesse caso).
+- Os três botões de Cobranças agora são **"Ver por Projeto"**, **"Ver por Fornecedor"** e o novo **"Ver por Período"** — escolha uma data de início e fim, e aparecem todas as cobranças com previsão de pagamento dentro desse intervalo.
+- Nova aba **"Dados do Escritório"** no menu: mostra os dados do escritório, da empresa e as duas contas bancárias — visível para todos, mas só o Administrador pode editar (botão "Editar" só aparece pra ele).
+- Três novos avisos na **Home**: cobranças com previsão de pagamento nos próximos 7 dias; cobranças com previsão vencida há até 5 dias que ainda não foram marcadas como "Pago"; e cobranças cadastradas hoje (com quem cadastrou, projeto e fornecedor/cliente).
+- Nova seção **"Checklist Financeiro"** na Home, ainda em branco — você me passa os detalhes quando quiser.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
