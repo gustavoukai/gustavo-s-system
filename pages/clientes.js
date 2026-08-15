@@ -222,9 +222,13 @@ export default function Clientes() {
         return;
       }
     } else {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       const { data: novoCliente, error: insertError } = await supabase
         .from('clientes')
-        .insert([payload])
+        .insert([{ ...payload, created_by: session?.user?.id || null }])
         .select()
         .single();
 

@@ -139,7 +139,13 @@ export default function Projetos() {
         return;
       }
     } else {
-      const { error: insertError } = await supabase.from('projetos').insert([payload]);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const { error: insertError } = await supabase
+        .from('projetos')
+        .insert([{ ...payload, created_by: session?.user?.id || null }]);
       if (insertError) {
         setSaving(false);
         setError('Não foi possível salvar o projeto. Tente novamente.');

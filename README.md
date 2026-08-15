@@ -538,3 +538,26 @@ Essa parte tem **um passo a mais que o normal** (pegar uma chave no Supabase e c
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 32 — Botão de nova cobrança avulso, destaques na tela inicial, avisos de cliente/projeto, senha e permissões
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-parte32.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Cobranças**: agora tem um botão **"+ Nova cobrança"** direto na tela inicial (antes dos três botões de "Ver por..."), com um campo a mais pra escolher o Projeto — não precisa mais entrar num projeto pra cadastrar. Logo abaixo, aparece a lista de todas as cobranças com status **"Cobrar"** ou **"Follow Up"**, organizadas por projeto (mais recente primeiro).
+- **Fornecedores**: legenda dos ícones de status agora aparece entre a busca e a lista.
+- **Home**: novos avisos de "novo cliente cadastrado" e "novo projeto cadastrado" (com botão de marcar como visto, igual às cobranças), e um aviso de aniversários que já passaram (até 5 dias atrás).
+- **Usuários**: no topo da página, a tabela com o que cada nível pode fazer, sempre atualizada. Cada usuário agora tem um botão **"Redefinir senha"** — sobre isso, uma explicação importante:
+
+**Sobre mostrar senhas:** não é possível (nem seria seguro) o sistema guardar ou mostrar a senha real de alguém depois de criada — isso vale pra qualquer sistema sério, banco, e-mail, etc., não é uma limitação daqui. O que dá pra fazer, e o que já deixei pronto, é você **redefinir a senha de qualquer usuário quando quiser** — a senha nova aparece na tela só naquele momento, pra você anotar ou avisar a pessoa na hora.
+- **Visualizante** agora pode cadastrar e editar em Clientes, Fornecedores, Projetos e Cobranças (mas continua sem poder apagar nada).
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

@@ -670,6 +670,20 @@ export default function Fornecedores() {
               </div>
             </div>
 
+            <div className="section-card">
+              <h2 style={{ marginBottom: 10 }}>Legenda de status</h2>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+                {STATUS_OPTIONS.map((s) => (
+                  <div key={s.codigo} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                    {renderStatusIcon(s.codigo)}
+                    <span>
+                      <strong>{s.codigo}</strong> — {s.texto}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="data-table-wrap">
               {itemsFiltrados.length === 0 ? (
                 <p className="empty-hint">Nenhum fornecedor encontrado.</p>

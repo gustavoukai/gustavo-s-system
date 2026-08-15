@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import Nav from '../components/Nav';
-import { getLembretesAniversario } from '../lib/aniversarios';
+import { getLembretesAniversario, getAniversariosPassados } from '../lib/aniversarios';
 import { getContasProximasDoVencimento, mensagemVencimento } from '../lib/contasPagarLembretes';
 import { getCobrancasComPrevisaoProxima, getCobrancasAtrasadas, getCobrancasNovasNaoLidas } from '../lib/cobrancasLembretes';
+import { getClientesNovosNaoLidos, getProjetosNovosNaoLidos } from '../lib/cadastrosLembretes';
 import Rodape from '../components/Rodape';
 
 const ROLE_LABELS = {
@@ -20,10 +21,13 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lembretes, setLembretes] = useState([]);
+  const [aniversariosPassados, setAniversariosPassados] = useState([]);
   const [contasProximas, setContasProximas] = useState([]);
   const [cobrancasProximas, setCobrancasProximas] = useState([]);
   const [cobrancasAtrasadas, setCobrancasAtrasadas] = useState([]);
   const [cobrancasNovas, setCobrancasNovas] = useState([]);
+  const [clientesNovos, setClientesNovos] = useState([]);
+  const [projetosNovos, setProjetosNovos] = useState([]);
   const [mostrarBoasVindas, setMostrarBoasVindas] = useState(false);
 
   useEffect(() => {
@@ -63,10 +67,23 @@ export default function Dashboard() {
           .upsert({ user_id: session.user.id, ultima_boas_vindas: new Date().toISOString() });
       }
 
+      const { data: perfis } = await supabase.from('profiles').select('id, email, nome');
+      const mapaNomes = {};
+      (perfis || []).forEach((p) => {
+        mapaNomes[p.id] = p.nome || p.email;
+      });
+
       const { data: clientes } = await supabase
         .from('clientes')
-        .select('nome, data_nascimento, conjuge_nome, conjuge_data_nascimento, filhos');
+        .select('id, nome, data_nascimento, conjuge_nome, conjuge_data_nascimento, filhos, created_by, created_at, aviso_lido');
       setLembretes(getLembretesAniversario(clientes));
+      setAniversariosPassados(getAniversariosPassados(clientes));
+      setClientesNovos(getClientesNovosNaoLidos(clientes, mapaNomes));
+
+      const { data: projetos } = await supabase
+        .from('projetos')
+        .select('id, numero_projeto, nome, created_by, created_at, aviso_lido');
+      setProjetosNovos(getProjetosNovosNaoLidos(projetos, mapaNomes));
 
       // Avisos de pagamentos/cobranças não aparecem pra quem só visualiza.
       if (roleAtual !== 'visualizante') {
@@ -81,12 +98,6 @@ export default function Dashboard() {
             'id, pagamento_previsao, pagamento_status, fornecedor_tipo, created_by, created_at, aviso_lido, projetos(numero_projeto, nome), fornecedores(nome)'
           );
 
-        const { data: perfis } = await supabase.from('profiles').select('id, email, nome');
-        const mapaNomes = {};
-        (perfis || []).forEach((p) => {
-          mapaNomes[p.id] = p.nome || p.email;
-        });
-
         setCobrancasProximas(getCobrancasComPrevisaoProxima(cobrancasData));
         setCobrancasAtrasadas(getCobrancasAtrasadas(cobrancasData));
         setCobrancasNovas(getCobrancasNovasNaoLidas(cobrancasData, mapaNomes));
@@ -98,14 +109,9 @@ export default function Dashboard() {
     loadProfile();
   }, [router]);
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push('/login');
-  }
-
-  async function marcarAvisoComoVisto(id) {
-    await supabase.from('cobrancas').update({ aviso_lido: true }).eq('id', id);
-    setCobrancasNovas((prev) => prev.filter((c) => c.id !== id));
+  async function marcarAvisoComoVisto(tabela, id, listaSetter) {
+    await supabase.from(tabela).update({ aviso_lido: true }).eq('id', id);
+    listaSetter((prev) => prev.filter((c) => c.id !== id));
   }
 
   if (loading) {
@@ -166,6 +172,17 @@ export default function Dashboard() {
           </div>
         )}
 
+        {aniversariosPassados.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--muted)' }}>
+            <h2>🎈 Aniversários recentes</h2>
+            {aniversariosPassados.map((lembrete, index) => (
+              <p key={index} style={{ margin: '6px 0' }}>
+                {lembrete.texto}
+              </p>
+            ))}
+          </div>
+        )}
+
         {cobrancasProximas.length > 0 && (
           <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
             <h2>📋 Cobranças com previsão nos próximos 7 dias</h2>
@@ -195,7 +212,39 @@ export default function Dashboard() {
               <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '6px 0' }}>
                 <p style={{ margin: 0 }}>{c.texto}</p>
                 {canEdit && (
-                  <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }} onClick={() => marcarAvisoComoVisto(c.id)}>
+                  <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }} onClick={() => marcarAvisoComoVisto('cobrancas', c.id, setCobrancasNovas)}>
+                    ✔ Marcar como visto
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {clientesNovos.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--accent)' }}>
+            <h2>🆕 Novos clientes cadastrados</h2>
+            {clientesNovos.map((c) => (
+              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '6px 0' }}>
+                <p style={{ margin: 0 }}>{c.texto}</p>
+                {canEdit && (
+                  <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }} onClick={() => marcarAvisoComoVisto('clientes', c.id, setClientesNovos)}>
+                    ✔ Marcar como visto
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {projetosNovos.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--accent)' }}>
+            <h2>🆕 Novos projetos cadastrados</h2>
+            {projetosNovos.map((c) => (
+              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '6px 0' }}>
+                <p style={{ margin: 0 }}>{c.texto}</p>
+                {canEdit && (
+                  <button className="btn-secondary" style={{ whiteSpace: 'nowrap' }} onClick={() => marcarAvisoComoVisto('projetos', c.id, setProjetosNovos)}>
                     ✔ Marcar como visto
                   </button>
                 )}

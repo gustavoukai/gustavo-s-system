@@ -14,6 +14,7 @@ import {
 } from '../lib/cobrancaHelpers';
 
 const emptyForm = {
+  projetoSelecionadoId: '',
   fornecedorSelecao: '',
   categoria: '',
   parcelas: '1',
@@ -45,10 +46,25 @@ export default function Cobrancas() {
   const [periodoInicio, setPeriodoInicio] = useState('');
   const [periodoFim, setPeriodoFim] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [formularioAvulso, setFormularioAvulso] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [destaques, setDestaques] = useState([]);
+
+  async function loadDestaques() {
+    const { data } = await supabase
+      .from('cobrancas')
+      .select(
+        '*, projetos(numero_projeto, nome), fornecedores(nome, categorias, vendedor, telefone_vendedor, financeiro, telefone_financeiro)'
+      )
+      .in('pagamento_status', ['COBRAR', 'FOLLOW UP']);
+    const ordenados = (data || []).sort(
+      (a, b) => Number(b.projetos?.numero_projeto || 0) - Number(a.projetos?.numero_projeto || 0)
+    );
+    setDestaques(ordenados);
+  }
 
   async function loadProjetos() {
     const { data } = await supabase.from('projetos').select('id, numero_projeto, nome');
@@ -70,6 +86,7 @@ export default function Cobrancas() {
     if (!loading) {
       loadProjetos();
       loadFornecedores();
+      loadDestaques();
     }
   }, [loading]);
 
@@ -170,11 +187,21 @@ export default function Cobrancas() {
     setEditingId(null);
     setForm(emptyForm);
     setError('');
+    setFormularioAvulso(false);
+    setShowForm(true);
+  }
+
+  function abrirNovaCobrancaAvulsa() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setError('');
+    setFormularioAvulso(true);
     setShowForm(true);
   }
 
   function openEditForm(item) {
     setForm({
+      projetoSelecionadoId: item.projeto_id || '',
       fornecedorSelecao: item.fornecedor_tipo === 'cliente' ? 'Cliente' : item.fornecedor_id,
       categoria: item.categoria || '',
       parcelas: String(item.parcela_total || 1),
@@ -196,6 +223,7 @@ export default function Cobrancas() {
     });
     setEditingId(item.id);
     setError('');
+    setFormularioAvulso(false);
     setShowForm(true);
   }
 
@@ -204,6 +232,7 @@ export default function Cobrancas() {
     setEditingId(null);
     setForm(emptyForm);
     setError('');
+    setFormularioAvulso(false);
   }
 
   function handleLimpar() {
@@ -215,8 +244,8 @@ export default function Cobrancas() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!form.fornecedorSelecao || !form.categoria) {
-      setError('Escolha o Cliente/Fornecedor e a Categoria antes de salvar.');
+    if (!form.fornecedorSelecao || !form.categoria || (formularioAvulso && !form.projetoSelecionadoId)) {
+      setError('Escolha o Projeto (se estiver cadastrando avulso), o Cliente/Fornecedor e a Categoria antes de salvar.');
       return;
     }
 
@@ -269,7 +298,7 @@ export default function Cobrancas() {
       for (let i = 1; i <= totalParcelas; i++) {
         registros.push({
           ...basePayload,
-          projeto_id: projetoAtual.id,
+          projeto_id: formularioAvulso ? form.projetoSelecionadoId : projetoAtual.id,
           parcela_atual: i,
           parcela_total: totalParcelas,
           percentual,
@@ -299,8 +328,14 @@ export default function Cobrancas() {
     }
 
     setSaving(false);
+    const eraAvulso = formularioAvulso;
     handleCancelar();
-    loadCobrancasPorProjeto(projetoAtual.id);
+    if (eraAvulso) {
+      loadDestaques();
+      setView('menu');
+    } else {
+      loadCobrancasPorProjeto(projetoAtual.id);
+    }
   }
 
   // Sempre que uma cobrança é salva com status "PAGO" + valor + data preenchidos,
@@ -412,12 +447,7 @@ export default function Cobrancas() {
           )}
         </div>
 
-        {view === 'fornecedor' && item.projetos && (
-          <p style={{ margin: '2px 0', fontSize: 12 }}>
-            Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}
-          </p>
-        )}
-        {view === 'periodo' && item.projetos && (
+        {(view === 'fornecedor' || view === 'periodo' || view === 'menu') && item.projetos && (
           <p style={{ margin: '2px 0', fontSize: 12 }}>
             Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}
           </p>
@@ -502,6 +532,25 @@ export default function Cobrancas() {
                 Ver por Período
               </button>
             </div>
+
+            {canEdit && !showForm && (
+              <button
+                type="button"
+                onClick={abrirNovaCobrancaAvulsa}
+                style={{ width: 'auto', padding: '10px 18px', margin: '20px 0' }}
+              >
+                + Nova cobrança
+              </button>
+            )}
+
+            {!showForm && destaques.length > 0 && (
+              <div style={{ marginTop: 28 }}>
+                <h2 style={{ marginBottom: 12 }}>Cobranças em aberto (Cobrar / Follow Up)</h2>
+                {destaques.map((item) => (
+                  <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />
+                ))}
+              </div>
+            )}
           </>
         )}
 
@@ -593,8 +642,10 @@ export default function Cobrancas() {
                 + Nova cobrança
               </button>
             )}
+          </>
+        )}
 
-            {canEdit && showForm && (
+        {canEdit && showForm && (view === 'projeto' || (view === 'menu' && formularioAvulso)) && (
               <form
                 className="section-card"
                 onSubmit={handleSubmit}
@@ -613,6 +664,22 @@ export default function Cobrancas() {
                 {error && <div className="error-box">{error}</div>}
 
                 <div className="form-grid">
+                  {formularioAvulso && (
+                    <div>
+                      <label>Projeto</label>
+                      <select
+                        value={form.projetoSelecionadoId}
+                        onChange={(e) => updateField('projetoSelecionadoId', e.target.value)}
+                      >
+                        <option value="">Selecione...</option>
+                        {projetos.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.numero_projeto} - {p.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div>
                     <label>Cliente / Fornecedor</label>
                     <select
@@ -839,16 +906,14 @@ export default function Cobrancas() {
               </form>
             )}
 
-            {!showForm && (
-              <div>
-                {cobrancas.length === 0 ? (
-                  <p className="empty-hint">Nenhuma cobrança cadastrada neste projeto.</p>
-                ) : (
-                  cobrancas.map((item) => <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />)
-                )}
-              </div>
+        {view === 'projeto' && projetoAtual && !showForm && (
+          <div>
+            {cobrancas.length === 0 ? (
+              <p className="empty-hint">Nenhuma cobrança cadastrada neste projeto.</p>
+            ) : (
+              cobrancas.map((item) => <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />)
             )}
-          </>
+          </div>
         )}
 
         {view === 'fornecedor' && fornecedorAtual && (
