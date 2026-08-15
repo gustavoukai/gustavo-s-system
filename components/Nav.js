@@ -10,6 +10,7 @@ const LINKS_BASE = [
   { href: '/clientes', label: 'Clientes' },
   { href: '/fornecedores', label: 'Fornecedores' },
   { href: '/cobrancas', label: 'Cobranças' },
+  { href: '/checklist-financeiro', label: 'Checklist Financeiro' },
 ];
 
 // Só quem pode operar/administrar vê estas três (visualizante não).
@@ -19,12 +20,18 @@ const LINKS_RESTRITOS = [
   { href: '/relatorios', label: 'Relatórios' },
 ];
 
+const LINKS_ADMIN = [
+  { href: '/usuarios', label: 'Usuários' },
+  { href: '/log-acessos', label: 'Log de Acessos' },
+  { href: '/backups', label: 'Backups' },
+];
+
 export default function Nav() {
   const router = useRouter();
   const { role } = useAuth();
 
   let links = role === 'visualizante' ? LINKS_BASE : [...LINKS_BASE, ...LINKS_RESTRITOS];
-  if (role === 'admin') links = [...links, { href: '/backups', label: 'Backups' }];
+  if (role === 'admin') links = [...links, ...LINKS_ADMIN];
 
   async function handleLogout() {
     await supabase.auth.signOut();

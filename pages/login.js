@@ -15,7 +15,7 @@ export default function Login() {
     setError('');
     setLoading(true);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -25,6 +25,13 @@ export default function Login() {
     if (signInError) {
       setError('E-mail ou senha incorretos. Confira e tente novamente.');
       return;
+    }
+
+    if (signInData?.user) {
+      supabase
+        .from('acessos_log')
+        .insert([{ user_id: signInData.user.id, email: signInData.user.email }])
+        .then(() => {});
     }
 
     router.push('/dashboard');

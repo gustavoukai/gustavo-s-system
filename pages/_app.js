@@ -13,6 +13,9 @@ const TITULOS = {
   '/recebimentos': 'Recebimentos',
   '/relatorios': 'Relatórios',
   '/dados-escritorio': 'Dados do Escritório',
+  '/checklist-financeiro': 'Checklist Financeiro',
+  '/usuarios': 'Usuários',
+  '/log-acessos': 'Log de Acessos',
   '/backups': 'Backups',
 };
 

@@ -204,11 +204,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="section-card">
-          <h2>Checklist Financeiro</h2>
-          <p style={{ color: 'var(--muted)' }}>Em breve.</p>
-        </div>
-
         <Rodape />
       </div>
     </div>

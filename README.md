@@ -502,6 +502,39 @@ Essa atualização não precisa de nenhum SQL novo. Só siga:
 - O nível **Visualizante** não vê mais as seções de Contas a Pagar, Recebimentos e Relatórios (nem no menu, nem digitando o endereço direto), e não recebe mais os avisos de pagamentos e cobranças na Home (o de aniversário continua aparecendo pra todo mundo).
 - Conferido: todas as ações de apagar do sistema já pedem confirmação antes de excluir — isso já estava certo.
 
+---
+
+## PARTE 31 — Checklist como botão, Visualizante pode cadastrar, cadastro de usuários pelo portal, log de acessos
+
+Essa parte tem **um passo a mais que o normal** (pegar uma chave no Supabase e colar na Vercel), mas só precisa fazer uma vez. Segue certinho na ordem:
+
+### Passo 1 — SQL no Supabase
+1. **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-parte31.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+
+### Passo 2 — Pegar a chave "service role" no Supabase
+1. No Supabase, clique em **"Project Settings"** (ícone de engrenagem, no menu da esquerda).
+2. Clique em **"API"**.
+3. Procure a seção **"Project API keys"**. Vai ter duas chaves: `anon` `public` (essa você já usa) e **`service_role`** `secret`.
+4. Clique no ícone de "olho" ou "copiar" ao lado de `service_role` pra copiar essa chave. **Ela é secreta — não mande ela pra mim nem mostre pra ninguém.**
+
+### Passo 3 — Colar a chave na Vercel
+1. Na **Vercel**, entre no seu projeto → aba **"Settings"** → **"Environment Variables"**.
+2. Em **"Key"**, digite: `SUPABASE_SERVICE_ROLE_KEY`
+3. Em **"Value"**, cole a chave que você copiou no passo anterior.
+4. Deixe marcado **"Production"** (e pode marcar os outros também) e clique em **"Save"**.
+
+### Passo 4 — Subir os arquivos e reiniciar
+1. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+2. Depois que o deploy terminar, vá em **Vercel → Deployments**, clique nos "..." da implantação mais recente e clique em **"Redeploy"** (isso garante que a nova chave seja usada — só subir o código não é suficiente dessa vez).
+
+**O que mudou:**
+- **Checklist Financeiro** agora é um botão no menu (não aparece mais como aviso na Home). A página continua em branco até você me detalhar o que ela precisa ter.
+- O nível **Visualizante** agora pode cadastrar e editar em **Clientes, Fornecedores, Projetos e Cobranças** (mas continua sem poder apagar nada, em nenhuma seção).
+- Nova aba **"Usuários"** (só admin vê): cadastra um novo usuário direto pelo site (nome, e-mail, senha provisória e nível de acesso) — sem precisar mexer no Supabase. Também dá pra editar o nome e o nível de qualquer usuário já existente, clicando em "Editar" na lista.
+- Nova aba **"Log de Acessos"** (só admin vê): mostra todo login feito no sistema, com data e hora, e filtros por usuário e por período.
+
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
