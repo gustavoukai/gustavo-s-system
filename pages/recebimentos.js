@@ -29,8 +29,8 @@ export default function Recebimentos() {
   const { loading, canEdit, role } = useAuth();
   useBloqueiaVisualizante(role, loading);
   const [anos, setAnos] = useState([]);
-  const [anoSelecionado, setAnoSelecionado] = useState('');
-  const [mesesSelecionados, setMesesSelecionados] = useState([]);
+  const [anoSelecionado, setAnoSelecionado] = useState(() => new Date().getFullYear());
+  const [mesesSelecionados, setMesesSelecionados] = useState(() => [new Date().getMonth() + 1]);
   const [itens, setItens] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyEdit);
@@ -117,6 +117,15 @@ export default function Recebimentos() {
   }
 
   // Agrupa por mês e ordena do mais recente para o mais antigo
+  function parseDataCurtaOrdenar(str) {
+    if (!str) return 0;
+    const partes = str.split('/');
+    if (partes.length !== 3) return 0;
+    const [d, m, a] = partes;
+    const ano = Number(a) < 100 ? 2000 + Number(a) : Number(a);
+    return new Date(ano, Number(m) - 1, Number(d)).getTime();
+  }
+
   const mesesComItens = [...new Set(itens.map((i) => i.mes))].sort((a, b) => b - a);
 
   if (loading) {
@@ -179,7 +188,9 @@ export default function Recebimentos() {
               <p className="empty-hint">Nenhum recebimento nesse período.</p>
             ) : (
               mesesComItens.map((mes) => {
-                const itensDoMes = itens.filter((i) => i.mes === mes);
+                const itensDoMes = itens
+                  .filter((i) => i.mes === mes)
+                  .sort((a, b) => parseDataCurtaOrdenar(b.data) - parseDataCurtaOrdenar(a.data));
                 const totalMes = itensDoMes.reduce((soma, i) => soma + (Number(i.valor) || 0), 0);
 
                 return (

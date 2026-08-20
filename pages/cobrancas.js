@@ -972,6 +972,29 @@ export default function Cobrancas() {
               </div>
             </div>
 
+            <div className="section-card">
+              <h2 style={{ marginBottom: 10 }}>Legenda de status do Pagamento</h2>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {PAGAMENTO_STATUS_OPTIONS.map((s) => {
+                  const cor = statusCor(s.codigo);
+                  return (
+                    <span
+                      key={s.codigo}
+                      style={{
+                        backgroundColor: cor.backgroundColor,
+                        color: cor.color,
+                        padding: '4px 10px',
+                        borderRadius: 6,
+                        fontSize: 12,
+                      }}
+                    >
+                      <strong>{s.codigo}</strong> — {s.texto}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+
             {cobrancas.length === 0 ? (
               <p className="empty-hint">
                 {periodoInicio && periodoFim

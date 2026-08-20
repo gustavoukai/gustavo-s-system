@@ -561,3 +561,21 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 33 — Mês corrente por padrão, legenda em Cobranças, fornecedores no projeto
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Recebimentos**: ao entrar na tela, já aparece o mês corrente selecionado sozinho, com a lista logo abaixo (do mais recente pro mais antigo) — não precisa mais escolher ano/mês toda vez.
+- **Contas a Pagar**: mesma coisa — já entra mostrando o mês corrente, em ordem cronológica.
+- **Cobranças → Ver por Período**: legenda dos status do Pagamento, entre os campos de busca por data e a lista de resultados.
+- **Projetos**: ao editar um projeto já cadastrado, aparece uma lista com os fornecedores que trabalharam nele (preenchida automaticamente com base no campo "Trabalhou em" de cada fornecedor — não precisa fazer nada a mais, só marcar lá no cadastro do fornecedor).
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

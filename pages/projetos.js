@@ -26,6 +26,7 @@ export default function Projetos() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [fornecedoresDoProjeto, setFornecedoresDoProjeto] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -82,10 +83,11 @@ export default function Projetos() {
     setEditingId(null);
     setForm(emptyForm);
     setError('');
+    setFornecedoresDoProjeto([]);
     setShowForm(true);
   }
 
-  function openEditForm(item) {
+  async function openEditForm(item) {
     const formData = { ...emptyForm };
     Object.keys(emptyForm).forEach((key) => {
       if (item[key] !== undefined && item[key] !== null) {
@@ -96,6 +98,13 @@ export default function Projetos() {
     setEditingId(item.id);
     setError('');
     setShowForm(true);
+
+    const { data: fornecedores } = await supabase
+      .from('fornecedores')
+      .select('nome')
+      .contains('trabalhou_em', [item.id])
+      .order('nome');
+    setFornecedoresDoProjeto((fornecedores || []).map((f) => f.nome));
   }
 
   function handleCancelar() {
@@ -313,6 +322,17 @@ export default function Projetos() {
                 <input value={form.uf_obra} onChange={(e) => updateField('uf_obra', e.target.value)} />
               </div>
             </div>
+
+            {editingId && (
+              <>
+                <div className="form-section-title">Fornecedores que trabalharam neste projeto</div>
+                <p style={{ fontSize: 13, marginBottom: 16 }}>
+                  {fornecedoresDoProjeto.length === 0
+                    ? 'Nenhum fornecedor marcado ainda (isso é feito no cadastro de cada fornecedor, no campo "Trabalhou em").'
+                    : fornecedoresDoProjeto.join(', ')}
+                </p>
+              </>
+            )}
 
             <div className="form-section-title">Observações</div>
             <div className="form-grid">

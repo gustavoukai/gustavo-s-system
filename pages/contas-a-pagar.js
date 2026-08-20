@@ -59,8 +59,8 @@ export default function ContasAPagar() {
   const { loading, canEdit, canDelete, role } = useAuth();
   useBloqueiaVisualizante(role, loading);
   const [anos, setAnos] = useState([]);
-  const [anoSelecionado, setAnoSelecionado] = useState('');
-  const [mesSelecionado, setMesSelecionado] = useState('');
+  const [anoSelecionado, setAnoSelecionado] = useState(() => new Date().getFullYear());
+  const [mesSelecionado, setMesSelecionado] = useState(() => new Date().getMonth() + 1);
   const [items, setItems] = useState([]);
   const [todasContas, setTodasContas] = useState([]);
   const [showForm, setShowForm] = useState(false);
