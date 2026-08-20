@@ -579,3 +579,20 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 34 — Legenda em todas as telas de Cobranças, botão de backup fixo, lembretes uniformizados
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- A legenda de status do Pagamento agora aparece na tela inicial de **Cobranças** (junto com os três botões) e também nas telas **"Ver por Projeto"**, **"Ver por Fornecedor"** e **"Ver por Período"** (essa já tinha).
+- Nova aba fixa **"Backup Completo"**: um botão na Home, só visível pro Administrador, que leva direto para o passo a passo completo de como fazer backup do código (já protegido pelo histórico do GitHub) e dos dados (exportando as tabelas do Supabase em CSV). Fica sempre disponível ali — não preciso mais te perguntar isso a cada mensagem.
+- Lembretes da Home uniformizados: aniversários, cobranças com previsão de pagamento e contas a pagar agora seguem todos a mesma janela — **até 7 dias antes** e **até 5 dias depois**.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

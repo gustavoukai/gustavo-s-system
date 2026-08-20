@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import Nav from '../components/Nav';
 import { getLembretesAniversario, getAniversariosPassados } from '../lib/aniversarios';
-import { getContasProximasDoVencimento, mensagemVencimento } from '../lib/contasPagarLembretes';
+import { getContasProximasDoVencimento, getContasAtrasadas, mensagemVencimento, mensagemAtraso } from '../lib/contasPagarLembretes';
 import { getCobrancasComPrevisaoProxima, getCobrancasAtrasadas, getCobrancasNovasNaoLidas } from '../lib/cobrancasLembretes';
 import { getClientesNovosNaoLidos, getProjetosNovosNaoLidos } from '../lib/cadastrosLembretes';
 import Rodape from '../components/Rodape';
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [lembretes, setLembretes] = useState([]);
   const [aniversariosPassados, setAniversariosPassados] = useState([]);
   const [contasProximas, setContasProximas] = useState([]);
+  const [contasAtrasadas, setContasAtrasadas] = useState([]);
   const [cobrancasProximas, setCobrancasProximas] = useState([]);
   const [cobrancasAtrasadas, setCobrancasAtrasadas] = useState([]);
   const [cobrancasNovas, setCobrancasNovas] = useState([]);
@@ -91,6 +92,7 @@ export default function Dashboard() {
           .from('contas_pagar')
           .select('id, pagamento, ano, mes, dia_vencimento, status, valor_previsto');
         setContasProximas(getContasProximasDoVencimento(contas));
+        setContasAtrasadas(getContasAtrasadas(contas));
 
         const { data: cobrancasData } = await supabase
           .from('cobrancas')
@@ -155,6 +157,22 @@ export default function Dashboard() {
                   ? ` — ${Number(conta.valor_previsto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
                   : ''}{' '}
                 {mensagemVencimento(conta.diffDias)} ({String(conta.dia_vencimento).padStart(2, '0')}/
+                {String(conta.mes).padStart(2, '0')})
+              </p>
+            ))}
+          </div>
+        )}
+
+        {contasAtrasadas.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--danger)' }}>
+            <h2>⚠️ Contas a pagar vencidas, ainda não pagas</h2>
+            {contasAtrasadas.map((conta) => (
+              <p key={conta.id} style={{ margin: '6px 0' }}>
+                {conta.pagamento || '(sem descrição)'}
+                {conta.valor_previsto != null
+                  ? ` — ${Number(conta.valor_previsto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+                  : ''}{' '}
+                {mensagemAtraso(conta.diffDias)} ({String(conta.dia_vencimento).padStart(2, '0')}/
                 {String(conta.mes).padStart(2, '0')})
               </p>
             ))}
@@ -250,6 +268,18 @@ export default function Dashboard() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {role === 'admin' && (
+          <div className="section-card">
+            <button
+              type="button"
+              style={{ width: 'auto', padding: '10px 18px' }}
+              onClick={() => router.push('/backup-completo')}
+            >
+              📦 Como fazer o backup completo do sistema
+            </button>
           </div>
         )}
 

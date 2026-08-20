@@ -408,6 +408,33 @@ export default function Cobrancas() {
     );
   }
 
+  function LegendaStatusPagamento() {
+    return (
+      <div className="section-card">
+        <h2 style={{ marginBottom: 10 }}>Legenda de status do Pagamento</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {PAGAMENTO_STATUS_OPTIONS.map((s) => {
+            const cor = statusCor(s.codigo);
+            return (
+              <span
+                key={s.codigo}
+                style={{
+                  backgroundColor: cor.backgroundColor,
+                  color: cor.color,
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  fontSize: 12,
+                }}
+              >
+                <strong>{s.codigo}</strong> — {s.texto}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   function CobrancaBox({ item, mostrarFornecedorInfo }) {
     const style = statusCor(item.pagamento_status);
     const statusInfo = PAGAMENTO_STATUS_OPTIONS.find((s) => s.codigo === item.pagamento_status);
@@ -533,6 +560,8 @@ export default function Cobrancas() {
               </button>
             </div>
 
+            <LegendaStatusPagamento />
+
             {canEdit && !showForm && (
               <button
                 type="button"
@@ -562,6 +591,7 @@ export default function Cobrancas() {
                 Voltar
               </button>
             </div>
+
             <div className="data-table-wrap">
               <table className="data-table">
                 <thead>
@@ -597,6 +627,7 @@ export default function Cobrancas() {
                 Voltar
               </button>
             </div>
+
             <div className="data-table-wrap">
               <table className="data-table">
                 <thead>
@@ -632,6 +663,8 @@ export default function Cobrancas() {
                 Voltar
               </button>
             </div>
+
+            {!showForm && <LegendaStatusPagamento />}
 
             {canEdit && !showForm && (
               <button
@@ -931,6 +964,8 @@ export default function Cobrancas() {
               {fornecedorAtual.telefone_financeiro ? ` (${fornecedorAtual.telefone_financeiro})` : ''}
             </p>
 
+            <LegendaStatusPagamento />
+
             {cobrancas.length === 0 ? (
               <p className="empty-hint">Nenhuma cobrança cadastrada com este fornecedor.</p>
             ) : (
@@ -972,28 +1007,7 @@ export default function Cobrancas() {
               </div>
             </div>
 
-            <div className="section-card">
-              <h2 style={{ marginBottom: 10 }}>Legenda de status do Pagamento</h2>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {PAGAMENTO_STATUS_OPTIONS.map((s) => {
-                  const cor = statusCor(s.codigo);
-                  return (
-                    <span
-                      key={s.codigo}
-                      style={{
-                        backgroundColor: cor.backgroundColor,
-                        color: cor.color,
-                        padding: '4px 10px',
-                        borderRadius: 6,
-                        fontSize: 12,
-                      }}
-                    >
-                      <strong>{s.codigo}</strong> — {s.texto}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
+            <LegendaStatusPagamento />
 
             {cobrancas.length === 0 ? (
               <p className="empty-hint">
