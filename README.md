@@ -596,3 +596,23 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 35 — Checklist Financeiro
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-checklist-financeiro.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**Como funciona:**
+- Ao entrar em **Checklist Financeiro**, já aparece o checklist do mês corrente. Pra ver outro mês, escolha o **Mês** e o **Ano** no topo e clique em **Buscar**.
+- Cada item (Cobrança de RTs, Atualizações no Sistema, Conciliação, Emissão de NF, Cobrança de Projeto, Produção da Planilha de Assessoria, Cobrança de Assessoria) mostra a quantidade de caixinhas correspondente à periodicidade dele naquele mês — já vem calculado automaticamente, sem precisar configurar nada.
+- Marque a caixinha conforme for cumprindo a tarefa, e preencha a data logo abaixo (só os números — formata sozinho pra DD/MM/AA). Cada marcação salva na hora.
+- No fim de cada item tem um campo de **Observações** livre.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
