@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [cobrancasNovas, setCobrancasNovas] = useState([]);
   const [clientesNovos, setClientesNovos] = useState([]);
   const [projetosNovos, setProjetosNovos] = useState([]);
+  const [avisosChecklist, setAvisosChecklist] = useState([]);
   const [mostrarBoasVindas, setMostrarBoasVindas] = useState(false);
 
   useEffect(() => {
@@ -103,6 +104,16 @@ export default function Dashboard() {
         setCobrancasProximas(getCobrancasComPrevisaoProxima(cobrancasData));
         setCobrancasAtrasadas(getCobrancasAtrasadas(cobrancasData));
         setCobrancasNovas(getCobrancasNovasNaoLidas(cobrancasData, mapaNomes));
+      }
+
+      // Avisos do Checklist Financeiro só para o admin.
+      if (roleAtual === 'admin') {
+        const { data: avisos } = await supabase
+          .from('checklist_financeiro_avisos')
+          .select('id, descricao, criado_em')
+          .eq('aviso_lido', false)
+          .order('criado_em', { ascending: false });
+        setAvisosChecklist(avisos || []);
       }
 
       setLoading(false);
@@ -271,15 +282,23 @@ export default function Dashboard() {
           </div>
         )}
 
-        {role === 'admin' && (
-          <div className="section-card">
-            <button
-              type="button"
-              style={{ width: 'auto', padding: '10px 18px' }}
-              onClick={() => router.push('/backup-completo')}
-            >
-              📦 Como fazer o backup completo do sistema
-            </button>
+        {avisosChecklist.length > 0 && (
+          <div className="section-card" style={{ borderLeft: '4px solid var(--accent)' }}>
+            <h2>✅ Atividade no Checklist Financeiro</h2>
+            {avisosChecklist.map((a) => (
+              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '6px 0' }}>
+                <p style={{ margin: 0 }}>
+                  {a.descricao} ({new Date(a.criado_em).toLocaleString('pt-BR')})
+                </p>
+                <button
+                  className="btn-secondary"
+                  style={{ whiteSpace: 'nowrap' }}
+                  onClick={() => marcarAvisoComoVisto('checklist_financeiro_avisos', a.id, setAvisosChecklist)}
+                >
+                  ✔ Marcar como visto
+                </button>
+              </div>
+            ))}
           </div>
         )}
 

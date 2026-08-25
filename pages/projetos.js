@@ -25,6 +25,7 @@ export default function Projetos() {
   const [clientes, setClientes] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [readOnly, setReadOnly] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [fornecedoresDoProjeto, setFornecedoresDoProjeto] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -84,6 +85,7 @@ export default function Projetos() {
     setForm(emptyForm);
     setError('');
     setFornecedoresDoProjeto([]);
+    setReadOnly(false);
     setShowForm(true);
   }
 
@@ -97,6 +99,7 @@ export default function Projetos() {
     setForm(formData);
     setEditingId(item.id);
     setError('');
+    setReadOnly(false);
     setShowForm(true);
 
     const { data: fornecedores } = await supabase
@@ -107,11 +110,17 @@ export default function Projetos() {
     setFornecedoresDoProjeto((fornecedores || []).map((f) => f.nome));
   }
 
+  async function openViewForm(item) {
+    await openEditForm(item);
+    setReadOnly(true);
+  }
+
   function handleCancelar() {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
     setError('');
+    setReadOnly(false);
   }
 
   function handleLimpar() {
@@ -219,11 +228,13 @@ export default function Projetos() {
             style={{ marginBottom: 24 }}
           >
             <div className="toolbar" style={{ marginBottom: 4 }}>
-              <h2>{editingId ? 'Editar projeto' : 'Novo projeto'}</h2>
+              <h2>{editingId ? (readOnly ? 'Visualizar projeto' : 'Editar projeto') : 'Novo projeto'}</h2>
               <button type="button" className="btn-secondary" onClick={handleCancelar}>
-                Cancelar
+                {readOnly ? 'Fechar' : 'Cancelar'}
               </button>
             </div>
+
+            <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
 
             {error && <div className="error-box">{error}</div>}
 
@@ -344,19 +355,22 @@ export default function Projetos() {
                 />
               </div>
             </div>
+            </fieldset>
 
-            <div className="form-actions">
-              <button type="submit" disabled={saving}>
-                {saving ? 'Salvando...' : 'Salvar projeto'}
-              </button>
-              <button
-                type="button"
-                onClick={handleLimpar}
-                style={{ marginLeft: 24, background: 'var(--danger)', color: 'white' }}
-              >
-                LIMPAR
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="form-actions">
+                <button type="submit" disabled={saving}>
+                  {saving ? 'Salvando...' : 'Salvar projeto'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLimpar}
+                  style={{ marginLeft: 24, background: 'var(--danger)', color: 'white' }}
+                >
+                  LIMPAR
+                </button>
+              </div>
+            )}
           </form>
         )}
 
@@ -370,7 +384,9 @@ export default function Projetos() {
                   <tr>
                     <th>Número</th>
                     <th>Nome do projeto</th>
+                    <th>Cliente</th>
                     <th>Cadastrado/editado em</th>
+                    <th></th>
                     {canEdit && <th></th>}
                     {canDelete && <th></th>}
                   </tr>
@@ -380,7 +396,13 @@ export default function Projetos() {
                     <tr key={item.id}>
                       <td>{item.numero_projeto}</td>
                       <td>{item.nome}</td>
+                      <td>{item.clientes?.nome || '—'}</td>
                       <td>{formatData(item.atualizado_em || item.created_at)}</td>
+                      <td>
+                        <button className="btn-secondary" onClick={() => openViewForm(item)}>
+                          Visualizar
+                        </button>
+                      </td>
                       {canEdit && (
                         <td>
                           <button className="btn-editar" onClick={() => openEditForm(item)}>

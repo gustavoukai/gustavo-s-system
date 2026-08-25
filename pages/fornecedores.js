@@ -122,6 +122,7 @@ export default function Fornecedores() {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [readOnly, setReadOnly] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [categorias, setCategorias] = useState([]);
   const [programasFidelidade, setProgramasFidelidade] = useState([]);
@@ -177,6 +178,7 @@ export default function Fornecedores() {
     setProgramasFidelidade([]);
     setTrabalhouEm([]);
     setError('');
+    setReadOnly(false);
     setShowForm(true);
   }
 
@@ -193,7 +195,13 @@ export default function Fornecedores() {
     setTrabalhouEm(Array.isArray(item.trabalhou_em) ? item.trabalhou_em : []);
     setEditingId(item.id);
     setError('');
+    setReadOnly(false);
     setShowForm(true);
+  }
+
+  function openViewForm(item) {
+    openEditForm(item);
+    setReadOnly(true);
   }
 
   function handleCancelar() {
@@ -204,6 +212,7 @@ export default function Fornecedores() {
     setProgramasFidelidade([]);
     setTrabalhouEm([]);
     setError('');
+    setReadOnly(false);
   }
 
   function handleLimpar() {
@@ -413,14 +422,15 @@ export default function Fornecedores() {
             style={{ marginBottom: 24 }}
           >
             <div className="toolbar" style={{ marginBottom: 4 }}>
-              <h2>{editingId ? 'Editar fornecedor' : 'Novo fornecedor'}</h2>
+              <h2>{editingId ? (readOnly ? 'Visualizar fornecedor' : 'Editar fornecedor') : 'Novo fornecedor'}</h2>
               <button type="button" className="btn-secondary" onClick={handleCancelar}>
-                Cancelar
+                {readOnly ? 'Fechar' : 'Cancelar'}
               </button>
             </div>
 
             {error && <div className="error-box">{error}</div>}
 
+            <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
             <div className="form-section-title">Dados do fornecedor</div>
             <div className="form-grid" style={{ marginBottom: 0 }}>
               <div style={{ gridColumn: '1 / -1' }}>
@@ -614,19 +624,22 @@ export default function Fornecedores() {
                 />
               </div>
             </div>
+            </fieldset>
 
-            <div className="form-actions">
-              <button type="submit" disabled={saving}>
-                {saving ? 'Salvando...' : 'Salvar fornecedor'}
-              </button>
-              <button
-                type="button"
-                onClick={handleLimpar}
-                style={{ marginLeft: 24, background: 'var(--danger)', color: 'white' }}
-              >
-                LIMPAR
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="form-actions">
+                <button type="submit" disabled={saving}>
+                  {saving ? 'Salvando...' : 'Salvar fornecedor'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLimpar}
+                  style={{ marginLeft: 24, background: 'var(--danger)', color: 'white' }}
+                >
+                  LIMPAR
+                </button>
+              </div>
+            )}
           </form>
         )}
 
@@ -696,6 +709,7 @@ export default function Fornecedores() {
                       <th>Vendedor</th>
                       <th>Financeiro</th>
                       <th>Cadastrado/editado em</th>
+                      <th></th>
                       {canEdit && <th></th>}
                       {canDelete && <th></th>}
                     </tr>
@@ -714,6 +728,11 @@ export default function Fornecedores() {
                           {item.telefone_financeiro ? ` — ${item.telefone_financeiro}` : ''}
                         </td>
                         <td>{formatData(item.atualizado_em || item.created_at)}</td>
+                        <td>
+                          <button className="btn-secondary" onClick={() => openViewForm(item)}>
+                            Visualizar
+                          </button>
+                        </td>
                         {canEdit && (
                           <td>
                             <button className="btn-editar" onClick={() => openEditForm(item)}>

@@ -70,6 +70,7 @@ export default function Clientes() {
   const [projetos, setProjetos] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [readOnly, setReadOnly] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [filhos, setFilhos] = useState([]);
   const [projetosSelecionados, setProjetosSelecionados] = useState([]);
@@ -158,6 +159,7 @@ export default function Clientes() {
     setFilhos([]);
     setProjetosSelecionados([]);
     setError('');
+    setReadOnly(false);
     setShowForm(true);
   }
 
@@ -173,7 +175,13 @@ export default function Clientes() {
     setProjetosSelecionados((item.projetos || []).map((p) => p.id));
     setEditingId(item.id);
     setError('');
+    setReadOnly(false);
     setShowForm(true);
+  }
+
+  function openViewForm(item) {
+    openEditForm(item);
+    setReadOnly(true);
   }
 
   function handleCancelar() {
@@ -183,6 +191,7 @@ export default function Clientes() {
     setFilhos([]);
     setProjetosSelecionados([]);
     setError('');
+    setReadOnly(false);
   }
 
   function handleLimpar() {
@@ -317,12 +326,13 @@ export default function Clientes() {
             style={{ marginBottom: 24 }}
           >
             <div className="toolbar" style={{ marginBottom: 4 }}>
-              <h2>{editingId ? 'Editar cliente' : 'Novo cliente'}</h2>
+              <h2>{editingId ? (readOnly ? 'Visualizar cliente' : 'Editar cliente') : 'Novo cliente'}</h2>
               <button type="button" className="btn-secondary" onClick={handleCancelar}>
-                Cancelar
+                {readOnly ? 'Fechar' : 'Cancelar'}
               </button>
             </div>
 
+            <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
             {error && <div className="error-box">{error}</div>}
 
             {/* PROJETOS VINCULADOS */}
@@ -796,23 +806,26 @@ export default function Clientes() {
                 />
               </div>
             </div>
+            </fieldset>
 
-            <div className="form-actions">
-              <button type="submit" disabled={saving}>
-                {saving ? 'Salvando...' : 'Salvar cliente'}
-              </button>
-              <button
-                type="button"
-                onClick={handleLimpar}
-                style={{
-                  marginLeft: 24,
-                  background: 'var(--danger)',
-                  color: 'white',
-                }}
-              >
-                LIMPAR
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="form-actions">
+                <button type="submit" disabled={saving}>
+                  {saving ? 'Salvando...' : 'Salvar cliente'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLimpar}
+                  style={{
+                    marginLeft: 24,
+                    background: 'var(--danger)',
+                    color: 'white',
+                  }}
+                >
+                  LIMPAR
+                </button>
+              </div>
+            )}
           </form>
         )}
 
@@ -825,7 +838,9 @@ export default function Clientes() {
                 <thead>
                   <tr>
                     <th>Nome</th>
+                    <th>Projeto vinculado</th>
                     <th>Cadastrado/editado em</th>
+                    <th></th>
                     {canEdit && <th></th>}
                     {canDelete && <th></th>}
                   </tr>
@@ -834,7 +849,13 @@ export default function Clientes() {
                   {items.map((item) => (
                     <tr key={item.id}>
                       <td>{item.nome}</td>
+                      <td>{(item.projetos || []).map((p) => `${p.numero_projeto} - ${p.nome}`).join(', ') || '—'}</td>
                       <td>{formatData(item.atualizado_em || item.created_at)}</td>
+                      <td>
+                        <button className="btn-secondary" onClick={() => openViewForm(item)}>
+                          Visualizar
+                        </button>
+                      </td>
                       {canEdit && (
                         <td>
                           <button

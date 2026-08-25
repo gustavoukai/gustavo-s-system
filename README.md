@@ -616,3 +616,43 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 36 — Observações em histórico, avisos do Checklist para o admin, acesso restrito
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-checklist-parte36.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou no Checklist Financeiro:**
+- A caixa de **Observações** agora aceita várias linhas — aperte Enter pra pular linha, e ela cresce sozinha conforme você escreve.
+- Ao clicar em **Salvar**, o texto sai da caixa, vai para uma lista acima (com a data do dia), e a caixa fica vazia pra você digitar a próxima observação.
+- O nível **Visualizante** não vê mais "Checklist Financeiro" no menu, e nem consegue abrir a página digitando o endereço direto (só Operador e Admin).
+- Toda vez que uma caixinha é marcada/desmarcada ou uma observação é salva, um aviso aparece na **Home do Administrador** (com quem fez, o quê, e quando) — com botão de marcar como visto.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 37 — Botão de Visualizar, cruzamento cliente/projeto, ordenação de destaques, datas automáticas por parcela, backup no menu
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Backup Sistema** agora é um item do menu principal (ao lado de Backups), só visível pro Admin — tirei o botão que estava solto na Home.
+- **Cobranças**: os destaques da tela inicial ("Cobrar"/"Follow Up") agora aparecem ordenados pela previsão de recebimento mais próxima primeiro.
+- **Cobranças com parcelas**: se você preencher a data de previsão ao cadastrar uma cobrança parcelada, cada parcela seguinte já recebe automaticamente a data um mês depois da anterior (mesmo dia) — ex: 15/10/26, 15/11/26, 15/12/26...
+- **Clientes**: nova coluna mostrando o(s) projeto(s) vinculado(s) na lista, e um botão **"Visualizar"** (à esquerda de "Editar") que abre a ficha só para consulta, sem poder editar nada.
+- **Fornecedores**: mesmo botão **"Visualizar"** adicionado na lista.
+- **Projetos**: nova coluna mostrando o cliente vinculado, e o mesmo botão **"Visualizar"**.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

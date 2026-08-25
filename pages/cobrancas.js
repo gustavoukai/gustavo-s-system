@@ -60,9 +60,14 @@ export default function Cobrancas() {
         '*, projetos(numero_projeto, nome), fornecedores(nome, categorias, vendedor, telefone_vendedor, financeiro, telefone_financeiro)'
       )
       .in('pagamento_status', ['COBRAR', 'FOLLOW UP']);
-    const ordenados = (data || []).sort(
-      (a, b) => Number(b.projetos?.numero_projeto || 0) - Number(a.projetos?.numero_projeto || 0)
-    );
+    const ordenados = (data || []).sort((a, b) => {
+      const dataA = parseDataCurtaParaData(a.pagamento_previsao);
+      const dataB = parseDataCurtaParaData(b.pagamento_previsao);
+      if (!dataA && !dataB) return 0;
+      if (!dataA) return 1;
+      if (!dataB) return -1;
+      return dataA - dataB;
+    });
     setDestaques(ordenados);
   }
 
@@ -109,6 +114,29 @@ export default function Cobrancas() {
       (a, b) => Number(b.projetos?.numero_projeto || 0) - Number(a.projetos?.numero_projeto || 0)
     );
     setCobrancas(ordenadas);
+  }
+
+  function somarMesesData(dataStr, meses) {
+    if (!dataStr) return dataStr;
+    const partes = dataStr.split('/');
+    if (partes.length !== 3) return dataStr;
+
+    const dia = parseInt(partes[0], 10);
+    let mes = parseInt(partes[1], 10);
+    let ano = parseInt(partes[2], 10);
+    ano = ano < 100 ? 2000 + ano : ano;
+
+    mes += meses;
+    while (mes > 12) {
+      mes -= 12;
+      ano += 1;
+    }
+    while (mes < 1) {
+      mes += 12;
+      ano -= 1;
+    }
+
+    return `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${String(ano).slice(-2)}`;
   }
 
   function parseDataCurtaParaData(str) {
@@ -302,6 +330,7 @@ export default function Cobrancas() {
           parcela_atual: i,
           parcela_total: totalParcelas,
           percentual,
+          pagamento_previsao: somarMesesData(basePayload.pagamento_previsao, i - 1),
           created_by: session?.user?.id || null,
         });
       }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
+import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import { formatDataCurta } from '../lib/masks';
@@ -24,13 +25,43 @@ function checkboxesVazios(quantidade) {
   return Array.from({ length: quantidade }, () => ({ feito: false, data: '' }));
 }
 
+function hojeFormatado() {
+  const hoje = new Date();
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const ano = String(hoje.getFullYear()).slice(-2);
+  return `${dia}/${mes}/${ano}`;
+}
+
+function ajustarAltura(e) {
+  e.target.style.height = 'auto';
+  e.target.style.height = `${e.target.scrollHeight}px`;
+}
+
 export default function ChecklistFinanceiro() {
-  const { loading, canEdit } = useAuth();
+  const { loading, canEdit, role } = useAuth();
+  useBloqueiaVisualizante(role, loading);
+
+  const [nomeUsuario, setNomeUsuario] = useState('Usuário');
   const [mesSelecionado, setMesSelecionado] = useState(() => new Date().getMonth() + 1);
   const [anoSelecionado, setAnoSelecionado] = useState(() => new Date().getFullYear());
   const [mesBusca, setMesBusca] = useState(() => new Date().getMonth() + 1);
   const [anoBusca, setAnoBusca] = useState(() => new Date().getFullYear());
   const [dadosItens, setDadosItens] = useState({});
+  const [textosNovos, setTextosNovos] = useState({});
+  const [versaoTextarea, setVersaoTextarea] = useState({});
+
+  useEffect(() => {
+    async function loadNomeUsuario() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase.from('profiles').select('nome, email').eq('id', session.user.id).single();
+      setNomeUsuario(data?.nome || data?.email || 'Usuário');
+    }
+    loadNomeUsuario();
+  }, []);
 
   async function loadChecklist(ano, mes) {
     const { data } = await supabase
@@ -47,10 +78,11 @@ export default function ChecklistFinanceiro() {
           existente?.checkboxes && existente.checkboxes.length === item.quantidade
             ? existente.checkboxes
             : checkboxesVazios(item.quantidade),
-        observacoes: existente?.observacoes || '',
+        historico: existente?.observacoes_historico || [],
       };
     });
     setDadosItens(mapa);
+    setTextosNovos({});
     setAnoSelecionado(ano);
     setMesSelecionado(mes);
   }
@@ -64,26 +96,47 @@ export default function ChecklistFinanceiro() {
     loadChecklist(anoBusca, mesBusca);
   }
 
-  async function salvarNoBanco(chave, checkboxes, observacoes) {
+  async function salvarNoBanco(chave, checkboxes, historico) {
     await supabase.from('checklist_financeiro').upsert(
       {
         ano: anoSelecionado,
         mes: mesSelecionado,
         item_chave: chave,
         checkboxes,
-        observacoes: observacoes || null,
+        observacoes_historico: historico,
         atualizado_em: new Date().toISOString(),
       },
       { onConflict: 'ano,mes,item_chave' }
     );
   }
 
+  async function registrarAviso(chave, titulo, tipo, descricao) {
+    await supabase.from('checklist_financeiro_avisos').insert([
+      {
+        item_chave: chave,
+        ano: anoSelecionado,
+        mes: mesSelecionado,
+        tipo,
+        descricao: `${nomeUsuario} — ${titulo}: ${descricao}`,
+        usuario_nome: nomeUsuario,
+      },
+    ]);
+  }
+
   function toggleCheckbox(chave, indice) {
+    const item = ITENS.find((i) => i.chave === chave);
     setDadosItens((prev) => {
-      const item = prev[chave];
-      const novosCheckboxes = item.checkboxes.map((c, i) => (i === indice ? { ...c, feito: !c.feito } : c));
-      salvarNoBanco(chave, novosCheckboxes, item.observacoes);
-      return { ...prev, [chave]: { ...item, checkboxes: novosCheckboxes } };
+      const atual = prev[chave];
+      const novoValor = !atual.checkboxes[indice].feito;
+      const novosCheckboxes = atual.checkboxes.map((c, i) => (i === indice ? { ...c, feito: novoValor } : c));
+      salvarNoBanco(chave, novosCheckboxes, atual.historico);
+      registrarAviso(
+        chave,
+        item.titulo,
+        'checkbox',
+        `caixa ${indice + 1} foi ${novoValor ? 'marcada' : 'desmarcada'} (${MESES[mesSelecionado - 1]}/${anoSelecionado})`
+      );
+      return { ...prev, [chave]: { ...atual, checkboxes: novosCheckboxes } };
     });
   }
 
@@ -99,16 +152,31 @@ export default function ChecklistFinanceiro() {
 
   function salvarDataAoSair(chave) {
     const item = dadosItens[chave];
-    if (item) salvarNoBanco(chave, item.checkboxes, item.observacoes);
+    if (item) salvarNoBanco(chave, item.checkboxes, item.historico);
   }
 
-  function alterarObservacoes(chave, valor) {
-    setDadosItens((prev) => ({ ...prev, [chave]: { ...prev[chave], observacoes: valor } }));
+  function alterarTextoNovo(chave, valor) {
+    setTextosNovos((prev) => ({ ...prev, [chave]: valor }));
   }
 
-  function salvarObservacoesAoSair(chave) {
-    const item = dadosItens[chave];
-    if (item) salvarNoBanco(chave, item.checkboxes, item.observacoes);
+  async function salvarObservacao(chave) {
+    const texto = (textosNovos[chave] || '').trim();
+    if (!texto) return;
+
+    const item = ITENS.find((i) => i.chave === chave);
+    const novaEntrada = { data: hojeFormatado(), texto };
+
+    setDadosItens((prev) => {
+      const atual = prev[chave];
+      const novoHistorico = [...atual.historico, novaEntrada];
+      salvarNoBanco(chave, atual.checkboxes, novoHistorico);
+      return { ...prev, [chave]: { ...atual, historico: novoHistorico } };
+    });
+
+    registrarAviso(chave, item.titulo, 'observacao', `nova observação registrada: "${texto}"`);
+
+    setTextosNovos((prev) => ({ ...prev, [chave]: '' }));
+    setVersaoTextarea((prev) => ({ ...prev, [chave]: (prev[chave] || 0) + 1 }));
   }
 
   if (loading) {
@@ -198,14 +266,48 @@ export default function ChecklistFinanceiro() {
                 </div>
               </div>
 
+              {dados.historico.length > 0 && (
+                <div style={{ marginTop: 14, fontStyle: 'italic', fontSize: 13 }}>
+                  {dados.historico.map((entrada, i) => (
+                    <p key={i} style={{ margin: '2px 0' }}>
+                      - {entrada.data} – {entrada.texto};
+                    </p>
+                  ))}
+                </div>
+              )}
+
               <div style={{ marginTop: 16 }}>
                 <label>Observações</label>
-                <input
-                  value={dados.observacoes}
-                  disabled={!canEdit}
-                  onChange={(e) => alterarObservacoes(item.chave, e.target.value)}
-                  onBlur={() => salvarObservacoesAoSair(item.chave)}
-                />
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                  <textarea
+                    key={versaoTextarea[item.chave] || 0}
+                    value={textosNovos[item.chave] || ''}
+                    disabled={!canEdit}
+                    onChange={(e) => alterarTextoNovo(item.chave, e.target.value)}
+                    onInput={ajustarAltura}
+                    rows={1}
+                    style={{
+                      flex: 1,
+                      resize: 'none',
+                      overflow: 'hidden',
+                      minHeight: 40,
+                      fontFamily: 'inherit',
+                      fontSize: 14,
+                      padding: '8px 10px',
+                      border: '1px solid var(--border)',
+                      borderRadius: 6,
+                    }}
+                  />
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => salvarObservacao(item.chave)}
+                      style={{ width: 'auto', padding: '10px 16px' }}
+                    >
+                      Salvar
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );

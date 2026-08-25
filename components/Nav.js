@@ -10,11 +10,11 @@ const LINKS_BASE = [
   { href: '/clientes', label: 'Clientes' },
   { href: '/fornecedores', label: 'Fornecedores' },
   { href: '/cobrancas', label: 'Cobranças' },
-  { href: '/checklist-financeiro', label: 'Checklist Financeiro' },
 ];
 
-// Só quem pode operar/administrar vê estas três (visualizante não).
+// Só quem pode operar/administrar vê estas quatro (visualizante não).
 const LINKS_RESTRITOS = [
+  { href: '/checklist-financeiro', label: 'Checklist Financeiro' },
   { href: '/contas-a-pagar', label: 'Contas a Pagar' },
   { href: '/recebimentos', label: 'Recebimentos' },
   { href: '/relatorios', label: 'Relatórios' },
@@ -24,6 +24,7 @@ const LINKS_ADMIN = [
   { href: '/usuarios', label: 'Usuários' },
   { href: '/log-acessos', label: 'Log de Acessos' },
   { href: '/backups', label: 'Backups' },
+  { href: '/backup-completo', label: 'Backup Sistema' },
 ];
 
 export default function Nav() {
