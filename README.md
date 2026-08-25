@@ -656,3 +656,24 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 38 — Correção do bug de salvamento no Checklist, editar histórico, novas quantidades
+
+1. **Antes de tudo**: confirme que você rodou o SQL da **Parte 36** (`supabase-setup-checklist-parte36.sql`). Era essa a causa mais provável do bug — se a coluna do histórico não existisse ainda no banco, todo salvamento falhava silenciosamente. Se não tiver rodado ainda, roda agora.
+2. Não tem SQL novo nesta parte.
+3. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+4. Espere 1-2 minutos.
+
+**O que mudou:**
+- Agora, se um salvamento falhar por qualquer motivo, aparece uma mensagem de erro visível no topo da tela — antes isso falhava calado, e por isso os checkboxes e o histórico pareciam sumir.
+- Se a quantidade de caixinhas de um item mudar no futuro, o que já estava marcado é preservado (só completa com caixinhas novas vazias, não apaga mais nada).
+- Novo botão **"Editar histórico"**, acima da caixa de Observações, à direita — permite corrigir o texto de qualquer observação já salva.
+- Novas quantidades de caixinhas por mês: **Conciliação** e **Emissão de NF** agora com 10 cada; **Cobrança de Projeto**, **Produção da Planilha de Assessoria** e **Cobrança de Assessoria** agora com 5 cada.
+
+**Teste assim:** marque uma caixinha, mude de mês e volte pro mês original — ela deve continuar marcada. Se ainda sumir ou der erro, me manda a mensagem de erro que aparecer na tela (agora ela vai aparecer, o que facilita achar a causa exata).
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

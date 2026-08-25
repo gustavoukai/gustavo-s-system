@@ -14,15 +14,24 @@ const MESES = [
 const ITENS = [
   { chave: 'cobranca_rts', titulo: 'Cobrança de RTs', periodicidade: 'a cada dois dias', quantidade: 15 },
   { chave: 'atualizacoes_sistema', titulo: 'Atualizações no Sistema', periodicidade: 'a cada dois dias', quantidade: 15 },
-  { chave: 'conciliacao', titulo: 'Conciliação', periodicidade: 'toda segunda-feira', quantidade: 5 },
-  { chave: 'emissao_nf', titulo: 'Emissão de NF', periodicidade: 'toda segunda-feira', quantidade: 5 },
-  { chave: 'cobranca_projeto', titulo: 'Cobrança de Projeto', periodicidade: 'a cada 15 dias', quantidade: 2 },
-  { chave: 'planilha_assessoria', titulo: 'Produção da Planilha de Assessoria', periodicidade: 'a cada 30 dias, na primeira semana do mês', quantidade: 1 },
-  { chave: 'cobranca_assessoria', titulo: 'Cobrança de Assessoria', periodicidade: 'a cada 30 dias, na primeira quinzena do mês', quantidade: 1 },
+  { chave: 'conciliacao', titulo: 'Conciliação', periodicidade: 'toda segunda-feira', quantidade: 10 },
+  { chave: 'emissao_nf', titulo: 'Emissão de NF', periodicidade: 'toda segunda-feira', quantidade: 10 },
+  { chave: 'cobranca_projeto', titulo: 'Cobrança de Projeto', periodicidade: 'a cada 15 dias', quantidade: 5 },
+  { chave: 'planilha_assessoria', titulo: 'Produção da Planilha de Assessoria', periodicidade: 'a cada 30 dias, na primeira semana do mês', quantidade: 5 },
+  { chave: 'cobranca_assessoria', titulo: 'Cobrança de Assessoria', periodicidade: 'a cada 30 dias, na primeira quinzena do mês', quantidade: 5 },
 ];
 
 function checkboxesVazios(quantidade) {
   return Array.from({ length: quantidade }, () => ({ feito: false, data: '' }));
+}
+
+// Se a quantidade de caixinhas do item mudar (pra mais ou pra menos), preserva
+// o que já existia em vez de apagar tudo.
+function ajustarCheckboxes(checkboxesExistentes, quantidade) {
+  const atuais = checkboxesExistentes || [];
+  if (atuais.length === quantidade) return atuais;
+  if (atuais.length > quantidade) return atuais.slice(0, quantidade);
+  return [...atuais, ...checkboxesVazios(quantidade - atuais.length)];
 }
 
 function hojeFormatado() {
@@ -50,6 +59,8 @@ export default function ChecklistFinanceiro() {
   const [dadosItens, setDadosItens] = useState({});
   const [textosNovos, setTextosNovos] = useState({});
   const [versaoTextarea, setVersaoTextarea] = useState({});
+  const [editandoHistorico, setEditandoHistorico] = useState({});
+  const [erroSalvar, setErroSalvar] = useState('');
 
   useEffect(() => {
     async function loadNomeUsuario() {
@@ -64,25 +75,27 @@ export default function ChecklistFinanceiro() {
   }, []);
 
   async function loadChecklist(ano, mes) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('checklist_financeiro')
       .select('*')
       .eq('ano', ano)
       .eq('mes', mes);
 
+    if (error) {
+      setErroSalvar(`Não foi possível carregar o checklist: ${error.message}`);
+    }
+
     const mapa = {};
     ITENS.forEach((item) => {
       const existente = (data || []).find((d) => d.item_chave === item.chave);
       mapa[item.chave] = {
-        checkboxes:
-          existente?.checkboxes && existente.checkboxes.length === item.quantidade
-            ? existente.checkboxes
-            : checkboxesVazios(item.quantidade),
+        checkboxes: ajustarCheckboxes(existente?.checkboxes, item.quantidade),
         historico: existente?.observacoes_historico || [],
       };
     });
     setDadosItens(mapa);
     setTextosNovos({});
+    setEditandoHistorico({});
     setAnoSelecionado(ano);
     setMesSelecionado(mes);
   }
@@ -97,7 +110,7 @@ export default function ChecklistFinanceiro() {
   }
 
   async function salvarNoBanco(chave, checkboxes, historico) {
-    await supabase.from('checklist_financeiro').upsert(
+    const { error } = await supabase.from('checklist_financeiro').upsert(
       {
         ano: anoSelecionado,
         mes: mesSelecionado,
@@ -108,6 +121,14 @@ export default function ChecklistFinanceiro() {
       },
       { onConflict: 'ano,mes,item_chave' }
     );
+
+    if (error) {
+      setErroSalvar(
+        `Não foi possível salvar (item "${chave}"): ${error.message}. Confirme se o SQL da Parte 36 foi executado no Supabase.`
+      );
+    } else {
+      setErroSalvar('');
+    }
   }
 
   async function registrarAviso(chave, titulo, tipo, descricao) {
@@ -165,18 +186,33 @@ export default function ChecklistFinanceiro() {
 
     const item = ITENS.find((i) => i.chave === chave);
     const novaEntrada = { data: hojeFormatado(), texto };
+    const atual = dadosItens[chave];
+    const novoHistorico = [...atual.historico, novaEntrada];
 
-    setDadosItens((prev) => {
-      const atual = prev[chave];
-      const novoHistorico = [...atual.historico, novaEntrada];
-      salvarNoBanco(chave, atual.checkboxes, novoHistorico);
-      return { ...prev, [chave]: { ...atual, historico: novoHistorico } };
-    });
-
+    setDadosItens((prev) => ({ ...prev, [chave]: { ...prev[chave], historico: novoHistorico } }));
+    await salvarNoBanco(chave, atual.checkboxes, novoHistorico);
     registrarAviso(chave, item.titulo, 'observacao', `nova observação registrada: "${texto}"`);
 
     setTextosNovos((prev) => ({ ...prev, [chave]: '' }));
     setVersaoTextarea((prev) => ({ ...prev, [chave]: (prev[chave] || 0) + 1 }));
+  }
+
+  function toggleEditarHistorico(chave) {
+    setEditandoHistorico((prev) => ({ ...prev, [chave]: !prev[chave] }));
+  }
+
+  function alterarTextoHistorico(chave, indice, valor) {
+    setDadosItens((prev) => {
+      const item = prev[chave];
+      const novoHistorico = item.historico.map((h, i) => (i === indice ? { ...h, texto: valor } : h));
+      return { ...prev, [chave]: { ...item, historico: novoHistorico } };
+    });
+  }
+
+  async function concluirEdicaoHistorico(chave) {
+    const item = dadosItens[chave];
+    await salvarNoBanco(chave, item.checkboxes, item.historico);
+    setEditandoHistorico((prev) => ({ ...prev, [chave]: false }));
   }
 
   if (loading) {
@@ -193,6 +229,8 @@ export default function ChecklistFinanceiro() {
         <Nav />
 
         <h1 style={{ marginBottom: 18 }}>Checklist Financeiro</h1>
+
+        {erroSalvar && <div className="error-box" style={{ marginBottom: 16 }}>{erroSalvar}</div>}
 
         <div className="filters-bar" style={{ alignItems: 'flex-end' }}>
           <div>
@@ -231,6 +269,7 @@ export default function ChecklistFinanceiro() {
         {ITENS.map((item) => {
           const dados = dadosItens[item.chave];
           if (!dados) return null;
+          const emEdicao = !!editandoHistorico[item.chave];
 
           return (
             <div key={item.chave} className="section-card">
@@ -266,15 +305,43 @@ export default function ChecklistFinanceiro() {
                 </div>
               </div>
 
-              {dados.historico.length > 0 && (
-                <div style={{ marginTop: 14, fontStyle: 'italic', fontSize: 13 }}>
-                  {dados.historico.map((entrada, i) => (
-                    <p key={i} style={{ margin: '2px 0' }}>
-                      - {entrada.data} – {entrada.texto};
-                    </p>
-                  ))}
+              <div style={{ marginTop: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  {canEdit && dados.historico.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() =>
+                        emEdicao ? concluirEdicaoHistorico(item.chave) : toggleEditarHistorico(item.chave)
+                      }
+                    >
+                      {emEdicao ? 'Concluir edição' : 'Editar histórico'}
+                    </button>
+                  )}
                 </div>
-              )}
+
+                {dados.historico.length > 0 && (
+                  <div style={{ marginTop: 6, fontStyle: 'italic', fontSize: 13 }}>
+                    {dados.historico.map((entrada, i) =>
+                      emEdicao ? (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '4px 0' }}>
+                          <span>- {entrada.data} –</span>
+                          <input
+                            value={entrada.texto}
+                            onChange={(e) => alterarTextoHistorico(item.chave, i, e.target.value)}
+                            style={{ flex: 1, fontStyle: 'italic', fontSize: 13, padding: '4px 8px' }}
+                          />
+                          <span>;</span>
+                        </div>
+                      ) : (
+                        <p key={i} style={{ margin: '2px 0' }}>
+                          - {entrada.data} – {entrada.texto};
+                        </p>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
 
               <div style={{ marginTop: 16 }}>
                 <label>Observações</label>
