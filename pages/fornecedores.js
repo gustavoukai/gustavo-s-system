@@ -729,20 +729,20 @@ export default function Fornecedores() {
                         </td>
                         <td>{formatData(item.atualizado_em || item.created_at)}</td>
                         <td>
-                          <button className="btn-secondary" onClick={() => openViewForm(item)}>
+                          <button className="btn-secondary table-action-btn" onClick={() => openViewForm(item)}>
                             Visualizar
                           </button>
                         </td>
                         {canEdit && (
                           <td>
-                            <button className="btn-editar" onClick={() => openEditForm(item)}>
+                            <button className="btn-editar table-action-btn" onClick={() => openEditForm(item)}>
                               EDITAR
                             </button>
                           </td>
                         )}
                         {canDelete && (
                           <td>
-                            <button className="delete-link" onClick={() => handleDelete(item.id)}>
+                            <button className="delete-link table-action-btn" onClick={() => handleDelete(item.id)}>
                               Apagar
                             </button>
                           </td>

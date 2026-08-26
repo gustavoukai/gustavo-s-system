@@ -695,3 +695,20 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 40 — Correção definitiva do botão "Apagar" cortado
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- A correção anterior não bastou porque a tabela de Fornecedores (e outras com muitos botões) ficou larga demais pra caber na tela sem precisar rolar pro lado — e essa rolagem não estava visível/óbvia.
+- Os botões **Visualizar**, **Editar** e **Apagar** agora são um pouco mais compactos nas listas, o que já resolve o corte na maioria das telas.
+- Também deixei a barra de rolagem da tabela mais visível, caso ainda precise rolar pro lado em telas menores.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

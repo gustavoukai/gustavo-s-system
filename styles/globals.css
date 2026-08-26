@@ -309,6 +309,16 @@ select {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.data-table-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+
+.data-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
 }
 
 table.data-table {
@@ -336,6 +346,11 @@ table.data-table {
 .data-table th:last-child,
 .data-table td:last-child {
   padding-right: 22px;
+}
+
+.table-action-btn {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
 }
 
 .data-table tr:last-child td {
