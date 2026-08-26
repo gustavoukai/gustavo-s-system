@@ -357,13 +357,12 @@ export default function Cobrancas() {
     }
 
     setSaving(false);
-    const eraAvulso = formularioAvulso;
     handleCancelar();
-    if (eraAvulso) {
+    if (view === 'projeto') {
+      loadCobrancasPorProjeto(projetoAtual.id);
+    } else {
       loadDestaques();
       setView('menu');
-    } else {
-      loadCobrancasPorProjeto(projetoAtual.id);
     }
   }
 
@@ -421,6 +420,8 @@ export default function Cobrancas() {
     await supabase.from('cobrancas').delete().eq('id', id);
     if (view === 'projeto') loadCobrancasPorProjeto(projetoAtual.id);
     if (view === 'fornecedor') loadCobrancasPorFornecedor(fornecedorAtual.id);
+    if (view === 'menu') loadDestaques();
+    if (view === 'periodo') loadCobrancasPorPeriodo(periodoInicio, periodoFim);
   }
 
   const categoriaOpcoes =
@@ -707,7 +708,7 @@ export default function Cobrancas() {
           </>
         )}
 
-        {canEdit && showForm && (view === 'projeto' || (view === 'menu' && formularioAvulso)) && (
+        {canEdit && showForm && (view === 'projeto' || view === 'menu') && (
               <form
                 className="section-card"
                 onSubmit={handleSubmit}

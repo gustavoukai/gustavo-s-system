@@ -677,3 +677,21 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 39 — Correção de 4 bugs (editar/apagar cobranças, botão cortado, apagar histórico)
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que foi corrigido:**
+- **Editar cobrança na tela inicial de Cobranças**: o formulário não abria (as cobranças simplesmente somiam da tela). Agora abre certinho.
+- **Apagar cobrança**: agora a lista atualiza na hora, sem precisar dar F5 ou trocar de seção, em qualquer uma das telas (inicial, por projeto, por fornecedor ou por período).
+- **Botão "Apagar" cortado em Fornecedores**: era um espacinho faltando na borda da tabela — corrigido em todas as listas do sistema.
+- **Checklist Financeiro**: agora, ao editar o histórico, tem um botão **"Apagar"** em cada linha pra remover a entrada inteira (não só o texto).
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

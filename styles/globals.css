@@ -308,6 +308,7 @@ select {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
+  padding-right: 4px;
 }
 
 table.data-table {
@@ -330,6 +331,11 @@ table.data-table {
   padding: 11px 14px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  padding-right: 22px;
 }
 
 .data-table tr:last-child td {

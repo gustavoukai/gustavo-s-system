@@ -209,6 +209,14 @@ export default function ChecklistFinanceiro() {
     });
   }
 
+  function apagarEntradaHistorico(chave, indice) {
+    setDadosItens((prev) => {
+      const item = prev[chave];
+      const novoHistorico = item.historico.filter((_, i) => i !== indice);
+      return { ...prev, [chave]: { ...item, historico: novoHistorico } };
+    });
+  }
+
   async function concluirEdicaoHistorico(chave) {
     const item = dadosItens[chave];
     await salvarNoBanco(chave, item.checkboxes, item.historico);
@@ -332,6 +340,13 @@ export default function ChecklistFinanceiro() {
                             style={{ flex: 1, fontStyle: 'italic', fontSize: 13, padding: '4px 8px' }}
                           />
                           <span>;</span>
+                          <button
+                            type="button"
+                            className="delete-link"
+                            onClick={() => apagarEntradaHistorico(item.chave, i)}
+                          >
+                            Apagar
+                          </button>
                         </div>
                       ) : (
                         <p key={i} style={{ margin: '2px 0' }}>
