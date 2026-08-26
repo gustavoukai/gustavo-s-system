@@ -712,3 +712,20 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 41 — Layout da caixa de cobrança, ordenação por previsão, campos obrigatórios
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Layout da caixa de cobrança** (em todas as telas: inicial, por Projeto, por Fornecedor e por Período): o nome do Projeto agora aparece em negrito, do lado do nome do Fornecedor/Cliente, com o mesmo tamanho de fonte; e a **Previsão de pagamento** aparece em destaque no topo, ao lado dos botões Editar/Apagar.
+- **Ordenação**: as listas "por Fornecedor" e "por Período" agora mostram as cobranças da previsão mais próxima pra mais distante, igual já era na tela inicial.
+- **Campos obrigatórios**: Projeto (quando o cadastro for avulso), Cliente/Fornecedor e Status do Pagamento agora têm o asterisco vermelho e o aviso "(campo obrigatório)" — e o sistema não deixa salvar sem eles preenchidos.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

@@ -110,9 +110,14 @@ export default function Cobrancas() {
       .select('*, projetos(numero_projeto, nome)')
       .eq('fornecedor_id', fornecedorId)
       .order('created_at', { ascending: true });
-    const ordenadas = (data || []).sort(
-      (a, b) => Number(b.projetos?.numero_projeto || 0) - Number(a.projetos?.numero_projeto || 0)
-    );
+    const ordenadas = (data || []).sort((a, b) => {
+      const dataA = parseDataCurtaParaData(a.pagamento_previsao);
+      const dataB = parseDataCurtaParaData(b.pagamento_previsao);
+      if (!dataA && !dataB) return 0;
+      if (!dataA) return 1;
+      if (!dataB) return -1;
+      return dataA - dataB;
+    });
     setCobrancas(ordenadas);
   }
 
@@ -272,8 +277,15 @@ export default function Cobrancas() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!form.fornecedorSelecao || !form.categoria || (formularioAvulso && !form.projetoSelecionadoId)) {
-      setError('Escolha o Projeto (se estiver cadastrando avulso), o Cliente/Fornecedor e a Categoria antes de salvar.');
+    if (
+      !form.fornecedorSelecao ||
+      !form.categoria ||
+      !form.pagamento_status ||
+      (formularioAvulso && !form.projetoSelecionadoId)
+    ) {
+      setError(
+        'Preencha os campos obrigatórios antes de salvar: Projeto (se estiver cadastrando avulso), Cliente/Fornecedor e Status do Pagamento.'
+      );
       return;
     }
 
@@ -473,40 +485,46 @@ export default function Cobrancas() {
 
     return (
       <div className="cobranca-box" style={{ backgroundColor: style.backgroundColor, color: style.color }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
             {mostrarFornecedorInfo && (
-              <h3 style={{ fontSize: 19 }}>
+              <h3 style={{ fontSize: 19, margin: 0 }}>
                 {item.fornecedor_tipo === 'cliente' ? 'Cliente' : item.fornecedores?.nome || '(fornecedor)'}
+                {(view === 'fornecedor' || view === 'periodo' || view === 'menu') && item.projetos && (
+                  <> – Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}</>
+                )}
               </h3>
             )}
-            {mostrarFornecedorInfo && item.fornecedor_tipo === 'fornecedor' && item.fornecedores && (
-              <p style={{ margin: 0, fontSize: 12 }}>
-                {(item.fornecedores.categorias || []).join(', ')}
-                {item.fornecedores.vendedor ? ` · Vendedor: ${item.fornecedores.vendedor}` : ''}
-                {item.fornecedores.telefone_vendedor ? ` (${item.fornecedores.telefone_vendedor})` : ''}
-                {item.fornecedores.financeiro ? ` · Financeiro: ${item.fornecedores.financeiro}` : ''}
-                {item.fornecedores.telefone_financeiro ? ` (${item.fornecedores.telefone_financeiro})` : ''}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            {item.pagamento_previsao && (
+              <p style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>
+                Pagamento previsão: {item.pagamento_previsao}
               </p>
             )}
-          </div>
-          {canEdit && (
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button className="btn-editar" onClick={() => openEditForm(item)}>
-                EDITAR
-              </button>
-              {canDelete && (
-                <button className="delete-link" onClick={() => handleDelete(item.id)}>
-                  Apagar
+            {canEdit && (
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button className="btn-editar" onClick={() => openEditForm(item)}>
+                  EDITAR
                 </button>
-              )}
-            </div>
-          )}
+                {canDelete && (
+                  <button className="delete-link" onClick={() => handleDelete(item.id)}>
+                    Apagar
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        {(view === 'fornecedor' || view === 'periodo' || view === 'menu') && item.projetos && (
+        {mostrarFornecedorInfo && item.fornecedor_tipo === 'fornecedor' && item.fornecedores && (
           <p style={{ margin: '2px 0', fontSize: 12 }}>
-            Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}
+            {(item.fornecedores.categorias || []).join(', ')}
+            {item.fornecedores.vendedor ? ` · Vendedor: ${item.fornecedores.vendedor}` : ''}
+            {item.fornecedores.telefone_vendedor ? ` (${item.fornecedores.telefone_vendedor})` : ''}
+            {item.fornecedores.financeiro ? ` · Financeiro: ${item.fornecedores.financeiro}` : ''}
+            {item.fornecedores.telefone_financeiro ? ` (${item.fornecedores.telefone_financeiro})` : ''}
           </p>
         )}
 
@@ -532,7 +550,6 @@ export default function Cobrancas() {
           <div><strong>Pedido valor:</strong> {item.pedido_valor != null ? `R$ ${Number(item.pedido_valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}</div>
           <div><strong>Pagamento valor:</strong> {item.pagamento_valor != null ? `R$ ${Number(item.pagamento_valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}</div>
           <div><strong>Pagamento data:</strong> {item.pagamento_data || '—'}</div>
-          <div><strong>Pagamento previsão:</strong> {item.pagamento_previsao || '—'}</div>
           <div>
             <strong>NF:</strong> {item.nf || '—'} {nfIncompleta && <AlertaTriangulo title="NF marcada como Sim, mas número e emissão ainda não foram preenchidos" />}
           </div>
@@ -729,7 +746,10 @@ export default function Cobrancas() {
                 <div className="form-grid">
                   {formularioAvulso && (
                     <div>
-                      <label>Projeto</label>
+                      <label>
+                        Projeto <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                        <span style={{ fontSize: 11, color: 'var(--muted)' }}>(campo obrigatório)</span>
+                      </label>
                       <select
                         value={form.projetoSelecionadoId}
                         onChange={(e) => updateField('projetoSelecionadoId', e.target.value)}
@@ -744,7 +764,10 @@ export default function Cobrancas() {
                     </div>
                   )}
                   <div>
-                    <label>Cliente / Fornecedor</label>
+                    <label>
+                      Cliente / Fornecedor <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>(campo obrigatório)</span>
+                    </label>
                     <select
                       value={form.fornecedorSelecao}
                       onChange={(e) => handleFornecedorSelecaoChange(e.target.value)}
@@ -850,7 +873,10 @@ export default function Cobrancas() {
                     )}
                   </div>
                   <div>
-                    <label>Status</label>
+                    <label>
+                      Status <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>(campo obrigatório)</span>
+                    </label>
                     <select
                       value={form.pagamento_status}
                       onChange={(e) => updateField('pagamento_status', e.target.value)}
