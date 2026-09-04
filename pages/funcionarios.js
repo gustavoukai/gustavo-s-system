@@ -39,6 +39,12 @@ const emptyForm = {
   email_profissional: '',
   base_salarial: '',
   data_ajuste: '',
+  banco_titular: '',
+  banco_nome: '',
+  banco_agencia: '',
+  banco_conta: '',
+  banco_pix: '',
+  banco_observacoes: '',
   observacoes: '',
 };
 
@@ -506,6 +512,39 @@ export default function Funcionarios() {
                   )}
                 </div>
               )}
+
+              <div className="form-section-title">Dados bancários</div>
+              <div className="form-grid">
+                <div>
+                  <label>Titular</label>
+                  <input value={form.banco_titular} onChange={(e) => updateField('banco_titular', e.target.value)} />
+                </div>
+                <div>
+                  <label>Banco</label>
+                  <input value={form.banco_nome} onChange={(e) => updateField('banco_nome', e.target.value)} />
+                </div>
+                <div>
+                  <label>Agência</label>
+                  <input value={form.banco_agencia} onChange={(e) => updateField('banco_agencia', e.target.value)} />
+                </div>
+                <div>
+                  <label>Conta corrente</label>
+                  <input value={form.banco_conta} onChange={(e) => updateField('banco_conta', e.target.value)} />
+                </div>
+                <div>
+                  <label>Chave PIX</label>
+                  <input value={form.banco_pix} onChange={(e) => updateField('banco_pix', e.target.value)} />
+                </div>
+              </div>
+              <div className="form-grid">
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label>Observações</label>
+                  <input
+                    value={form.banco_observacoes}
+                    onChange={(e) => updateField('banco_observacoes', e.target.value)}
+                  />
+                </div>
+              </div>
 
               <div className="form-section-title">Observações</div>
               <div className="form-grid">
