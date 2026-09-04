@@ -3,7 +3,17 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
-import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
+import {
+  formatCPF,
+  formatRG,
+  formatPhone,
+  formatCEP,
+  onlyDigits,
+  buscarEnderecoPorCep,
+  sanitizeValorComCentavos,
+  previewValorComCentavos,
+  parseValorComCentavos,
+} from '../lib/masks';
 
 const emptyForm = {
   nome: '',
@@ -12,11 +22,10 @@ const emptyForm = {
   data_nascimento: '',
   celular1: '',
   celular2: '',
-  email: '',
+  email_pessoal: '',
   instagram: '',
-  cargo: '',
-  data_admissao: '',
   instituicao_ensino: '',
+  curso: '',
   semestre_ano: '',
   cep_residencial: '',
   logradouro_residencial: '',
@@ -25,8 +34,20 @@ const emptyForm = {
   bairro_residencial: '',
   cidade_residencial: '',
   uf_residencial: '',
+  cargo: '',
+  data_admissao: '',
+  email_profissional: '',
+  base_salarial: '',
+  data_ajuste: '',
   observacoes: '',
 };
+
+function formatDataBR(isoDate) {
+  if (!isoDate) return '';
+  const [ano, mes, dia] = isoDate.split('-');
+  if (!ano || !mes || !dia) return isoDate;
+  return `${dia}/${mes}/${ano}`;
+}
 
 export default function Funcionarios() {
   const { loading, role } = useAuth();
@@ -35,6 +56,8 @@ export default function Funcionarios() {
   const [editingId, setEditingId] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [historicoSalarial, setHistoricoSalarial] = useState([]);
+  const [salarioOriginal, setSalarioOriginal] = useState({ valor: '', data: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -89,6 +112,8 @@ export default function Funcionarios() {
   function openNewForm() {
     setEditingId(null);
     setForm(emptyForm);
+    setHistoricoSalarial([]);
+    setSalarioOriginal({ valor: '', data: '' });
     setError('');
     setReadOnly(false);
     setShowForm(true);
@@ -101,7 +126,15 @@ export default function Funcionarios() {
         formData[key] = item[key];
       }
     });
+    if (item.base_salarial != null) {
+      formData.base_salarial = String(item.base_salarial).replace('.', ',');
+    }
     setForm(formData);
+    setHistoricoSalarial(Array.isArray(item.historico_salarial) ? item.historico_salarial : []);
+    setSalarioOriginal({
+      valor: item.base_salarial != null ? String(item.base_salarial) : '',
+      data: item.data_ajuste || '',
+    });
     setEditingId(item.id);
     setError('');
     setReadOnly(false);
@@ -117,6 +150,8 @@ export default function Funcionarios() {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
+    setHistoricoSalarial([]);
+    setSalarioOriginal({ valor: '', data: '' });
     setError('');
     setReadOnly(false);
   }
@@ -125,6 +160,14 @@ export default function Funcionarios() {
     if (!confirm('Tem certeza que quer limpar todas as informações inseridas?')) return;
     setForm(emptyForm);
     setError('');
+  }
+
+  function alterarTextoHistorico(indice, valor) {
+    setHistoricoSalarial((prev) => prev.map((h, i) => (i === indice ? valor : h)));
+  }
+
+  function apagarEntradaHistorico(indice) {
+    setHistoricoSalarial((prev) => prev.filter((_, i) => i !== indice));
   }
 
   async function handleSubmit(e) {
@@ -138,10 +181,25 @@ export default function Funcionarios() {
     setSaving(true);
     setError('');
 
+    const novoValorSalario = form.base_salarial ? parseValorComCentavos(form.base_salarial) : null;
+
+    // Se já existia um salário anterior e ele (ou a data do ajuste) mudou, registra no histórico.
+    let novoHistorico = [...historicoSalarial];
+    const valorMudou =
+      salarioOriginal.valor && (String(novoValorSalario) !== String(Number(salarioOriginal.valor)) || form.data_ajuste !== salarioOriginal.data);
+
+    if (valorMudou && novoValorSalario != null && form.data_ajuste) {
+      const valorFormatado = novoValorSalario.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      novoHistorico.push(`base salarial ajustada para R$ ${valorFormatado} em ${formatDataBR(form.data_ajuste)};`);
+    }
+
     const payload = {
       ...form,
       data_nascimento: form.data_nascimento || null,
       data_admissao: form.data_admissao || null,
+      data_ajuste: form.data_ajuste || null,
+      base_salarial: novoValorSalario,
+      historico_salarial: novoHistorico,
       atualizado_em: new Date().toISOString(),
     };
 
@@ -230,7 +288,7 @@ export default function Funcionarios() {
             {error && <div className="error-box">{error}</div>}
 
             <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
-              <div className="form-section-title">Dados do funcionário</div>
+              <div className="form-section-title">Dados pessoais</div>
               <div className="form-grid" style={{ marginBottom: 0 }}>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label>
@@ -294,24 +352,12 @@ export default function Funcionarios() {
                   />
                 </div>
                 <div>
-                  <label>E-mail</label>
-                  <input value={form.email} onChange={(e) => updateField('email', e.target.value)} />
+                  <label>E-mail pessoal</label>
+                  <input value={form.email_pessoal} onChange={(e) => updateField('email_pessoal', e.target.value)} />
                 </div>
                 <div>
                   <label>Instagram</label>
                   <input value={form.instagram} onChange={(e) => updateField('instagram', e.target.value)} />
-                </div>
-                <div>
-                  <label>Cargo</label>
-                  <input value={form.cargo} onChange={(e) => updateField('cargo', e.target.value)} />
-                </div>
-                <div>
-                  <label>Data de admissão</label>
-                  <input
-                    type="date"
-                    value={form.data_admissao}
-                    onChange={(e) => updateField('data_admissao', e.target.value)}
-                  />
                 </div>
                 <div>
                   <label>Instituição de ensino</label>
@@ -319,6 +365,10 @@ export default function Funcionarios() {
                     value={form.instituicao_ensino}
                     onChange={(e) => updateField('instituicao_ensino', e.target.value)}
                   />
+                </div>
+                <div>
+                  <label>Curso</label>
+                  <input value={form.curso} onChange={(e) => updateField('curso', e.target.value)} />
                 </div>
                 <div>
                   <label>Semestre/Ano</label>
@@ -383,6 +433,79 @@ export default function Funcionarios() {
                   />
                 </div>
               </div>
+
+              <div className="form-section-title">Dados profissionais</div>
+              <div className="form-grid">
+                <div>
+                  <label>Cargo</label>
+                  <input value={form.cargo} onChange={(e) => updateField('cargo', e.target.value)} />
+                </div>
+                <div>
+                  <label>Data de admissão</label>
+                  <input
+                    type="date"
+                    value={form.data_admissao}
+                    onChange={(e) => updateField('data_admissao', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label>E-mail profissional</label>
+                  <input
+                    value={form.email_profissional}
+                    onChange={(e) => updateField('email_profissional', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label>Base salarial</label>
+                  <input
+                    value={form.base_salarial}
+                    onChange={(e) => updateField('base_salarial', sanitizeValorComCentavos(e.target.value))}
+                    placeholder="1500 ou 1500,50"
+                    inputMode="decimal"
+                  />
+                  {form.base_salarial && (
+                    <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
+                      = {previewValorComCentavos(form.base_salarial)}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label>Data do ajuste</label>
+                  <input
+                    type="date"
+                    value={form.data_ajuste}
+                    onChange={(e) => updateField('data_ajuste', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {historicoSalarial.length > 0 && (
+                <div style={{ marginTop: 4, marginBottom: 18, fontStyle: 'italic', fontSize: 13 }}>
+                  {historicoSalarial.map((linha, i) =>
+                    readOnly ? (
+                      <p key={i} style={{ margin: '2px 0' }}>
+                        - {linha}
+                      </p>
+                    ) : (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '4px 0' }}>
+                        <span>-</span>
+                        <input
+                          value={linha}
+                          onChange={(e) => alterarTextoHistorico(i, e.target.value)}
+                          style={{ flex: 1, fontStyle: 'italic', fontSize: 13, padding: '4px 8px' }}
+                        />
+                        <button
+                          type="button"
+                          className="delete-link"
+                          onClick={() => apagarEntradaHistorico(i)}
+                        >
+                          Apagar
+                        </button>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
 
               <div className="form-section-title">Observações</div>
               <div className="form-grid">

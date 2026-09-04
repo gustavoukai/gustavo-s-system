@@ -763,3 +763,22 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 44 — RH: dados pessoais/profissionais e histórico salarial
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-rh-parte44.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou no cadastro de funcionários:**
+- Primeira seção renomeada para **"Dados pessoais"**; campo "E-mail" virou **"E-mail pessoal"**; novo campo **"Curso"** (entre Instituição de ensino e Semestre/Ano).
+- Nova seção **"Dados profissionais"**, depois de Endereço residencial: **Cargo** e **Data de admissão** (que saíram de Dados pessoais), mais **E-mail profissional**, **Base salarial** e **Data do ajuste**.
+- **Histórico salarial automático**: a primeira vez que você preenche Base salarial + Data do ajuste (geralmente na data de admissão), isso vira só o valor "atual" — não gera linha de histórico. Da próxima vez que você mudar esses dois campos (um reajuste de verdade), aparece uma linha abaixo, tipo "- base salarial ajustada para R$ 1.500,00 em 01/03/2025;". Essas linhas ficam visíveis na consulta (Visualizar) e totalmente editáveis (inclusive apagáveis uma a uma) quando você está no modo Editar.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
