@@ -21,6 +21,7 @@ const LINKS_RESTRITOS = [
 ];
 
 const LINKS_ADMIN = [
+  { href: '/funcionarios', label: 'RH' },
   { href: '/usuarios', label: 'Usuários' },
   { href: '/log-acessos', label: 'Log de Acessos' },
   { href: '/backups', label: 'Backups' },

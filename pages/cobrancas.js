@@ -59,7 +59,7 @@ export default function Cobrancas() {
       .select(
         '*, projetos(numero_projeto, nome), fornecedores(nome, categorias, vendedor, telefone_vendedor, financeiro, telefone_financeiro)'
       )
-      .in('pagamento_status', ['COBRAR', 'FOLLOW UP']);
+      .in('pagamento_status', ['COBRAR', 'NF', 'AGUARDANDO', 'FOLLOW UP', 'INFO']);
     const ordenados = (data || []).sort((a, b) => {
       const dataA = parseDataCurtaParaData(a.pagamento_previsao);
       const dataB = parseDataCurtaParaData(b.pagamento_previsao);
@@ -621,7 +621,7 @@ export default function Cobrancas() {
 
             {!showForm && destaques.length > 0 && (
               <div style={{ marginTop: 28 }}>
-                <h2 style={{ marginBottom: 12 }}>Cobranças em aberto (Cobrar / Follow Up)</h2>
+                <h2 style={{ marginBottom: 12 }}>Cobranças em aberto (Cobrar / NF / Aguardando / Follow Up / Info)</h2>
                 {destaques.map((item) => (
                   <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />
                 ))}

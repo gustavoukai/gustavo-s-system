@@ -729,3 +729,37 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 42 — Mais status na tela inicial de Cobranças
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- A lista de destaques na tela inicial de Cobranças agora mostra todas as cobranças com status **Cobrar, NF, Aguardando, Follow Up e Info** (antes só mostrava Cobrar e Follow Up), sempre ordenadas pela previsão de recebimento mais próxima primeiro.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 43 — RH (Funcionários)
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-rh.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**Como funciona:**
+- Nova aba **"RH"** no menu, visível só pro Admin.
+- Lista de funcionários com botão **"+ Novo Funcionário"** acima, igual em Clientes — com Visualizar, Editar e Apagar em cada linha.
+- Cadastro simplificado: seção **"Dados do funcionário"** (Nome e Celular 1 obrigatórios, mais CPF, RG, data de nascimento, Celular 2, e-mail, Instagram, **Cargo**, **Data de admissão**, **Instituição de ensino** e **Semestre/Ano**) e **"Endereço residencial"** (com CEP automático) — sem vínculo de projetos, sem dados comerciais nem de cônjuge.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
