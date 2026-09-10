@@ -4,6 +4,7 @@ import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import {
+import TabelaRolavel from '../components/TabelaRolavel';
   formatCPF,
   formatRG,
   formatPhone,
@@ -576,7 +577,7 @@ export default function Funcionarios() {
         )}
 
         {!showForm && (
-          <div className="data-table-wrap">
+          <TabelaRolavel>
             <table className="data-table">
               <thead>
                 <tr>
@@ -615,7 +616,7 @@ export default function Funcionarios() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TabelaRolavel>
         )}
 
         <Rodape />

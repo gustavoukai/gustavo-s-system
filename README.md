@@ -799,3 +799,22 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 46 — Vírgula nos valores, cabeçalho fixo com rolagem no topo, totais em Contas a Pagar
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Contas a Pagar**: os campos "Valor pago" e "Valor previsto" agora aceitam vírgula pra digitar os centavos (ex: `1351,90`) — ou, se digitar só números inteiros, continua assumindo ",00" automaticamente, como antes.
+- **Totais**: no fim da lista de Contas a Pagar, agora aparece a soma total do "Valor pago" e do "Valor previsto" daquele mês.
+- **Tabelas em todo o sistema** (Clientes, Fornecedores, Projetos, Cobranças, Contas a Pagar, Recebimentos, RH, Usuários, Log de Acessos, Relatórios, Backups): 
+  - O título das colunas agora fica fixo no topo da tela conforme você rola a lista pra baixo — não some mais.
+  - A barra de rolagem horizontal (pra listas com muitas colunas) agora aparece **logo abaixo do título das colunas**, no topo da tabela, além da barra de sempre lá embaixo — as duas ficam sincronizadas, então rolar uma rola a outra também.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

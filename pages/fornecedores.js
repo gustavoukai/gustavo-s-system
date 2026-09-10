@@ -6,6 +6,7 @@ import Rodape from '../components/Rodape';
 import { formatCPF, formatCNPJ, formatPhone } from '../lib/masks';
 import { generateFornecedorPdfBlob } from '../lib/fornecedorSnapshot';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 const CATEGORIAS = [
   'Acabamentos',
@@ -697,7 +698,7 @@ export default function Fornecedores() {
               </div>
             </div>
 
-            <div className="data-table-wrap">
+            <TabelaRolavel>
               {itemsFiltrados.length === 0 ? (
                 <p className="empty-hint">Nenhum fornecedor encontrado.</p>
               ) : (
@@ -752,7 +753,7 @@ export default function Fornecedores() {
                   </tbody>
                 </table>
               )}
-            </div>
+            </TabelaRolavel>
           </>
         )}
 

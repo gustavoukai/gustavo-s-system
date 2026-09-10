@@ -305,6 +305,7 @@ select {
 
 .data-table-wrap {
   overflow-x: auto;
+  overflow-y: visible;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -317,6 +318,22 @@ select {
 }
 
 .data-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.tabela-rolagem-topo {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 14px;
+  scrollbar-width: thin;
+}
+
+.tabela-rolagem-topo::-webkit-scrollbar {
+  height: 10px;
+}
+
+.tabela-rolagem-topo::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 4px;
 }
@@ -335,12 +352,21 @@ table.data-table {
   font-weight: 600;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .data-table td {
   padding: 11px 14px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+}
+
+.data-table tfoot td {
+  background: #eef2f0;
+  border-top: 2px solid var(--border);
+  border-bottom: none;
 }
 
 .data-table th:last-child,

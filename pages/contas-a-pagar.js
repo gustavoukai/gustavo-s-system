@@ -4,7 +4,14 @@ import { useAuth } from '../lib/useAuth';
 import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
-import { formatParcela, formatDataCurta, formatValorReais } from '../lib/masks';
+import {
+import TabelaRolavel from '../components/TabelaRolavel';
+  formatParcela,
+  formatDataCurta,
+  sanitizeValorComCentavos,
+  previewValorComCentavos,
+  parseValorComCentavos,
+} from '../lib/masks';
 
 const MESES = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -159,8 +166,8 @@ export default function ContasAPagar() {
       dia_vencimento: item.dia_vencimento || '',
       status: item.status || '',
       data_pagamento: item.data_pagamento || '',
-      valor_pago: item.valor_pago != null ? String(Math.round(item.valor_pago)) : '',
-      valor_previsto: item.valor_previsto != null ? String(Math.round(item.valor_previsto)) : '',
+      valor_pago: item.valor_pago != null ? String(item.valor_pago).replace('.', ',') : '',
+      valor_previsto: item.valor_previsto != null ? String(item.valor_previsto).replace('.', ',') : '',
       observacoes: item.observacoes || '',
       recorrencia: 1,
     });
@@ -200,8 +207,8 @@ export default function ContasAPagar() {
       dia_vencimento: form.dia_vencimento ? parseInt(form.dia_vencimento, 10) : null,
       status: form.status || null,
       data_pagamento: form.data_pagamento || null,
-      valor_pago: form.valor_pago ? parseInt(form.valor_pago, 10) : null,
-      valor_previsto: form.valor_previsto ? parseInt(form.valor_previsto, 10) : null,
+      valor_pago: form.valor_pago ? parseValorComCentavos(form.valor_pago) : null,
+      valor_previsto: form.valor_previsto ? parseValorComCentavos(form.valor_previsto) : null,
       observacoes: form.observacoes || null,
       atualizado_em: new Date().toISOString(),
     };
@@ -484,13 +491,13 @@ export default function ContasAPagar() {
                     <label>Valor pago</label>
                     <input
                       value={form.valor_pago}
-                      onChange={(e) => updateField('valor_pago', e.target.value.replace(/\D/g, ''))}
-                      placeholder="Só os números. Ex: 1351"
-                      inputMode="numeric"
+                      onChange={(e) => updateField('valor_pago', sanitizeValorComCentavos(e.target.value))}
+                      placeholder="1500 ou 1500,50"
+                      inputMode="decimal"
                     />
                     {form.valor_pago && (
                       <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
-                        = {formatValorReais(form.valor_pago)}
+                        = {previewValorComCentavos(form.valor_pago)}
                       </p>
                     )}
                   </div>
@@ -499,13 +506,13 @@ export default function ContasAPagar() {
                     <label>Valor previsto</label>
                     <input
                       value={form.valor_previsto}
-                      onChange={(e) => updateField('valor_previsto', e.target.value.replace(/\D/g, ''))}
-                      placeholder="Só os números. Ex: 1351"
-                      inputMode="numeric"
+                      onChange={(e) => updateField('valor_previsto', sanitizeValorComCentavos(e.target.value))}
+                      placeholder="1500 ou 1500,50"
+                      inputMode="decimal"
                     />
                     {form.valor_previsto && (
                       <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
-                        = {formatValorReais(form.valor_previsto)}
+                        = {previewValorComCentavos(form.valor_previsto)}
                       </p>
                     )}
                   </div>
@@ -555,7 +562,7 @@ export default function ContasAPagar() {
             )}
 
             {!showForm && (
-              <div className="data-table-wrap">
+              <TabelaRolavel>
                 {items.length === 0 ? (
                   <p className="empty-hint">Nenhuma conta cadastrada neste mês.</p>
                 ) : (
@@ -608,9 +615,24 @@ export default function ContasAPagar() {
                         </tr>
                       ))}
                     </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 700 }}>
+                          Totais do mês:
+                        </td>
+                        <td style={{ fontWeight: 700 }}>
+                          {formatMoney(items.reduce((soma, i) => soma + (Number(i.valor_pago) || 0), 0))}
+                        </td>
+                        <td style={{ fontWeight: 700 }}>
+                          {formatMoney(items.reduce((soma, i) => soma + (Number(i.valor_previsto) || 0), 0))}
+                        </td>
+                        {canEdit && <td></td>}
+                        {canDelete && <td></td>}
+                      </tr>
+                    </tfoot>
                   </table>
                 )}
-              </div>
+              </TabelaRolavel>
             )}
           </>
         )}

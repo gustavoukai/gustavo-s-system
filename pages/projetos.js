@@ -4,6 +4,7 @@ import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import { formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 const emptyForm = {
   nome: '',
@@ -375,7 +376,7 @@ export default function Projetos() {
         )}
 
         {!showForm && (
-          <div className="data-table-wrap">
+          <TabelaRolavel>
             {items.length === 0 ? (
               <p className="empty-hint">Nenhum projeto cadastrado ainda.</p>
             ) : (
@@ -422,7 +423,7 @@ export default function Projetos() {
                 </tbody>
               </table>
             )}
-          </div>
+          </TabelaRolavel>
         )}
 
         <Rodape />

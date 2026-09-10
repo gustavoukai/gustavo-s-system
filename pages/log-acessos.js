@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 export default function LogAcessos() {
   const { loading, role } = useAuth();
@@ -87,7 +88,7 @@ export default function LogAcessos() {
           </div>
         </div>
 
-        <div className="data-table-wrap">
+        <TabelaRolavel>
           {acessos.length === 0 ? (
             <p className="empty-hint">Nenhum acesso encontrado.</p>
           ) : (
@@ -108,7 +109,7 @@ export default function LogAcessos() {
               </tbody>
             </table>
           )}
-        </div>
+        </TabelaRolavel>
 
         <Rodape />
       </div>

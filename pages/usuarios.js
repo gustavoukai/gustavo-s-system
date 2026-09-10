@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 const ROLES = [
   { valor: 'visualizante', label: 'Visualizante' },
@@ -160,7 +161,7 @@ export default function Usuarios() {
 
         <div className="section-card">
           <h2 style={{ marginBottom: 10 }}>O que cada nível de acesso pode fazer</h2>
-          <div className="data-table-wrap">
+          <TabelaRolavel>
             <table className="data-table">
               <thead>
                 <tr>
@@ -181,7 +182,7 @@ export default function Usuarios() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TabelaRolavel>
         </div>
 
         <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
@@ -271,7 +272,7 @@ export default function Usuarios() {
           </form>
         )}
 
-        <div className="data-table-wrap">
+        <TabelaRolavel>
           <table className="data-table">
             <thead>
               <tr>
@@ -358,7 +359,7 @@ export default function Usuarios() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TabelaRolavel>
 
         <Rodape />
       </div>

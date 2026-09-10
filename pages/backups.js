@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 function formatData(value) {
   if (!value) return '—';
@@ -19,7 +20,7 @@ function TabelaBackup({ titulo, linhas, carregando, onAbrir }) {
   return (
     <div style={{ marginBottom: 28 }}>
       <h2 style={{ marginBottom: 10 }}>{titulo}</h2>
-      <div className="data-table-wrap">
+      <TabelaRolavel>
         {carregando ? (
           <p className="empty-hint">Carregando...</p>
         ) : linhas.length === 0 ? (
@@ -48,7 +49,7 @@ function TabelaBackup({ titulo, linhas, carregando, onAbrir }) {
             </tbody>
           </table>
         )}
-      </div>
+      </TabelaRolavel>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../lib/useAuth';
 import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 const STATUS_OPTIONS = ['pendente', 'pago', 'cancelado'];
 
@@ -232,7 +233,7 @@ export default function Relatorios() {
           </div>
         </div>
 
-        <div className="data-table-wrap">
+        <TabelaRolavel>
           {items.length === 0 ? (
             <p className="empty-hint">Nenhum resultado com esses filtros.</p>
           ) : (
@@ -269,7 +270,7 @@ export default function Relatorios() {
               </tbody>
             </table>
           )}
-        </div>
+        </TabelaRolavel>
 
         <Rodape />
       </div>

@@ -5,6 +5,7 @@ import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 import {
+import TabelaRolavel from '../components/TabelaRolavel';
   CATEGORIA_CLIENTE,
   CATEGORIA_FORNECEDOR,
   PAGAMENTO_STATUS_OPTIONS,
@@ -639,7 +640,7 @@ export default function Cobrancas() {
               </button>
             </div>
 
-            <div className="data-table-wrap">
+            <TabelaRolavel>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -662,7 +663,7 @@ export default function Cobrancas() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TabelaRolavel>
           </>
         )}
 
@@ -675,7 +676,7 @@ export default function Cobrancas() {
               </button>
             </div>
 
-            <div className="data-table-wrap">
+            <TabelaRolavel>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -696,7 +697,7 @@ export default function Cobrancas() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TabelaRolavel>
           </>
         )}
 

@@ -5,6 +5,7 @@ import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
+import TabelaRolavel from '../components/TabelaRolavel';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 import { formatParcelaLabel } from '../lib/cobrancaHelpers';
 
@@ -199,7 +200,7 @@ export default function Recebimentos() {
                       {MESES[mes - 1]}/{String(anoSelecionado).slice(-2)}
                     </h2>
 
-                    <div className="data-table-wrap" style={{ marginBottom: 8 }}>
+                    <TabelaRolavel>
                       <table className="data-table">
                         <thead>
                           <tr>
@@ -246,7 +247,7 @@ export default function Recebimentos() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </TabelaRolavel>
                     <p style={{ textAlign: 'right', fontWeight: 700 }}>
                       Total do mês: {formatMoney(totalMes)}
                     </p>

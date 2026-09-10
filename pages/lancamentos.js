@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 const STATUS_OPTIONS = ['pendente', 'pago', 'cancelado'];
 
@@ -320,7 +321,7 @@ export default function Lancamentos() {
           </div>
         </div>
 
-        <div className="data-table-wrap">
+        <TabelaRolavel>
           {items.length === 0 ? (
             <p className="empty-hint">Nenhum lançamento encontrado com esses filtros.</p>
           ) : (
@@ -367,7 +368,7 @@ export default function Lancamentos() {
               </tbody>
             </table>
           )}
-        </div>
+        </TabelaRolavel>
 
         <Rodape />
       </div>

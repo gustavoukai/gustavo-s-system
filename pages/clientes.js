@@ -6,6 +6,7 @@ import Rodape from '../components/Rodape';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
 import { generateClientePdfBlob } from '../lib/clienteSnapshot';
+import TabelaRolavel from '../components/TabelaRolavel';
 
 const emptyForm = {
   nome: '',
@@ -830,7 +831,7 @@ export default function Clientes() {
         )}
 
         {!showForm && (
-          <div className="data-table-wrap">
+          <TabelaRolavel>
             {items.length === 0 ? (
               <p className="empty-hint">Nenhum cliente cadastrado ainda.</p>
             ) : (
@@ -878,7 +879,7 @@ export default function Clientes() {
                 </tbody>
               </table>
             )}
-          </div>
+          </TabelaRolavel>
         )}
 
         <Rodape />
