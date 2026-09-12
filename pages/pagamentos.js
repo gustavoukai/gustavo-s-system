@@ -5,7 +5,6 @@ import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
-import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 
 const MESES = [
@@ -39,16 +38,17 @@ export default function Pagamentos() {
 
   const [anos, setAnos] = useState([]);
   const [anoSelecionado, setAnoSelecionado] = useState(() => new Date().getFullYear());
-  const [mesesSelecionados, setMesesSelecionados] = useState(() => [new Date().getMonth() + 1]);
+  const [mesSelecionado, setMesSelecionado] = useState(() => new Date().getMonth() + 1);
   const [filtroPagamento, setFiltroPagamento] = useState('');
   const [filtroRecebedor, setFiltroRecebedor] = useState('');
   const [itens, setItens] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [form, setForm] = useState(emptyEdit);
   const [saving, setSaving] = useState(false);
 
-  const [relAnoInicio, setRelAnoInicio] = useState(() => new Date().getFullYear());
-  const [relMesesRelatorio, setRelMesesRelatorio] = useState([]);
+  const [relAno, setRelAno] = useState(() => new Date().getFullYear());
+  const [relMes, setRelMes] = useState('');
   const [relPagamento, setRelPagamento] = useState('');
   const [relRecebedor, setRelRecebedor] = useState('');
   const [relStatus, setRelStatus] = useState('');
@@ -60,7 +60,7 @@ export default function Pagamentos() {
   }
 
   async function loadPagamentos() {
-    if (!anoSelecionado || mesesSelecionados.length === 0) {
+    if (!anoSelecionado || !mesSelecionado) {
       setItens([]);
       return;
     }
@@ -68,7 +68,7 @@ export default function Pagamentos() {
       .from('pagamentos')
       .select('*')
       .eq('ano', anoSelecionado)
-      .in('mes', mesesSelecionados);
+      .eq('mes', mesSelecionado);
     setItens(data || []);
   }
 
@@ -79,7 +79,7 @@ export default function Pagamentos() {
   useEffect(() => {
     loadPagamentos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anoSelecionado, mesesSelecionados]);
+  }, [anoSelecionado, mesSelecionado]);
 
   function updateField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -126,8 +126,8 @@ export default function Pagamentos() {
   async function gerarRelatorioContasPagas() {
     setGerandoRelatorio(true);
 
-    let query = supabase.from('contas_pagar').select('*').eq('ano', relAnoInicio);
-    if (relMesesRelatorio.length > 0) query = query.in('mes', relMesesRelatorio);
+    let query = supabase.from('contas_pagar').select('*').eq('ano', relAno);
+    if (relMes) query = query.eq('mes', Number(relMes));
     if (relStatus) query = query.eq('status', relStatus);
 
     const { data } = await query;
@@ -172,17 +172,19 @@ export default function Pagamentos() {
   }
 
   // Filtros cumulativos: período (já aplicado na consulta) -> pagamento -> recebedor
-  const itensFiltrados = itens.filter((item) => {
-    if (filtroPagamento.trim() && !(item.pagamento || '').toLowerCase().includes(filtroPagamento.trim().toLowerCase())) {
-      return false;
-    }
-    if (filtroRecebedor.trim() && !(item.recebedor || '').toLowerCase().includes(filtroRecebedor.trim().toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
+  const itensFiltrados = itens
+    .filter((item) => {
+      if (filtroPagamento.trim() && !(item.pagamento || '').toLowerCase().includes(filtroPagamento.trim().toLowerCase())) {
+        return false;
+      }
+      if (filtroRecebedor.trim() && !(item.recebedor || '').toLowerCase().includes(filtroRecebedor.trim().toLowerCase())) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => parseDataCurtaOrdenar(b.data_pagamento) - parseDataCurtaOrdenar(a.data_pagamento));
 
-  const mesesComItens = [...new Set(itensFiltrados.map((i) => i.mes))].sort((a, b) => b - a);
+  const totalMes = itensFiltrados.reduce((soma, i) => soma + (Number(i.valor) || 0), 0);
 
   if (loading) {
     return (
@@ -206,14 +208,7 @@ export default function Pagamentos() {
         <div className="filters-bar" style={{ alignItems: 'flex-end' }}>
           <div>
             <label>Ano</label>
-            <select
-              value={anoSelecionado}
-              onChange={(e) => {
-                setAnoSelecionado(Number(e.target.value));
-                setMesesSelecionados([]);
-              }}
-            >
-              <option value="">Selecione...</option>
+            <select value={anoSelecionado} onChange={(e) => setAnoSelecionado(Number(e.target.value))}>
               {anos.map((ano) => (
                 <option key={ano} value={ano}>
                   {ano}
@@ -221,21 +216,16 @@ export default function Pagamentos() {
               ))}
             </select>
           </div>
-          {anoSelecionado && (
-            <div style={{ minWidth: 220 }}>
-              <label>Meses (período)</label>
-              <MultiSelectDropdown
-                options={MESES.map((mes, index) => ({ value: index + 1, label: mes }))}
-                selected={mesesSelecionados}
-                onToggle={(mes) =>
-                  setMesesSelecionados((prev) =>
-                    prev.includes(mes) ? prev.filter((m) => m !== mes) : [...prev, mes]
-                  )
-                }
-                placeholder="Selecione os meses..."
-              />
-            </div>
-          )}
+          <div>
+            <label>Mês</label>
+            <select value={mesSelecionado} onChange={(e) => setMesSelecionado(Number(e.target.value))}>
+              {MESES.map((mes, index) => (
+                <option key={mes} value={index + 1}>
+                  {mes}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label>Pagamento</label>
             <input
@@ -254,64 +244,55 @@ export default function Pagamentos() {
           </div>
         </div>
 
-        {anoSelecionado && mesesSelecionados.length > 0 && (
+        <h2 style={{ margin: '10px 0 18px' }}>
+          {MESES[mesSelecionado - 1]}/{String(anoSelecionado).slice(-2)}
+        </h2>
+
+        {itensFiltrados.length === 0 ? (
+          <p className="empty-hint">Nenhum pagamento nesse filtro.</p>
+        ) : (
           <>
-            {mesesComItens.length === 0 ? (
-              <p className="empty-hint">Nenhum pagamento nesse filtro.</p>
-            ) : (
-              mesesComItens.map((mes) => {
-                const itensDoMes = itensFiltrados
-                  .filter((i) => i.mes === mes)
-                  .sort((a, b) => parseDataCurtaOrdenar(b.data_pagamento) - parseDataCurtaOrdenar(a.data_pagamento));
-                const totalMes = itensDoMes.reduce((soma, i) => soma + (Number(i.valor) || 0), 0);
-
-                return (
-                  <div key={mes} style={{ marginBottom: 28 }}>
-                    <h2 style={{ marginBottom: 10 }}>
-                      {MESES[mes - 1]}/{String(anoSelecionado).slice(-2)}
-                    </h2>
-
-                    <TabelaRolavel>
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Pagamento</th>
-                            <th>Referência</th>
-                            <th>Recebedor</th>
-                            <th>Pagador</th>
-                            <th>Valor</th>
-                            <th>Data do pagamento</th>
-                            {canEdit && <th></th>}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {itensDoMes.map((item) => (
-                            <tr key={item.id}>
-                              <td>{item.pagamento || '—'}</td>
-                              <td>{item.referencia || '—'}</td>
-                              <td>{item.recebedor || '—'}</td>
-                              <td>{item.pagador || '—'}</td>
-                              <td>{formatMoney(item.valor)}</td>
-                              <td>{item.data_pagamento || '—'}</td>
-                              {canEdit && (
-                                <td>
-                                  <button className="btn-editar" onClick={() => openEdit(item)}>
-                                    EDITAR
-                                  </button>
-                                </td>
-                              )}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </TabelaRolavel>
-                    <p style={{ textAlign: 'right', fontWeight: 700, marginTop: 8 }}>
-                      Total do mês: {formatMoney(totalMes)}
-                    </p>
-                  </div>
-                );
-              })
-            )}
+            <TabelaRolavel>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Pagamento</th>
+                    <th>Referência</th>
+                    <th>Recebedor</th>
+                    <th>Pagador</th>
+                    <th>Valor</th>
+                    <th>Data do pagamento</th>
+                    {canEdit && <th></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {itensFiltrados.map((item) => (
+                    <tr
+                      key={item.id}
+                      className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
+                      onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
+                    >
+                      <td>{item.pagamento || '—'}</td>
+                      <td>{item.referencia || '—'}</td>
+                      <td>{item.recebedor || '—'}</td>
+                      <td>{item.pagador || '—'}</td>
+                      <td>{formatMoney(item.valor)}</td>
+                      <td>{item.data_pagamento || '—'}</td>
+                      {canEdit && (
+                        <td>
+                          <button className="btn-editar" onClick={() => openEdit(item)}>
+                            EDITAR
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TabelaRolavel>
+            <p style={{ textAlign: 'right', fontWeight: 700, marginTop: 8 }}>
+              Total do mês: {formatMoney(totalMes)}
+            </p>
           </>
         )}
 
@@ -396,7 +377,7 @@ export default function Pagamentos() {
           <div className="filters-bar" style={{ alignItems: 'flex-end' }}>
             <div>
               <label>Ano</label>
-              <select value={relAnoInicio} onChange={(e) => setRelAnoInicio(Number(e.target.value))}>
+              <select value={relAno} onChange={(e) => setRelAno(Number(e.target.value))}>
                 {anos.map((ano) => (
                   <option key={ano} value={ano}>
                     {ano}
@@ -404,18 +385,16 @@ export default function Pagamentos() {
                 ))}
               </select>
             </div>
-            <div style={{ minWidth: 200 }}>
-              <label>Período (meses)</label>
-              <MultiSelectDropdown
-                options={MESES.map((mes, index) => ({ value: index + 1, label: mes }))}
-                selected={relMesesRelatorio}
-                onToggle={(mes) =>
-                  setRelMesesRelatorio((prev) =>
-                    prev.includes(mes) ? prev.filter((m) => m !== mes) : [...prev, mes]
-                  )
-                }
-                placeholder="Todos os meses"
-              />
+            <div>
+              <label>Mês</label>
+              <select value={relMes} onChange={(e) => setRelMes(e.target.value)}>
+                <option value="">Todos os meses</option>
+                {MESES.map((mes, index) => (
+                  <option key={mes} value={index + 1}>
+                    {mes}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label>Pagamento</label>

@@ -27,6 +27,7 @@ const PERMISSOES = [
 export default function Usuarios() {
   const { loading, role } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -248,7 +249,11 @@ export default function Usuarios() {
             </thead>
             <tbody>
               {usuarios.map((u) => (
-                <tr key={u.id}>
+                <tr
+                  key={u.id}
+                  className={linhaSelecionada === u.id ? 'linha-selecionada' : ''}
+                  onClick={() => setLinhaSelecionada(linhaSelecionada === u.id ? null : u.id)}
+                >
                   {editingId === u.id ? (
                     <>
                       <td>

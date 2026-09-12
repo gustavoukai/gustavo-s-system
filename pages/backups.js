@@ -17,6 +17,8 @@ function formatData(value) {
 }
 
 function TabelaBackup({ titulo, linhas, carregando, onAbrir }) {
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
+
   return (
     <div style={{ marginBottom: 28 }}>
       <h2 style={{ marginBottom: 10 }}>{titulo}</h2>
@@ -36,7 +38,11 @@ function TabelaBackup({ titulo, linhas, carregando, onAbrir }) {
             </thead>
             <tbody>
               {linhas.map((linha) => (
-                <tr key={linha.id}>
+                <tr
+                  key={linha.id}
+                  className={linhaSelecionada === linha.id ? 'linha-selecionada' : ''}
+                  onClick={() => setLinhaSelecionada(linhaSelecionada === linha.id ? null : linha.id)}
+                >
                   <td>{linha.nome}</td>
                   <td>{formatData(linha.atualizadoEm)}</td>
                   <td>

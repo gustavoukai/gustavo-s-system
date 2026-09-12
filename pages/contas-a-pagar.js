@@ -67,6 +67,7 @@ export default function ContasAPagar() {
   useBloqueiaVisualizante(role, loading);
   const [anos, setAnos] = useState([]);
   const [anoSelecionado, setAnoSelecionado] = useState(() => new Date().getFullYear());
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [mesSelecionado, setMesSelecionado] = useState(() => new Date().getMonth() + 1);
   const [items, setItems] = useState([]);
   const [todasContas, setTodasContas] = useState([]);
@@ -640,7 +641,14 @@ export default function ContasAPagar() {
                     </thead>
                     <tbody>
                       {items.map((item) => (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          className={[
+                            item.status === 'pago' ? 'linha-pago' : '',
+                            linhaSelecionada === item.id ? 'linha-selecionada' : '',
+                          ].join(' ').trim()}
+                          onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
+                        >
                           <td>{item.pagamento || '—'}</td>
                           <td>{labelReferencia(item)}</td>
                           <td>{item.recebedor || '—'}</td>

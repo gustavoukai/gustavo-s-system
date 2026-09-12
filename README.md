@@ -840,3 +840,23 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 49 — Seleção de linha, destaque de "pago", correção do layout de Pagamentos, backfill
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-parte48.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"** (esse aqui resolve as contas que já estavam "Pago" antes da Parte 47 e por isso não apareciam em Pagamentos — inclusive a de janeiro/26 que você notou).
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Seleção de linha**: agora, em qualquer lista do sistema (Clientes, Fornecedores, Projetos, Contas a Pagar, Pagamentos, Recebimentos, RH, Usuários, e as listas de Clientes/Fornecedores dentro de Backups), clicar em qualquer ponto de uma linha destaca ela inteira em cinza claro. Clicar de novo tira a seleção.
+- **Contas a Pagar**: linhas com status "Pago" agora ficam com um fundo azul bem clarinho (mais claro que a cor da etiqueta "PAGO"), pra identificar rapidinho quais já foram pagas.
+- **Pagamentos**: corrigido o desalinhamento dos campos de filtro (o "Meses" que estava sobrepondo o campo ao lado). A escolha de Ano e Mês agora é simples, igual em Contas a Pagar — só selects normais, sem caixinhas de marcar, e a lista já atualiza sozinha ao trocar.
+- **Bug do pagamento de janeiro/26 que sumia**: a causa era que a sincronização automática só rodava quando uma conta era salva/editada — contas que já estavam "Pago" desde antes da Parte 47 nunca tinham passado por essa sincronização. O SQL desta parte corrige isso de uma vez por todas (e o problema não deve mais acontecer daqui pra frente).
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

@@ -123,6 +123,7 @@ export default function Fornecedores() {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [categorias, setCategorias] = useState([]);
@@ -717,7 +718,11 @@ export default function Fornecedores() {
                   </thead>
                   <tbody>
                     {itemsFiltrados.map((item) => (
-                      <tr key={item.id}>
+                      <tr
+                        key={item.id}
+                        className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
+                        onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
+                      >
                         <td>{item.nome}</td>
                         <td>{renderStatusIcon(item.status)}</td>
                         <td>

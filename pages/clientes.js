@@ -71,6 +71,7 @@ export default function Clientes() {
   const [projetos, setProjetos] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [filhos, setFilhos] = useState([]);
@@ -848,7 +849,11 @@ export default function Clientes() {
                 </thead>
                 <tbody>
                   {items.map((item) => (
-                    <tr key={item.id}>
+                    <tr
+                      key={item.id}
+                      className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
+                      onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
+                    >
                       <td>{item.nome}</td>
                       <td>{(item.projetos || []).map((p) => `${p.numero_projeto} - ${p.nome}`).join(', ') || '—'}</td>
                       <td>{formatData(item.atualizado_em || item.created_at)}</td>

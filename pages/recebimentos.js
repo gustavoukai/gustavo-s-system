@@ -34,6 +34,7 @@ export default function Recebimentos() {
   const [mesesSelecionados, setMesesSelecionados] = useState(() => [new Date().getMonth() + 1]);
   const [itens, setItens] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [form, setForm] = useState(emptyEdit);
   const [saving, setSaving] = useState(false);
 
@@ -219,7 +220,11 @@ export default function Recebimentos() {
                         </thead>
                         <tbody>
                           {itensDoMes.map((item) => (
-                            <tr key={item.id}>
+                            <tr
+                              key={item.id}
+                              className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
+                              onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
+                            >
                               <td>{item.data || '—'}</td>
                               <td>
                                 {item.projetos

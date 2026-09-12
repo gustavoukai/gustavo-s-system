@@ -369,6 +369,22 @@ table.data-table {
   border-bottom: none;
 }
 
+.data-table tbody tr {
+  cursor: pointer;
+}
+
+.data-table tbody tr.linha-selecionada td {
+  background-color: #e3e6e6 !important;
+}
+
+.data-table tbody tr.linha-pago td {
+  background-color: #eaf4fc !important;
+}
+
+.data-table tbody tr.linha-pago.linha-selecionada td {
+  background-color: #d7e9f5 !important;
+}
+
 .data-table th:last-child,
 .data-table td:last-child {
   padding-right: 22px;

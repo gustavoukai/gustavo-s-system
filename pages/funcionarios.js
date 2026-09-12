@@ -61,6 +61,7 @@ export default function Funcionarios() {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [readOnly, setReadOnly] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [historicoSalarial, setHistoricoSalarial] = useState([]);
@@ -592,7 +593,11 @@ export default function Funcionarios() {
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item.id}>
+                  <tr
+                    key={item.id}
+                    className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
+                    onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
+                  >
                     <td>{item.nome}</td>
                     <td>{item.cargo || '—'}</td>
                     <td>{item.celular1 || '—'}</td>
