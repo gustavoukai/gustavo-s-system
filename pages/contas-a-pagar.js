@@ -4,8 +4,8 @@ import { useAuth } from '../lib/useAuth';
 import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
-import {
 import TabelaRolavel from '../components/TabelaRolavel';
+import {
   formatParcela,
   formatDataCurta,
   sanitizeValorComCentavos,

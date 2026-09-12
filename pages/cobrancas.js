@@ -3,9 +3,9 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import TabelaRolavel from '../components/TabelaRolavel';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 import {
-import TabelaRolavel from '../components/TabelaRolavel';
   CATEGORIA_CLIENTE,
   CATEGORIA_FORNECEDOR,
   PAGAMENTO_STATUS_OPTIONS,

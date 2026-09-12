@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
-import {
 import TabelaRolavel from '../components/TabelaRolavel';
+import {
   formatCPF,
   formatRG,
   formatPhone,
