@@ -9,6 +9,7 @@ const TITULOS = {
   '/fornecedores': 'Fornecedores',
   '/projetos': 'Projetos',
   '/contas-a-pagar': 'Contas a Pagar',
+  '/pagamentos': 'Pagamentos',
   '/cobrancas': 'Cobranças',
   '/recebimentos': 'Recebimentos',
   '/relatorios': 'Relatórios',

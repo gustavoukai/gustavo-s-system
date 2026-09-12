@@ -213,6 +213,8 @@ export default function ContasAPagar() {
       atualizado_em: new Date().toISOString(),
     };
 
+    let idsParaSincronizar = [];
+
     if (editingId) {
       const { error: updateError } = await supabase
         .from('contas_pagar')
@@ -223,6 +225,7 @@ export default function ContasAPagar() {
         setError(`Não foi possível salvar: ${updateError.message}`);
         return;
       }
+      idsParaSincronizar = [editingId];
     } else {
       const {
         data: { session },
@@ -247,12 +250,28 @@ export default function ContasAPagar() {
         }
       }
 
-      const { error: insertError } = await supabase.from('contas_pagar').insert(registros);
+      const { data: inseridos, error: insertError } = await supabase
+        .from('contas_pagar')
+        .insert(registros)
+        .select('id');
       if (insertError) {
         setSaving(false);
         setError(`Não foi possível salvar: ${insertError.message}`);
         return;
       }
+      idsParaSincronizar = (inseridos || []).map((r) => r.id);
+    }
+
+    try {
+      const { data: linhasCompletas } = await supabase
+        .from('contas_pagar')
+        .select('*')
+        .in('id', idsParaSincronizar);
+      for (const linha of linhasCompletas || []) {
+        await sincronizarPagamento(linha);
+      }
+    } catch (syncError) {
+      // A sincronização com Pagamentos não deve travar o cadastro principal.
     }
 
     setSaving(false);
@@ -261,8 +280,45 @@ export default function ContasAPagar() {
     loadTodasContas();
   }
 
+  // Sempre que uma conta é salva com status "pago", cria (ou atualiza) o
+  // pagamento correspondente. Se deixar de ser "pago", o pagamento some junto.
+  async function sincronizarPagamento(conta) {
+    const condicaoAtendida = conta.status === 'pago';
+
+    if (!condicaoAtendida) {
+      await supabase.from('pagamentos').delete().eq('conta_pagar_id', conta.id);
+      return;
+    }
+
+    const { data: existente } = await supabase
+      .from('pagamentos')
+      .select('id')
+      .eq('conta_pagar_id', conta.id)
+      .maybeSingle();
+
+    const payload = {
+      conta_pagar_id: conta.id,
+      ano: conta.ano,
+      mes: conta.mes,
+      pagamento: conta.pagamento,
+      referencia: labelReferencia(conta),
+      recebedor: conta.recebedor,
+      pagador: conta.pagador,
+      valor: conta.valor_pago,
+      data_pagamento: conta.data_pagamento,
+      atualizado_em: new Date().toISOString(),
+    };
+
+    if (existente) {
+      await supabase.from('pagamentos').update(payload).eq('id', existente.id);
+    } else {
+      await supabase.from('pagamentos').insert([payload]);
+    }
+  }
+
   async function handleDelete(id) {
     if (!confirm('Apagar esta conta?')) return;
+    await supabase.from('pagamentos').delete().eq('conta_pagar_id', id);
     await supabase.from('contas_pagar').delete().eq('id', id);
     loadItems();
   }

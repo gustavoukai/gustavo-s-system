@@ -15,7 +15,7 @@ const emptyForm = { nome: '', email: '', senha: '', role: 'visualizante' };
 
 const PERMISSOES = [
   { area: 'Home, Dados do Escritório, Projetos, Clientes, Fornecedores, Cobranças', visualizante: 'Ver, cadastrar e editar', operador: 'Ver, cadastrar e editar', admin: 'Ver, cadastrar e editar' },
-  { area: 'Contas a Pagar, Recebimentos, Relatórios', visualizante: 'Sem acesso', operador: 'Ver, cadastrar e editar', admin: 'Ver, cadastrar e editar' },
+  { area: 'Contas a Pagar, Pagamentos, Recebimentos, Relatórios', visualizante: 'Sem acesso', operador: 'Ver, cadastrar e editar', admin: 'Ver, cadastrar e editar' },
   { area: 'Apagar registros (qualquer seção)', visualizante: 'Não pode', operador: 'Não pode', admin: 'Pode' },
   { area: 'Backups', visualizante: 'Sem acesso', operador: 'Sem acesso', admin: 'Acesso total' },
   { area: 'Dados do Escritório (edição)', visualizante: 'Não pode editar', operador: 'Não pode editar', admin: 'Pode editar' },
@@ -157,43 +157,6 @@ export default function Usuarios() {
               + Novo usuário
             </button>
           )}
-        </div>
-
-        <div className="section-card">
-          <h2 style={{ marginBottom: 10 }}>O que cada nível de acesso pode fazer</h2>
-          <TabelaRolavel>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Área</th>
-                  <th>Visualizante</th>
-                  <th>Operador</th>
-                  <th>Admin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PERMISSOES.map((p) => (
-                  <tr key={p.area}>
-                    <td>{p.area}</td>
-                    <td>{p.visualizante}</td>
-                    <td>{p.operador}</td>
-                    <td>{p.admin}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TabelaRolavel>
-        </div>
-
-        <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
-          <h2 style={{ marginBottom: 6 }}>Sobre senhas</h2>
-          <p style={{ fontSize: 13, margin: 0 }}>
-            Por segurança, o sistema nunca guarda nem mostra a senha real de ninguém (nem pra você, como
-            administrador — isso vale pra qualquer sistema sério, não é uma limitação só daqui). Cada
-            usuário faz login só com a senha que você definir, e não existe tela pra ele trocar sozinho.
-            Se precisar trocar a senha de alguém, use o botão <strong>"Redefinir senha"</strong> na lista
-            abaixo — a senha nova aparece na tela só naquele momento, então anote ou avise a pessoa na hora.
-          </p>
         </div>
 
         {senhaDefinidaAgora && (
@@ -360,6 +323,43 @@ export default function Usuarios() {
             </tbody>
           </table>
         </TabelaRolavel>
+
+        <div className="section-card">
+          <h2 style={{ marginBottom: 10 }}>O que cada nível de acesso pode fazer</h2>
+          <TabelaRolavel>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Área</th>
+                  <th>Visualizante</th>
+                  <th>Operador</th>
+                  <th>Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {PERMISSOES.map((p) => (
+                  <tr key={p.area}>
+                    <td>{p.area}</td>
+                    <td>{p.visualizante}</td>
+                    <td>{p.operador}</td>
+                    <td>{p.admin}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TabelaRolavel>
+        </div>
+
+        <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
+          <h2 style={{ marginBottom: 6 }}>Sobre senhas</h2>
+          <p style={{ fontSize: 13, margin: 0 }}>
+            Por segurança, o sistema nunca guarda nem mostra a senha real de ninguém (nem pra você, como
+            administrador — isso vale pra qualquer sistema sério, não é uma limitação só daqui). Cada
+            usuário faz login só com a senha que você definir, e não existe tela pra ele trocar sozinho.
+            Se precisar trocar a senha de alguém, use o botão <strong>"Redefinir senha"</strong> na lista
+            acima — a senha nova aparece na tela só naquele momento, então anote ou avise a pessoa na hora.
+          </p>
+        </div>
 
         <Rodape />
       </div>

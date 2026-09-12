@@ -818,3 +818,25 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 47 — Pagamentos, relatório de contas pagas, reordenação de Usuários
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-pagamentos.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**Como funciona:**
+- Nova aba **"Pagamentos"** no menu (mesmo nível de acesso de Contas a Pagar — Admin e Operador).
+- Toda vez que você marcar uma conta com status **"Pago"** em Contas a Pagar, um pagamento aparece sozinho na nova tela — não precisa fazer nada manualmente. Se tirar o "Pago" depois, o pagamento some junto.
+- Na tela, os filtros são cumulativos, nesta ordem: **Período** (Ano + Meses), depois **Pagamento** (texto) e depois **Recebedor** (texto) — vá refinando a busca aplicando um filtro de cada vez, se quiser.
+- Os pagamentos aparecem separados por mês (do mais recente pro mais antigo), com Pagamento, Referência, Recebedor, Pagador, Valor e Data do Pagamento — tudo preenchido sozinho a partir da conta, mas editável clicando em **Editar**. No fim de cada mês, aparece o total pago.
+- Mais abaixo na mesma tela, o **Relatório de Contas Pagas**: escolha Ano, Período (meses), Pagamento, Recebedor e Status, e clique em **"Gerar relatório (CSV)"** pra baixar uma planilha com o resultado.
+- Na tela de **Usuários**, a ordem agora é: lista de usuários primeiro, depois a tabela de permissões por nível, e por último o aviso sobre senhas.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

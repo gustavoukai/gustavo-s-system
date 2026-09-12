@@ -16,6 +16,7 @@ const LINKS_BASE = [
 const LINKS_RESTRITOS = [
   { href: '/checklist-financeiro', label: 'Checklist Financeiro' },
   { href: '/contas-a-pagar', label: 'Contas a Pagar' },
+  { href: '/pagamentos', label: 'Pagamentos' },
   { href: '/recebimentos', label: 'Recebimentos' },
   { href: '/relatorios', label: 'Relatórios' },
 ];
