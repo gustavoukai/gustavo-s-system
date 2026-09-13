@@ -5,6 +5,7 @@ import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
+import { BotaoEditarIcone } from '../components/Icones';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 
 const MESES = [
@@ -256,13 +257,13 @@ export default function Pagamentos() {
               <table className="data-table">
                 <thead>
                   <tr>
+                    {canEdit && <th></th>}
                     <th>Pagamento</th>
                     <th>Referência</th>
                     <th>Recebedor</th>
                     <th>Pagador</th>
                     <th>Valor</th>
                     <th>Data do pagamento</th>
-                    {canEdit && <th></th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -272,19 +273,17 @@ export default function Pagamentos() {
                       className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
                       onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
                     >
+                      {canEdit && (
+                        <td>
+                          <BotaoEditarIcone onClick={() => openEdit(item)} />
+                        </td>
+                      )}
                       <td>{item.pagamento || '—'}</td>
                       <td>{item.referencia || '—'}</td>
                       <td>{item.recebedor || '—'}</td>
                       <td>{item.pagador || '—'}</td>
                       <td>{formatMoney(item.valor)}</td>
                       <td>{item.data_pagamento || '—'}</td>
-                      {canEdit && (
-                        <td>
-                          <button className="btn-editar" onClick={() => openEdit(item)}>
-                            EDITAR
-                          </button>
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>

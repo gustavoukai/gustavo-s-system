@@ -860,3 +860,19 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 50 — Ícones de editar/apagar e destaque "não pago"
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Contas a Pagar**: linhas com status "Não pago" agora ficam com um fundo cinza bem clarinho (mais claro que o cinza da linha selecionada), do mesmo jeito que "Pago" já ficava em azul.
+- Em **todas as listas do sistema** (Clientes, Fornecedores, Projetos, Contas a Pagar, Pagamentos, Recebimentos, RH, Cobranças e Usuários), o botão "EDITAR" virou um ícone de lápis azul no início de cada linha, e o botão "Apagar" virou um ícone de lixeira vermelha no fim de cada linha — mantendo as mesmas permissões de sempre (só aparece pra quem pode editar ou apagar).
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

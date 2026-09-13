@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import { formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
 import TabelaRolavel from '../components/TabelaRolavel';
 
@@ -384,12 +385,12 @@ export default function Projetos() {
               <table className="data-table">
                 <thead>
                   <tr>
+                    {canEdit && <th></th>}
                     <th>Número</th>
                     <th>Nome do projeto</th>
                     <th>Cliente</th>
                     <th>Cadastrado/editado em</th>
                     <th></th>
-                    {canEdit && <th></th>}
                     {canDelete && <th></th>}
                   </tr>
                 </thead>
@@ -400,6 +401,11 @@ export default function Projetos() {
                       className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
                       onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
                     >
+                      {canEdit && (
+                        <td>
+                          <BotaoEditarIcone onClick={() => openEditForm(item)} />
+                        </td>
+                      )}
                       <td>{item.numero_projeto}</td>
                       <td>{item.nome}</td>
                       <td>{item.clientes?.nome || '—'}</td>
@@ -409,18 +415,9 @@ export default function Projetos() {
                           Visualizar
                         </button>
                       </td>
-                      {canEdit && (
-                        <td>
-                          <button className="btn-editar table-action-btn" onClick={() => openEditForm(item)}>
-                            EDITAR
-                          </button>
-                        </td>
-                      )}
                       {canDelete && (
                         <td>
-                          <button className="delete-link table-action-btn" onClick={() => handleDelete(item.id)}>
-                            Apagar
-                          </button>
+                          <BotaoApagarIcone onClick={() => handleDelete(item.id)} />
                         </td>
                       )}
                     </tr>

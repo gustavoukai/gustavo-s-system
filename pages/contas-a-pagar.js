@@ -5,6 +5,7 @@ import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
+import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import {
   formatParcela,
   formatDataCurta,
@@ -626,6 +627,7 @@ export default function ContasAPagar() {
                   <table className="data-table">
                     <thead>
                       <tr>
+                        {canEdit && <th></th>}
                         <th>Pagamento</th>
                         <th>Referência</th>
                         <th>Recebedor</th>
@@ -635,7 +637,6 @@ export default function ContasAPagar() {
                         <th>Data pagto.</th>
                         <th>Valor pago</th>
                         <th>Valor previsto</th>
-                        {canEdit && <th></th>}
                         {canDelete && <th></th>}
                       </tr>
                     </thead>
@@ -645,10 +646,16 @@ export default function ContasAPagar() {
                           key={item.id}
                           className={[
                             item.status === 'pago' ? 'linha-pago' : '',
+                            item.status === 'não pago' ? 'linha-nao-pago' : '',
                             linhaSelecionada === item.id ? 'linha-selecionada' : '',
                           ].join(' ').trim()}
                           onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
                         >
+                          {canEdit && (
+                            <td>
+                              <BotaoEditarIcone onClick={() => openEditForm(item)} />
+                            </td>
+                          )}
                           <td>{item.pagamento || '—'}</td>
                           <td>{labelReferencia(item)}</td>
                           <td>{item.recebedor || '—'}</td>
@@ -662,18 +669,9 @@ export default function ContasAPagar() {
                           <td>{item.data_pagamento || '—'}</td>
                           <td>{formatMoney(item.valor_pago)}</td>
                           <td>{formatMoney(item.valor_previsto)}</td>
-                          {canEdit && (
-                            <td>
-                              <button className="btn-editar" onClick={() => openEditForm(item)}>
-                                EDITAR
-                              </button>
-                            </td>
-                          )}
                           {canDelete && (
                             <td>
-                              <button className="delete-link" onClick={() => handleDelete(item.id)}>
-                                Apagar
-                              </button>
+                              <BotaoApagarIcone onClick={() => handleDelete(item.id)} />
                             </td>
                           )}
                         </tr>
@@ -681,6 +679,7 @@ export default function ContasAPagar() {
                     </tbody>
                     <tfoot>
                       <tr>
+                        {canEdit && <td></td>}
                         <td colSpan={7} style={{ textAlign: 'right', fontWeight: 700 }}>
                           Totais do mês:
                         </td>
@@ -690,7 +689,6 @@ export default function ContasAPagar() {
                         <td style={{ fontWeight: 700 }}>
                           {formatMoney(items.reduce((soma, i) => soma + (Number(i.valor_previsto) || 0), 0))}
                         </td>
-                        {canEdit && <td></td>}
                         {canDelete && <td></td>}
                       </tr>
                     </tfoot>

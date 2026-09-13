@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
 import { generateClientePdfBlob } from '../lib/clienteSnapshot';
@@ -839,11 +840,11 @@ export default function Clientes() {
               <table className="data-table">
                 <thead>
                   <tr>
+                    {canEdit && <th></th>}
                     <th>Nome</th>
                     <th>Projeto vinculado</th>
                     <th>Cadastrado/editado em</th>
                     <th></th>
-                    {canEdit && <th></th>}
                     {canDelete && <th></th>}
                   </tr>
                 </thead>
@@ -854,6 +855,11 @@ export default function Clientes() {
                       className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
                       onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
                     >
+                      {canEdit && (
+                        <td>
+                          <BotaoEditarIcone onClick={() => openEditForm(item)} />
+                        </td>
+                      )}
                       <td>{item.nome}</td>
                       <td>{(item.projetos || []).map((p) => `${p.numero_projeto} - ${p.nome}`).join(', ') || '—'}</td>
                       <td>{formatData(item.atualizado_em || item.created_at)}</td>
@@ -862,21 +868,9 @@ export default function Clientes() {
                           Visualizar
                         </button>
                       </td>
-                      {canEdit && (
-                        <td>
-                          <button
-                            className="btn-editar table-action-btn"
-                            onClick={() => openEditForm(item)}
-                          >
-                            EDITAR
-                          </button>
-                        </td>
-                      )}
                       {canDelete && (
                         <td>
-                          <button className="delete-link table-action-btn" onClick={() => handleDelete(item.id)}>
-                            Apagar
-                          </button>
+                          <BotaoApagarIcone onClick={() => handleDelete(item.id)} />
                         </td>
                       )}
                     </tr>

@@ -6,6 +6,7 @@ import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import TabelaRolavel from '../components/TabelaRolavel';
+import { BotaoEditarIcone } from '../components/Icones';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 import { formatParcelaLabel } from '../lib/cobrancaHelpers';
 
@@ -205,6 +206,7 @@ export default function Recebimentos() {
                       <table className="data-table">
                         <thead>
                           <tr>
+                            {canEdit && <th></th>}
                             <th>Data</th>
                             <th>Projeto</th>
                             <th>Fornecedor/Cliente</th>
@@ -215,7 +217,6 @@ export default function Recebimentos() {
                             <th>Valor</th>
                             <th>Nº NF</th>
                             <th>Observações</th>
-                            {canEdit && <th></th>}
                           </tr>
                         </thead>
                         <tbody>
@@ -225,6 +226,11 @@ export default function Recebimentos() {
                               className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
                               onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
                             >
+                              {canEdit && (
+                                <td>
+                                  <BotaoEditarIcone onClick={() => openEdit(item)} />
+                                </td>
+                              )}
                               <td>{item.data || '—'}</td>
                               <td>
                                 {item.projetos
@@ -241,13 +247,6 @@ export default function Recebimentos() {
                               <td>{formatMoney(item.valor)}</td>
                               <td>{item.nf_numero || '—'}</td>
                               <td>{item.observacoes || '—'}</td>
-                              {canEdit && (
-                                <td>
-                                  <button className="btn-editar" onClick={() => openEdit(item)}>
-                                    EDITAR
-                                  </button>
-                                </td>
-                              )}
                             </tr>
                           ))}
                         </tbody>

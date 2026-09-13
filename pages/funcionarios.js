@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
+import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import TabelaRolavel from '../components/TabelaRolavel';
 import {
   formatCPF,
@@ -582,11 +583,11 @@ export default function Funcionarios() {
             <table className="data-table">
               <thead>
                 <tr>
+                  <th></th>
                   <th>Nome</th>
                   <th>Cargo</th>
                   <th>Celular</th>
                   <th>Cadastrado/editado em</th>
-                  <th></th>
                   <th></th>
                   <th></th>
                 </tr>
@@ -598,6 +599,9 @@ export default function Funcionarios() {
                     className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}
                     onClick={() => setLinhaSelecionada(linhaSelecionada === item.id ? null : item.id)}
                   >
+                    <td>
+                      <BotaoEditarIcone onClick={() => openEditForm(item)} />
+                    </td>
                     <td>{item.nome}</td>
                     <td>{item.cargo || '—'}</td>
                     <td>{item.celular1 || '—'}</td>
@@ -608,14 +612,7 @@ export default function Funcionarios() {
                       </button>
                     </td>
                     <td>
-                      <button className="btn-editar table-action-btn" onClick={() => openEditForm(item)}>
-                        EDITAR
-                      </button>
-                    </td>
-                    <td>
-                      <button className="delete-link table-action-btn" onClick={() => handleDelete(item.id)}>
-                        Apagar
-                      </button>
+                      <BotaoApagarIcone onClick={() => handleDelete(item.id)} />
                     </td>
                   </tr>
                 ))}

@@ -4,6 +4,7 @@ import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
+import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 import {
   CATEGORIA_CLIENTE,
@@ -505,15 +506,9 @@ export default function Cobrancas() {
               </p>
             )}
             {canEdit && (
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button className="btn-editar" onClick={() => openEditForm(item)}>
-                  EDITAR
-                </button>
-                {canDelete && (
-                  <button className="delete-link" onClick={() => handleDelete(item.id)}>
-                    Apagar
-                  </button>
-                )}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <BotaoEditarIcone onClick={() => openEditForm(item)} />
+                {canDelete && <BotaoApagarIcone onClick={() => handleDelete(item.id)} />}
               </div>
             )}
           </div>

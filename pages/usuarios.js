@@ -4,6 +4,7 @@ import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
+import { BotaoEditarIcone } from '../components/Icones';
 
 const ROLES = [
   { valor: 'visualizante', label: 'Visualizante' },
@@ -317,9 +318,7 @@ export default function Usuarios() {
                         </button>
                       </td>
                       <td>
-                        <button className="btn-editar" onClick={() => openEdit(u)}>
-                          EDITAR
-                        </button>
+                        <BotaoEditarIcone onClick={() => openEdit(u)} />
                       </td>
                     </>
                   )}
