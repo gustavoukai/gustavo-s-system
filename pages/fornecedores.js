@@ -712,9 +712,9 @@ export default function Fornecedores() {
                       <th></th>
                       <th>Vendedor</th>
                       <th>Financeiro</th>
-                      <th>Cadastrado/editado em</th>
                       <th></th>
                       {canDelete && <th></th>}
+                      <th>Cadastrado/editado em</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -739,7 +739,6 @@ export default function Fornecedores() {
                           {item.financeiro || '—'}
                           {item.telefone_financeiro ? ` — ${item.telefone_financeiro}` : ''}
                         </td>
-                        <td>{formatData(item.atualizado_em || item.created_at)}</td>
                         <td>
                           <button className="btn-secondary table-action-btn" onClick={() => openViewForm(item)}>
                             Visualizar
@@ -750,6 +749,7 @@ export default function Fornecedores() {
                             <BotaoApagarIcone onClick={() => handleDelete(item.id)} />
                           </td>
                         )}
+                        <td>{formatData(item.atualizado_em || item.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>

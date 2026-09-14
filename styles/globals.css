@@ -488,6 +488,10 @@ table.data-table {
   margin-bottom: 0;
 }
 
+.filters-bar .dropdown-select {
+  margin-bottom: 0;
+}
+
 .empty-hint {
   color: var(--muted);
   font-size: 13px;

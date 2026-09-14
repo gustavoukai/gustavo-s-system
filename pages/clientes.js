@@ -843,9 +843,9 @@ export default function Clientes() {
                     {canEdit && <th></th>}
                     <th>Nome</th>
                     <th>Projeto vinculado</th>
-                    <th>Cadastrado/editado em</th>
                     <th></th>
                     {canDelete && <th></th>}
+                    <th>Cadastrado/editado em</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -862,7 +862,6 @@ export default function Clientes() {
                       )}
                       <td>{item.nome}</td>
                       <td>{(item.projetos || []).map((p) => `${p.numero_projeto} - ${p.nome}`).join(', ') || '—'}</td>
-                      <td>{formatData(item.atualizado_em || item.created_at)}</td>
                       <td>
                         <button className="btn-secondary table-action-btn" onClick={() => openViewForm(item)}>
                           Visualizar
@@ -873,6 +872,7 @@ export default function Clientes() {
                           <BotaoApagarIcone onClick={() => handleDelete(item.id)} />
                         </td>
                       )}
+                      <td>{formatData(item.atualizado_em || item.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>

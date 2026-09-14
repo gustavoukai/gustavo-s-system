@@ -4,7 +4,7 @@ import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
-import { BotaoEditarIcone } from '../components/Icones';
+import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 
 const ROLES = [
   { valor: 'visualizante', label: 'Visualizante' },
@@ -139,6 +139,32 @@ export default function Usuarios() {
     setNovaSenha('');
   }
 
+  async function handleDelete(usuario) {
+    if (!confirm(`Apagar o usuário ${usuario.email}? Essa ação não pode ser desfeita.`)) return;
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const response = await fetch('/api/apagar-usuario', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ userId: usuario.id }),
+    });
+
+    const resultado = await response.json();
+
+    if (!response.ok) {
+      alert(resultado.error || 'Não foi possível apagar o usuário.');
+      return;
+    }
+
+    loadUsuarios();
+  }
+
   if (loading) {
     return (
       <div className="page-center">
@@ -246,6 +272,7 @@ export default function Usuarios() {
                 <th>Nível</th>
                 <th></th>
                 <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -276,7 +303,7 @@ export default function Usuarios() {
                           ))}
                         </select>
                       </td>
-                      <td colSpan={2}>
+                      <td colSpan={3}>
                         <button className="btn-editar" onClick={() => salvarEdicao(u.id)}>
                           SALVAR
                         </button>
@@ -290,7 +317,7 @@ export default function Usuarios() {
                       <td>{u.nome || '—'}</td>
                       <td>{u.email}</td>
                       <td>{ROLES.find((r) => r.valor === u.role)?.label || u.role}</td>
-                      <td colSpan={2}>
+                      <td colSpan={3}>
                         <input
                           type="text"
                           value={novaSenha}
@@ -319,6 +346,9 @@ export default function Usuarios() {
                       </td>
                       <td>
                         <BotaoEditarIcone onClick={() => openEdit(u)} />
+                      </td>
+                      <td>
+                        <BotaoApagarIcone onClick={() => handleDelete(u)} />
                       </td>
                     </>
                   )}

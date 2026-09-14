@@ -587,9 +587,9 @@ export default function Funcionarios() {
                   <th>Nome</th>
                   <th>Cargo</th>
                   <th>Celular</th>
+                  <th></th>
+                  <th></th>
                   <th>Cadastrado/editado em</th>
-                  <th></th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -605,7 +605,6 @@ export default function Funcionarios() {
                     <td>{item.nome}</td>
                     <td>{item.cargo || '—'}</td>
                     <td>{item.celular1 || '—'}</td>
-                    <td>{formatData(item.atualizado_em || item.created_at)}</td>
                     <td>
                       <button className="btn-secondary table-action-btn" onClick={() => openViewForm(item)}>
                         Visualizar
@@ -614,6 +613,7 @@ export default function Funcionarios() {
                     <td>
                       <BotaoApagarIcone onClick={() => handleDelete(item.id)} />
                     </td>
+                    <td>{formatData(item.atualizado_em || item.created_at)}</td>
                   </tr>
                 ))}
               </tbody>

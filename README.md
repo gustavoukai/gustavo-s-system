@@ -876,3 +876,20 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 51 — Apagar usuário, ordem da coluna de data, alinhamento em Recebimentos
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Usuários**: agora tem um botão de apagar (ícone de lixeira) em cada usuário da lista. Por segurança, você não consegue apagar o seu próprio usuário logado. A ordem da página (lista → tabela de permissões → aviso de senhas) já estava certa desde a Parte 47 — se não parecia assim, dá uma conferida depois de atualizar.
+- **Projetos, Clientes, Fornecedores e RH**: a coluna "Cadastrado/editado em" agora aparece por último, depois do botão de apagar.
+- **Recebimentos**: corrigido o desalinhamento do campo "Meses" (estava com uma margem a mais que os outros campos da barra de filtro).
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
