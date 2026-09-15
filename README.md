@@ -893,3 +893,19 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 52 — Filtro por período em Pagamentos, correção do CSV
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Pagamentos**: agora tem dois botões no topo — **"Mês completo"** (como já era) e **"Período específico"**, onde você escolhe uma data de início e uma data de fim (o seletor de data já mostra no formato DD/MM/AAAA do seu navegador). Se o período cair em mais de um mês, a lista aparece separada por mês, do mais recente pro mais antigo, cada um com seu total.
+- **Relatório em CSV** (tanto o de Contas Pagas quanto o de Relatórios): corrigido o problema de todas as informações caindo numa única célula ao abrir no Excel. A causa era o separador usado (vírgula) — o Excel em português espera ponto-e-vírgula, já que a vírgula ali é o separador decimal. Já ajustei os dois relatórios pra usar o separador certo. Campos em branco continuam aparecendo em branco.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

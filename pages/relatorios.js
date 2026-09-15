@@ -83,18 +83,20 @@ export default function Relatorios() {
     ];
 
     const rows = items.map((item) => [
-      item.tipo,
-      item.valor,
-      item.data,
-      item.status,
+      item.tipo ?? '',
+      item.valor ?? '',
+      item.data ?? '',
+      item.status ?? '',
       item.clientes?.nome || '',
       item.fornecedores?.nome || '',
       item.projetos?.nome || '',
       item.programa_fidelidade || '',
-      (item.descricao || '').replace(/,/g, ';'),
+      (item.descricao || '').replace(/;/g, ','),
     ]);
 
-    const csvContent = [header, ...rows].map((row) => row.join(',')).join('\n');
+    // Ponto-e-vírgula como separador: é o que o Excel em português espera
+    // (já que a vírgula ali é usada como separador decimal).
+    const csvContent = [header, ...rows].map((row) => row.join(';')).join('\n');
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
