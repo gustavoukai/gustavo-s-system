@@ -138,6 +138,38 @@ export default function Fornecedores() {
   const [filtroCategoria, setFiltroCategoria] = useState('Todos');
   const [filtroFidelidade, setFiltroFidelidade] = useState('Todos');
 
+  const [categoriasDisponiveis, setCategoriasDisponiveis] = useState(CATEGORIAS);
+  const [novaCategoria, setNovaCategoria] = useState('');
+  const [erroNovaCategoria, setErroNovaCategoria] = useState('');
+
+  async function loadCategorias() {
+    const { data } = await supabase.from('fornecedores_categorias').select('nome').order('nome');
+    if (data && data.length > 0) {
+      setCategoriasDisponiveis(data.map((c) => c.nome).sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    }
+  }
+
+  async function adicionarNovaCategoria() {
+    const nome = novaCategoria.trim();
+    if (!nome) return;
+
+    if (categoriasDisponiveis.some((c) => c.toLowerCase() === nome.toLowerCase())) {
+      setErroNovaCategoria('Essa categoria já existe.');
+      return;
+    }
+
+    const { error: insertError } = await supabase.from('fornecedores_categorias').insert([{ nome }]);
+    if (insertError) {
+      setErroNovaCategoria('Não foi possível adicionar. Tente novamente.');
+      return;
+    }
+
+    setErroNovaCategoria('');
+    setNovaCategoria('');
+    await loadCategorias();
+    toggleCategoria(nome);
+  }
+
   async function loadItems() {
     const { data } = await supabase.from('fornecedores').select('*').order('nome');
     setItems(data || []);
@@ -155,6 +187,7 @@ export default function Fornecedores() {
     if (!loading) {
       loadItems();
       loadProjetos();
+      loadCategorias();
     }
   }, [loading]);
 
@@ -455,12 +488,37 @@ export default function Fornecedores() {
                 </span>
               </label>
               <MultiSelectDropdown
-                options={CATEGORIAS.map((cat) => ({ value: cat, label: cat }))}
+                options={categoriasDisponiveis.map((cat) => ({ value: cat, label: cat }))}
                 selected={categorias}
                 onToggle={toggleCategoria}
                 placeholder="Selecione as categorias..."
                 searchable
               />
+
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <input
+                    value={novaCategoria}
+                    onChange={(e) => {
+                      setNovaCategoria(e.target.value);
+                      setErroNovaCategoria('');
+                    }}
+                    placeholder="Não achou a categoria? Digite o nome dela aqui..."
+                    style={{ marginBottom: 0 }}
+                  />
+                  {erroNovaCategoria && (
+                    <p style={{ color: 'var(--danger)', fontSize: 12, marginTop: 4 }}>{erroNovaCategoria}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ whiteSpace: 'nowrap' }}
+                  onClick={adicionarNovaCategoria}
+                >
+                  + Adicionar categoria
+                </button>
+              </div>
             </div>
 
             <div style={{ marginTop: 18 }}>
@@ -661,7 +719,7 @@ export default function Fornecedores() {
                 <label>Categoria</label>
                 <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)}>
                   <option value="Todos">Todos</option>
-                  {CATEGORIAS.map((cat) => (
+                  {categoriasDisponiveis.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>

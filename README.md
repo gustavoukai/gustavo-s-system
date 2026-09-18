@@ -909,3 +909,20 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 53 — Adicionar categoria de fornecedor direto no site
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-categorias-fornecedores.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"** (isso guarda no banco todas as categorias que já existiam, então nada se perde).
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**Como funciona:**
+- No cadastro de Fornecedores, embaixo do campo "Categoria", agora tem um campo de texto com o botão **"+ Adicionar categoria"**. Digite o nome da categoria nova e clique — ela é criada, já fica marcada no fornecedor que você está cadastrando, e passa a aparecer pra escolher em todos os cadastros seguintes (e no filtro da lista também). Não precisa mais me pedir isso por aqui.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
