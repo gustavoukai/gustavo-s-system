@@ -24,6 +24,7 @@ const emptyForm = {
 export default function Projetos() {
   const { loading, canEdit, canDelete } = useAuth();
   const [items, setItems] = useState([]);
+  const [busca, setBusca] = useState('');
   const [clientes, setClientes] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -204,12 +205,32 @@ export default function Projetos() {
     );
   }
 
+  const itemsFiltrados = items.filter((item) => {
+    if (!busca.trim()) return true;
+    const alvo = [item.numero_projeto, item.nome, item.clientes?.nome]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    return alvo.includes(busca.trim().toLowerCase());
+  });
+
   return (
     <div className="wide-page">
       <div className="wide-page-inner">
         <Nav />
 
         <h1 style={{ marginBottom: 18 }}>Projetos</h1>
+
+        <div className="filters-bar">
+          <div>
+            <label>Buscar</label>
+            <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Número, nome do projeto ou cliente..."
+            />
+          </div>
+        </div>
 
         {canEdit && !showForm && (
           <button
@@ -379,8 +400,10 @@ export default function Projetos() {
 
         {!showForm && (
           <TabelaRolavel>
-            {items.length === 0 ? (
-              <p className="empty-hint">Nenhum projeto cadastrado ainda.</p>
+            {itemsFiltrados.length === 0 ? (
+              <p className="empty-hint">
+                {items.length === 0 ? 'Nenhum projeto cadastrado ainda.' : 'Nenhum projeto encontrado com essa busca.'}
+              </p>
             ) : (
               <table className="data-table">
                 <thead>
@@ -395,7 +418,7 @@ export default function Projetos() {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item) => (
+                  {itemsFiltrados.map((item) => (
                     <tr
                       key={item.id}
                       className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}

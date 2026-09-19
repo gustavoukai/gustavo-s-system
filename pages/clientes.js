@@ -69,6 +69,7 @@ const emptyForm = {
 export default function Clientes() {
   const { loading, canEdit, canDelete } = useAuth();
   const [items, setItems] = useState([]);
+  const [busca, setBusca] = useState('');
   const [projetos, setProjetos] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -302,12 +303,35 @@ export default function Clientes() {
     );
   }
 
+  const itemsFiltrados = items.filter((item) => {
+    if (!busca.trim()) return true;
+    const alvo = [
+      item.nome,
+      ...(item.projetos || []).map((p) => `${p.numero_projeto} ${p.nome}`),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    return alvo.includes(busca.trim().toLowerCase());
+  });
+
   return (
     <div className="wide-page">
       <div className="wide-page-inner">
         <Nav />
 
         <h1 style={{ marginBottom: 18 }}>Clientes</h1>
+
+        <div className="filters-bar">
+          <div>
+            <label>Buscar</label>
+            <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Nome ou projeto vinculado..."
+            />
+          </div>
+        </div>
 
         {canEdit && !showForm && (
           <button
@@ -834,8 +858,10 @@ export default function Clientes() {
 
         {!showForm && (
           <TabelaRolavel>
-            {items.length === 0 ? (
-              <p className="empty-hint">Nenhum cliente cadastrado ainda.</p>
+            {itemsFiltrados.length === 0 ? (
+              <p className="empty-hint">
+                {items.length === 0 ? 'Nenhum cliente cadastrado ainda.' : 'Nenhum cliente encontrado com essa busca.'}
+              </p>
             ) : (
               <table className="data-table">
                 <thead>
@@ -849,7 +875,7 @@ export default function Clientes() {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item) => (
+                  {itemsFiltrados.map((item) => (
                     <tr
                       key={item.id}
                       className={linhaSelecionada === item.id ? 'linha-selecionada' : ''}

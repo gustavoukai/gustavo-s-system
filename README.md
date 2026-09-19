@@ -926,3 +926,19 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 54 — Busca em Clientes e Projetos
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Clientes**: novo campo de busca no topo da lista, que procura pelo nome do cliente e pelo nome/número do projeto vinculado.
+- **Projetos**: novo campo de busca no topo da lista, que procura pelo número do projeto, nome do projeto e nome do cliente.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
