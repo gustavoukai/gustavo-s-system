@@ -297,6 +297,41 @@ export default function Cobrancas() {
     const tipo = form.fornecedorSelecao === 'Cliente' ? 'cliente' : 'fornecedor';
     const fornecedorId = tipo === 'fornecedor' ? form.fornecedorSelecao : null;
 
+    if (!editingId) {
+      const valorChecagem = form.pagamento_valor
+        ? parseValorComCentavos(form.pagamento_valor)
+        : form.pedido_valor
+        ? parseValorComCentavos(form.pedido_valor)
+        : null;
+      const projetoChecagem = formularioAvulso ? form.projetoSelecionadoId : projetoAtual?.id;
+
+      if (valorChecagem != null && projetoChecagem) {
+        const fornecedorFiltro = fornecedorId ? `fornecedor_id.eq.${fornecedorId}` : 'fornecedor_id.is.null';
+        const { data: cobrancasComValor } = await supabase
+          .from('cobrancas')
+          .select('id, pagamento_valor, pedido_valor')
+          .eq('projeto_id', projetoChecagem)
+          .eq('fornecedor_tipo', tipo)
+          .eq('categoria', form.categoria)
+          .or(fornecedorFiltro);
+
+        const temDuplicado = (cobrancasComValor || []).some(
+          (c) => c.pagamento_valor === valorChecagem || c.pedido_valor === valorChecagem
+        );
+
+        if (temDuplicado) {
+          if (
+            !confirm(
+              'Já existe uma cobrança cadastrada neste projeto com o mesmo fornecedor/cliente, categoria e valor. Deseja cadastrar mesmo assim?'
+            )
+          ) {
+            setSaving(false);
+            return;
+          }
+        }
+      }
+    }
+
     const basePayload = {
       fornecedor_tipo: tipo,
       fornecedor_id: fornecedorId,

@@ -144,6 +144,15 @@ export default function Projetos() {
       return;
     }
 
+    let queryDuplicado = supabase.from('projetos').select('id').ilike('nome', form.nome.trim());
+    if (editingId) queryDuplicado = queryDuplicado.neq('id', editingId);
+    const { data: duplicados } = await queryDuplicado;
+    if (duplicados && duplicados.length > 0) {
+      if (!confirm(`Já existe um projeto cadastrado com o nome "${form.nome.trim()}". Deseja cadastrar mesmo assim?`)) {
+        return;
+      }
+    }
+
     setSaving(true);
     setError('');
 
@@ -449,6 +458,16 @@ export default function Projetos() {
               </table>
             )}
           </TabelaRolavel>
+        )}
+
+        {canEdit && !showForm && (
+          <button
+            type="button"
+            onClick={openNewForm}
+            style={{ width: 'auto', padding: '10px 18px', marginTop: 20 }}
+          >
+            + Novo Projeto
+          </button>
         )}
 
         <Rodape />

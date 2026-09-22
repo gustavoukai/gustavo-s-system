@@ -268,6 +268,15 @@ export default function Fornecedores() {
       return;
     }
 
+    let queryDuplicado = supabase.from('fornecedores').select('id').ilike('nome', form.nome.trim());
+    if (editingId) queryDuplicado = queryDuplicado.neq('id', editingId);
+    const { data: duplicados } = await queryDuplicado;
+    if (duplicados && duplicados.length > 0) {
+      if (!confirm(`Já existe um fornecedor cadastrado com o nome "${form.nome.trim()}". Deseja cadastrar mesmo assim?`)) {
+        return;
+      }
+    }
+
     setSaving(true);
     setError('');
 
@@ -814,6 +823,16 @@ export default function Fornecedores() {
                 </table>
               )}
             </TabelaRolavel>
+
+            {canEdit && (
+              <button
+                type="button"
+                onClick={openNewForm}
+                style={{ width: 'auto', padding: '10px 18px', marginTop: 20 }}
+              >
+                + Novo Fornecedor
+              </button>
+            )}
           </>
         )}
 

@@ -942,3 +942,23 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 55 — Botões no fim das listas e avisos de possível duplicidade
+
+1. Não precisa rodar nada no Supabase.
+2. No **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+3. Espere 1-2 minutos.
+
+**O que mudou:**
+- **Clientes, Fornecedores e Projetos**: agora também tem o botão de cadastrar novo no final da lista, abaixo do último item (além do que já existia no topo).
+- **Avisos de possível duplicidade**: ao salvar um novo cadastro, o sistema confere se já existe algo parecido e mostra um aviso antes de salvar (você decide se quer continuar mesmo assim ou cancelar):
+  - **Clientes, Fornecedores e Projetos**: avisa se já existe um registro com o **mesmo nome**.
+  - **Contas a Pagar**: avisa se já existe uma conta com o **mesmo nome de pagamento e o mesmo valor previsto**, no mesmo mês.
+  - **Cobranças**: avisa se já existe uma cobrança no **mesmo projeto**, com o **mesmo fornecedor/cliente, categoria e valor**.
+- Esses avisos só aparecem ao **cadastrar algo novo** (não ao editar um já existente), e nunca bloqueiam o cadastro — é só um alerta pra você confirmar que realmente quer duplicar.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.

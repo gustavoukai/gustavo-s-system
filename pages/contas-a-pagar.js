@@ -193,6 +193,27 @@ export default function ContasAPagar() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (!editingId && form.pagamento && form.valor_previsto) {
+      const valorPrevistoChecagem = parseValorComCentavos(form.valor_previsto);
+      const { data: duplicados } = await supabase
+        .from('contas_pagar')
+        .select('id')
+        .eq('ano', anoSelecionado)
+        .eq('mes', mesSelecionado)
+        .ilike('pagamento', form.pagamento.trim())
+        .eq('valor_previsto', valorPrevistoChecagem);
+      if (duplicados && duplicados.length > 0) {
+        if (
+          !confirm(
+            `Já existe uma conta chamada "${form.pagamento.trim()}" com o mesmo valor previsto neste mês. Deseja cadastrar mesmo assim?`
+          )
+        ) {
+          return;
+        }
+      }
+    }
+
     setSaving(true);
     setError('');
 
