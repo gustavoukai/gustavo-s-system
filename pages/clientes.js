@@ -5,12 +5,15 @@ import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
-import { formatCPF, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
+import { formatCPF, formatCNPJ, formatRG, formatPhone, formatCEP, onlyDigits, buscarEnderecoPorCep } from '../lib/masks';
 import { generateClientePdfBlob } from '../lib/clienteSnapshot';
 import TabelaRolavel from '../components/TabelaRolavel';
 
 const emptyForm = {
   nome: '',
+  nome_razao_social: '',
+  cnpj: '',
+  atividade: '',
   cpf: '',
   rg: '',
   data_nascimento: '',
@@ -394,6 +397,28 @@ export default function Clientes() {
                   </span>
                 </label>
                 <input required value={form.nome} onChange={(e) => updateField('nome', e.target.value)} />
+              </div>
+            </div>
+            <div className="form-grid">
+              <div>
+                <label>Nome completo ou Razão Social</label>
+                <input
+                  value={form.nome_razao_social}
+                  onChange={(e) => updateField('nome_razao_social', e.target.value)}
+                />
+              </div>
+              <div>
+                <label>CNPJ</label>
+                <input
+                  value={form.cnpj}
+                  onChange={(e) => updateMaskedField('cnpj', e.target.value, formatCNPJ)}
+                  placeholder="00.000.000/0000-00"
+                  inputMode="numeric"
+                />
+              </div>
+              <div>
+                <label>Atividade</label>
+                <input value={form.atividade} onChange={(e) => updateField('atividade', e.target.value)} />
               </div>
             </div>
             <div className="form-grid">

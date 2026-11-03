@@ -225,7 +225,10 @@ export default function Usuarios() {
                 <input value={form.nome} onChange={(e) => updateField('nome', e.target.value)} />
               </div>
               <div>
-                <label>E-mail (campo obrigatório)</label>
+                <label>
+                  E-mail <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                  <span style={{ fontWeight: 400, color: 'var(--muted)', fontSize: 11 }}>(campo obrigatório)</span>
+                </label>
                 <input
                   type="email"
                   required
@@ -234,7 +237,10 @@ export default function Usuarios() {
                 />
               </div>
               <div>
-                <label>Senha provisória (campo obrigatório)</label>
+                <label>
+                  Senha provisória <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                  <span style={{ fontWeight: 400, color: 'var(--muted)', fontSize: 11 }}>(campo obrigatório)</span>
+                </label>
                 <input
                   type="text"
                   required

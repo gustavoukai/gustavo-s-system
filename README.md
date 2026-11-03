@@ -962,3 +962,40 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 ## Se algo der errado
 
 Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 56 — Novos campos em Clientes (razão social, CNPJ, atividade)
+
+1. Volte ao **Supabase** → **"SQL Editor"** → **"New query"**.
+2. Abra o arquivo **`supabase-setup-clientes-parte56.sql`**, copie tudo e cole na tela.
+3. Clique em **"Run"**.
+4. Atualize o site: no **GitHub**, **"Add file"** → **"Upload files"**, arraste todos os arquivos e pastas da nova versão, **"Commit changes"**.
+5. Espere 1-2 minutos.
+
+**O que mudou:**
+- Na seção **"Dados do cliente"**, logo depois do campo "Nome" (que continua obrigatório, sem mudanças), três campos novos: **"Nome completo ou Razão Social"**, **CNPJ** (só dígitos, formata sozinho) e **Atividade**.
+
+## Se algo der errado
+
+Me mande uma mensagem descrevendo em que passo você travou (pode até ser um print da tela) e eu te ajudo a resolver.
+
+---
+
+## PARTE 57 — Login com olho, obrigatórios, parcelas automáticas, edição de parcelas, planilha de Cobranças
+
+**Esta entrega é o pacote COMPLETO** (uma vez só, pra garantir que o GitHub fique igualzinho ao meu). A partir da próxima, só virão os arquivos que mudaram.
+
+1. **Supabase → SQL Editor → New query**: rode, nesta ordem (cada um numa consulta nova):
+   - `supabase-setup-clientes-parte56.sql` (só se você ainda não tinha rodado — é seguro rodar de novo);
+   - `supabase-setup-parte57.sql`.
+2. **GitHub → Add file → Upload files**: abra a pasta `sistema-web` que está dentro do zip e arraste o CONTEÚDO dela (não a pasta de fora). Depois **Commit changes**.
+3. Espere o deploy na Vercel ficar **Ready**. Desta vez o site instala uma biblioteca nova (para gerar o Excel), então o deploy pode levar um pouco mais.
+
+**O que mudou:**
+- **Login**: botão de olho dentro do campo de senha — aberto mostra os caracteres, fechado volta a ocultar.
+- **Campos obrigatórios**: "Categoria" em Cobranças agora tem o asterisco vermelho e o aviso. Revisei todos os cadastros (Clientes, Fornecedores, Projetos, RH, Cobranças, Usuários): o único outro ponto era Usuários (e-mail e senha tinham o texto mas não o asterisco) — corrigido. Contas a Pagar não tem nenhum campo obrigatório.
+- **Cobranças — parcelas**: ao informar o valor do pedido e mais de 1 parcela, o valor do pagamento é preenchido sozinho (pedido ÷ parcelas; os centavos que sobrarem vão na última parcela). Você ainda pode alterar o valor manualmente.
+- **Cobranças — editar parcelada**: ao clicar no lápis de uma cobrança com mais de uma parcela, abre uma pergunta: editar só aquela parcela, ou a cobrança como um todo. "Como um todo" abre uma janela com categoria, pedido, fidelidade e observações, valendo para todas as parcelas (com a opção de recalcular o valor das parcelas ainda não pagas).
+- **Cobranças — planilha**: botão **"Baixar planilha (Excel)"** nas listas (tela inicial, por projeto, por fornecedor e por período) gera um .xlsx só com as cobranças visíveis: projeto, cliente/fornecedor, categoria, parcela, valor e previsão.
+- **Correção**: o lápis de editar cobrança nas telas "por fornecedor" e "por período" não abria o formulário; agora abre.

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import Rodape from '../components/Rodape';
+import { IconeOlhoAberto, IconeOlhoFechado } from '../components/Icones';
 
 export default function Login() {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -62,14 +64,27 @@ export default function Login() {
         />
 
         <label htmlFor="password">Senha</label>
-        <input
-          id="password"
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-        />
+        <div style={{ position: 'relative', marginBottom: 18 }}>
+          <input
+            id="password"
+            type={mostrarSenha ? 'text' : 'password'}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            style={{ marginBottom: 0, paddingRight: 46 }}
+          />
+          <button
+            type="button"
+            className="icon-btn"
+            title={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+            aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+            onClick={() => setMostrarSenha((v) => !v)}
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }}
+          >
+            {mostrarSenha ? <IconeOlhoFechado /> : <IconeOlhoAberto />}
+          </button>
+        </div>
 
         <button type="submit" disabled={loading}>
           {loading ? 'Entrando...' : 'Entrar'}

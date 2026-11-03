@@ -15,6 +15,27 @@ import {
   calcPercentual,
 } from '../lib/cobrancaHelpers';
 
+// Divide o valor do pedido pelo nº de parcelas (só quando há mais de 1 parcela).
+// Devolve o texto no formato do campo (ex: "1000,00") ou null.
+function valorPorParcelaTexto(pedidoRaw, parcelasRaw) {
+  const total = parseValorComCentavos(pedidoRaw);
+  const n = Math.max(parseInt(parcelasRaw, 10) || 1, 1);
+  if (total == null || n <= 1) return null;
+  const base = Math.floor(Math.round(total * 100) / n);
+  return (base / 100).toFixed(2).replace('.', ',');
+}
+
+const estiloOverlay = {
+  position: 'fixed',
+  inset: 0,
+  background: 'rgba(0,0,0,0.35)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 50,
+  padding: 20,
+};
+
 const emptyForm = {
   projetoSelecionadoId: '',
   fornecedorSelecao: '',
@@ -49,6 +70,12 @@ export default function Cobrancas() {
   const [periodoFim, setPeriodoFim] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [formularioAvulso, setFormularioAvulso] = useState(false);
+  const [pagamentoAuto, setPagamentoAuto] = useState(false);
+  const [escolhaEdicao, setEscolhaEdicao] = useState(null);
+  const [editandoTodas, setEditandoTodas] = useState(null);
+  const [formTodas, setFormTodas] = useState({});
+  const [salvandoTodas, setSalvandoTodas] = useState(false);
+  const [erroTodas, setErroTodas] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -218,9 +245,25 @@ export default function Cobrancas() {
     }));
   }
 
+  function updateFieldComDivisao(field, value) {
+    const novo = { ...form, [field]: value };
+    if (!editingId) {
+      const calculado = valorPorParcelaTexto(novo.pedido_valor, novo.parcelas);
+      if (calculado && (!form.pagamento_valor || pagamentoAuto)) {
+        novo.pagamento_valor = calculado;
+        setPagamentoAuto(true);
+      } else if (!calculado && pagamentoAuto) {
+        novo.pagamento_valor = '';
+        setPagamentoAuto(false);
+      }
+    }
+    setForm(novo);
+  }
+
   function openNewForm() {
     setEditingId(null);
     setForm(emptyForm);
+    setPagamentoAuto(false);
     setError('');
     setFormularioAvulso(false);
     setShowForm(true);
@@ -229,6 +272,7 @@ export default function Cobrancas() {
   function abrirNovaCobrancaAvulsa() {
     setEditingId(null);
     setForm(emptyForm);
+    setPagamentoAuto(false);
     setError('');
     setFormularioAvulso(true);
     setShowForm(true);
@@ -266,6 +310,7 @@ export default function Cobrancas() {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
+    setPagamentoAuto(false);
     setError('');
     setFormularioAvulso(false);
   }
@@ -273,6 +318,7 @@ export default function Cobrancas() {
   function handleLimpar() {
     if (!confirm('Tem certeza que quer limpar todas as informações inseridas?')) return;
     setForm(emptyForm);
+    setPagamentoAuto(false);
     setError('');
   }
 
@@ -286,7 +332,7 @@ export default function Cobrancas() {
       (formularioAvulso && !form.projetoSelecionadoId)
     ) {
       setError(
-        'Preencha os campos obrigatórios antes de salvar: Projeto (se estiver cadastrando avulso), Cliente/Fornecedor e Status do Pagamento.'
+        'Preencha os campos obrigatórios antes de salvar: Projeto (se estiver cadastrando avulso), Cliente/Fornecedor, Categoria e Status do Pagamento.'
       );
       return;
     }
@@ -372,9 +418,23 @@ export default function Cobrancas() {
       const totalParcelas = Math.max(parseInt(form.parcelas, 10) || 1, 1);
       const percentual = calcPercentual(totalParcelas);
       const registros = [];
+      // Se o valor do pagamento foi calculado automaticamente (pedido ÷ parcelas), distribui
+      // os centavos que sobrarem na última parcela, pra a soma bater certinho com o pedido.
+      const totalCentavos =
+        pagamentoAuto && form.pedido_valor && totalParcelas > 1
+          ? Math.round(parseValorComCentavos(form.pedido_valor) * 100)
+          : null;
+      const grupoId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : null;
+
       for (let i = 1; i <= totalParcelas; i++) {
+        const valorDaParcela =
+          totalCentavos != null
+            ? (Math.floor(totalCentavos / totalParcelas) + (i === totalParcelas ? totalCentavos % totalParcelas : 0)) / 100
+            : basePayload.pagamento_valor;
         registros.push({
           ...basePayload,
+          pagamento_valor: valorDaParcela,
+          grupo_id: totalParcelas > 1 ? grupoId : null,
           projeto_id: formularioAvulso ? form.projetoSelecionadoId : projetoAtual.id,
           parcela_atual: i,
           parcela_total: totalParcelas,
@@ -407,13 +467,172 @@ export default function Cobrancas() {
 
     setSaving(false);
     handleCancelar();
-    if (view === 'projeto') {
-      loadCobrancasPorProjeto(projetoAtual.id);
-    } else {
-      loadDestaques();
-      setView('menu');
-    }
+    recarregarListaAtual();
   }
+
+  // Gera a planilha Excel (.xlsx) com as cobranças que estão visíveis na tela.
+  async function baixarPlanilha(lista) {
+    const modulo = await import('xlsx');
+    const XLSX = modulo.default && modulo.default.utils ? modulo.default : modulo;
+
+    function nomeProjeto(item) {
+      if (item.projetos) return `${item.projetos.numero_projeto} - ${item.projetos.nome}`;
+      if (view === 'projeto' && projetoAtual) return `${projetoAtual.numero_projeto} - ${projetoAtual.nome}`;
+      return '';
+    }
+    function nomeFornecedor(item) {
+      if (item.fornecedor_tipo === 'cliente') return 'Cliente';
+      if (item.fornecedores?.nome) return item.fornecedores.nome;
+      if (view === 'fornecedor' && fornecedorAtual) return fornecedorAtual.nome;
+      return '';
+    }
+    function serialExcel(dataTexto) {
+      const d = parseDataCurtaParaData(dataTexto);
+      if (!d) return null;
+      return Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1899, 11, 30)) / 86400000);
+    }
+
+    const linhas = [['Projeto', 'Cliente / Fornecedor', 'Categoria', 'Parcela', 'Valor', 'Previsão']];
+    lista.forEach((item) => {
+      linhas.push([
+        nomeProjeto(item),
+        nomeFornecedor(item),
+        item.categoria || '',
+        item.parcela_total ? formatParcelaLabel(item.parcela_atual, item.parcela_total) : '',
+        item.pagamento_valor != null ? Number(item.pagamento_valor) : null,
+        serialExcel(item.pagamento_previsao),
+      ]);
+    });
+
+    const planilha = XLSX.utils.aoa_to_sheet(linhas);
+    for (let r = 1; r < linhas.length; r++) {
+      const celulaValor = planilha[XLSX.utils.encode_cell({ r, c: 4 })];
+      if (celulaValor) celulaValor.z = '"R$" #,##0.00';
+      const celulaData = planilha[XLSX.utils.encode_cell({ r, c: 5 })];
+      if (celulaData) celulaData.z = 'dd/mm/yy';
+    }
+    planilha['!cols'] = [{ wch: 34 }, { wch: 28 }, { wch: 14 }, { wch: 9 }, { wch: 16 }, { wch: 12 }];
+
+    const livro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(livro, planilha, 'Cobranças');
+    const bytes = XLSX.write(livro, { bookType: 'xlsx', type: 'array' });
+
+    const blob = new Blob([bytes], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `cobrancas-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Atualiza a lista que está na tela (menu, projeto, fornecedor ou período).
+  function recarregarListaAtual() {
+    if (view === 'projeto' && projetoAtual) loadCobrancasPorProjeto(projetoAtual.id);
+    else if (view === 'fornecedor' && fornecedorAtual) loadCobrancasPorFornecedor(fornecedorAtual.id);
+    else if (view === 'periodo') loadCobrancasPorPeriodo(periodoInicio, periodoFim);
+    loadDestaques();
+  }
+
+  // ---- Edição de cobranças parceladas: "só esta parcela" ou "cobrança inteira" ----
+  function iniciarEdicao(item) {
+    if (item.parcela_total > 1 && item.grupo_id) setEscolhaEdicao(item);
+    else openEditForm(item);
+  }
+
+  function escolherSomenteParcela() {
+    const item = escolhaEdicao;
+    setEscolhaEdicao(null);
+    openEditForm(item);
+  }
+
+  function escolherCobrancaInteira() {
+    const it = escolhaEdicao;
+    setEscolhaEdicao(null);
+    setFormTodas({
+      categoria: it.categoria || '',
+      pedido_salvo: it.pedido_salvo || '',
+      pedido_numero: it.pedido_numero || '',
+      pedido_data: it.pedido_data || '',
+      pedido_valor: it.pedido_valor != null ? String(it.pedido_valor).replace('.', ',') : '',
+      fidelidade_programa: it.fidelidade_programa || '',
+      fidelidade_status: it.fidelidade_status || '',
+      observacoes: it.observacoes || '',
+      recalcular: false,
+    });
+    setErroTodas('');
+    setEditandoTodas(it);
+  }
+
+  function updateTodas(field, value) {
+    setFormTodas((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function salvarTodas(e) {
+    e.preventDefault();
+    if (!formTodas.categoria) {
+      setErroTodas('Escolha a Categoria.');
+      return;
+    }
+    setSalvandoTodas(true);
+    setErroTodas('');
+
+    const base = editandoTodas;
+    const pedidoNumero = formTodas.pedido_valor ? parseValorComCentavos(formTodas.pedido_valor) : null;
+
+    const { error: updateError } = await supabase
+      .from('cobrancas')
+      .update({
+        categoria: formTodas.categoria,
+        pedido_salvo: formTodas.pedido_salvo || null,
+        pedido_numero: formTodas.pedido_numero || null,
+        pedido_data: formTodas.pedido_data || null,
+        pedido_valor: pedidoNumero,
+        fidelidade_programa: formTodas.fidelidade_programa || null,
+        fidelidade_status: formTodas.fidelidade_status || null,
+        observacoes: formTodas.observacoes || null,
+        atualizado_em: new Date().toISOString(),
+      })
+      .eq('grupo_id', base.grupo_id);
+
+    if (updateError) {
+      setSalvandoTodas(false);
+      setErroTodas(`Não foi possível salvar: ${updateError.message}`);
+      return;
+    }
+
+    // Recalcula o valor de cada parcela ainda não paga (pedido ÷ nº de parcelas).
+    if (formTodas.recalcular && pedidoNumero != null) {
+      const { data: parcelas } = await supabase
+        .from('cobrancas')
+        .select('id, parcela_atual, pagamento_status')
+        .eq('grupo_id', base.grupo_id);
+      const n = base.parcela_total;
+      const totalCentavos = Math.round(pedidoNumero * 100);
+      for (const parcela of parcelas || []) {
+        if (parcela.pagamento_status === 'PAGO') continue;
+        const valor = (Math.floor(totalCentavos / n) + (parcela.parcela_atual === n ? totalCentavos % n : 0)) / 100;
+        await supabase.from('cobrancas').update({ pagamento_valor: valor }).eq('id', parcela.id);
+      }
+    }
+
+    // Mantém os Recebimentos em dia (a categoria aparece lá também).
+    try {
+      const { data: atualizadas } = await supabase.from('cobrancas').select('*').eq('grupo_id', base.grupo_id);
+      for (const linha of atualizadas || []) {
+        await sincronizarRecebimento(linha);
+      }
+    } catch (syncError) {
+      // não trava a edição
+    }
+
+    setSalvandoTodas(false);
+    setEditandoTodas(null);
+    recarregarListaAtual();
+  }
+
 
   // Sempre que uma cobrança é salva com status "PAGO" + valor + data preenchidos,
   // cria (ou atualiza) o recebimento correspondente. Se deixar de atender a condição,
@@ -542,7 +761,7 @@ export default function Cobrancas() {
             )}
             {canEdit && (
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <BotaoEditarIcone onClick={() => openEditForm(item)} />
+                <BotaoEditarIcone onClick={() => iniciarEdicao(item)} />
                 {canDelete && <BotaoApagarIcone onClick={() => handleDelete(item.id)} />}
               </div>
             )}
@@ -653,6 +872,17 @@ export default function Cobrancas() {
             {!showForm && destaques.length > 0 && (
               <div style={{ marginTop: 28 }}>
                 <h2 style={{ marginBottom: 12 }}>Cobranças em aberto (Cobrar / NF / Aguardando / Follow Up / Info)</h2>
+                {destaques.length > 0 && !showForm && (
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ marginBottom: 14 }}
+                onClick={() => baixarPlanilha(destaques)}
+              >
+                ⬇ Baixar planilha (Excel)
+              </button>
+            )}
+
                 {destaques.map((item) => (
                   <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />
                 ))}
@@ -756,7 +986,7 @@ export default function Cobrancas() {
           </>
         )}
 
-        {canEdit && showForm && (view === 'projeto' || view === 'menu') && (
+        {canEdit && showForm && (view === 'projeto' || view === 'menu' || view === 'fornecedor' || view === 'periodo') && (
               <form
                 className="section-card"
                 onSubmit={handleSubmit}
@@ -816,7 +1046,10 @@ export default function Cobrancas() {
 
                   {form.fornecedorSelecao && (
                     <div>
-                      <label>Categoria</label>
+                      <label>
+                        Categoria <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                        <span style={{ fontSize: 11, color: 'var(--muted)' }}>(campo obrigatório)</span>
+                      </label>
                       <select value={form.categoria} onChange={(e) => updateField('categoria', e.target.value)}>
                         <option value="">Selecione...</option>
                         {categoriaOpcoes.map((c) => (
@@ -833,7 +1066,7 @@ export default function Cobrancas() {
                       <label>Parcela (quantidade)</label>
                       <input
                         value={form.parcelas}
-                        onChange={(e) => updateField('parcelas', e.target.value.replace(/\D/g, '').slice(0, 2))}
+                        onChange={(e) => updateFieldComDivisao('parcelas', e.target.value.replace(/\D/g, '').slice(0, 2))}
                         placeholder="Ex: 3"
                         inputMode="numeric"
                       />
@@ -875,7 +1108,7 @@ export default function Cobrancas() {
                     <label>Valor</label>
                     <input
                       value={form.pedido_valor}
-                      onChange={(e) => updateField('pedido_valor', sanitizeValorComCentavos(e.target.value))}
+                      onChange={(e) => updateFieldComDivisao('pedido_valor', sanitizeValorComCentavos(e.target.value))}
                       placeholder="1500 ou 1500,50"
                       inputMode="decimal"
                     />
@@ -893,13 +1126,21 @@ export default function Cobrancas() {
                     <label>Valor</label>
                     <input
                       value={form.pagamento_valor}
-                      onChange={(e) => updateField('pagamento_valor', sanitizeValorComCentavos(e.target.value))}
+                      onChange={(e) => {
+                        setPagamentoAuto(false);
+                        updateField('pagamento_valor', sanitizeValorComCentavos(e.target.value));
+                      }}
                       placeholder="1500 ou 1500,50"
                       inputMode="decimal"
                     />
                     {form.pagamento_valor && (
                       <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
                         = {previewValorComCentavos(form.pagamento_valor)}
+                      </p>
+                    )}
+                    {pagamentoAuto && (
+                      <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
+                        Calculado automaticamente: valor do pedido ÷ nº de parcelas (você pode alterar).
                       </p>
                     )}
                   </div>
@@ -1028,6 +1269,17 @@ export default function Cobrancas() {
 
         {view === 'projeto' && projetoAtual && !showForm && (
           <div>
+            {cobrancas.length > 0 && !showForm && (
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ marginBottom: 14 }}
+                onClick={() => baixarPlanilha(cobrancas)}
+              >
+                ⬇ Baixar planilha (Excel)
+              </button>
+            )}
+
             {cobrancas.length === 0 ? (
               <p className="empty-hint">Nenhuma cobrança cadastrada neste projeto.</p>
             ) : (
@@ -1053,7 +1305,18 @@ export default function Cobrancas() {
 
             <LegendaStatusPagamento />
 
-            {cobrancas.length === 0 ? (
+            {cobrancas.length > 0 && !showForm && (
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ marginBottom: 14 }}
+                onClick={() => baixarPlanilha(cobrancas)}
+              >
+                ⬇ Baixar planilha (Excel)
+              </button>
+            )}
+
+            {showForm ? null : cobrancas.length === 0 ? (
               <p className="empty-hint">Nenhuma cobrança cadastrada com este fornecedor.</p>
             ) : (
               cobrancas.map((item) => <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo={false} />)
@@ -1096,7 +1359,18 @@ export default function Cobrancas() {
 
             <LegendaStatusPagamento />
 
-            {cobrancas.length === 0 ? (
+            {cobrancas.length > 0 && !showForm && (
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ marginBottom: 14 }}
+                onClick={() => baixarPlanilha(cobrancas)}
+              >
+                ⬇ Baixar planilha (Excel)
+              </button>
+            )}
+
+            {showForm ? null : cobrancas.length === 0 ? (
               <p className="empty-hint">
                 {periodoInicio && periodoFim
                   ? 'Nenhuma cobrança com previsão de pagamento nesse período.'
@@ -1106,6 +1380,163 @@ export default function Cobrancas() {
               cobrancas.map((item) => <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />)
             )}
           </>
+        )}
+
+        {escolhaEdicao && (
+          <div style={estiloOverlay}>
+            <div className="section-card" style={{ maxWidth: 460, width: '100%' }}>
+              <h2 style={{ marginBottom: 8 }}>Editar cobrança parcelada</h2>
+              <p style={{ fontSize: 14, marginBottom: 16 }}>
+                Esta cobrança está dividida em {escolhaEdicao.parcela_total} parcelas. O que você quer editar?
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button type="button" style={{ width: '100%' }} onClick={escolherSomenteParcela}>
+                  Somente esta parcela ({formatParcelaLabel(escolhaEdicao.parcela_atual, escolhaEdicao.parcela_total)})
+                </button>
+                <button
+                  type="button"
+                  style={{ width: '100%', background: 'var(--primary-dark)' }}
+                  onClick={escolherCobrancaInteira}
+                >
+                  A cobrança como um todo (todas as {escolhaEdicao.parcela_total} parcelas)
+                </button>
+                <button type="button" className="btn-secondary" style={{ width: '100%' }} onClick={() => setEscolhaEdicao(null)}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editandoTodas && (
+          <div style={estiloOverlay}>
+            <form
+              className="section-card"
+              onSubmit={salvarTodas}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') e.preventDefault();
+              }}
+              style={{ maxWidth: 560, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+            >
+              <div className="toolbar" style={{ marginBottom: 4 }}>
+                <h2>Editar a cobrança inteira</h2>
+                <button type="button" className="btn-secondary" onClick={() => setEditandoTodas(null)}>
+                  Cancelar
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 14 }}>
+                As mudanças abaixo valem para todas as {editandoTodas.parcela_total} parcelas. Status, datas e NF de
+                cada parcela continuam sendo editados parcela a parcela.
+              </p>
+
+              {erroTodas && <div className="error-box">{erroTodas}</div>}
+
+              <div className="form-grid">
+                <div>
+                  <label>
+                    Categoria <span style={{ color: 'var(--danger)' }}>*</span>{' '}
+                    <span style={{ fontSize: 11, color: 'var(--muted)' }}>(campo obrigatório)</span>
+                  </label>
+                  <select value={formTodas.categoria} onChange={(e) => updateTodas('categoria', e.target.value)}>
+                    <option value="">Selecione...</option>
+                    {(editandoTodas.fornecedor_tipo === 'cliente' ? CATEGORIA_CLIENTE : CATEGORIA_FORNECEDOR).map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {!(editandoTodas.fornecedor_tipo === 'cliente' && formTodas.categoria === 'Assessoria') && (
+                <>
+                  <div className="form-section-title">Pedido</div>
+                  <div className="form-grid">
+                    <div>
+                      <label>Pedido salvo</label>
+                      <select value={formTodas.pedido_salvo} onChange={(e) => updateTodas('pedido_salvo', e.target.value)}>
+                        <option value="">—</option>
+                        <option value="sim">Sim</option>
+                        <option value="não">Não</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label>Número</label>
+                      <input value={formTodas.pedido_numero} onChange={(e) => updateTodas('pedido_numero', e.target.value)} />
+                    </div>
+                    <div>
+                      <label>Data</label>
+                      <input
+                        value={formTodas.pedido_data}
+                        onChange={(e) => updateTodas('pedido_data', formatDataCurta(e.target.value))}
+                        placeholder="DD/MM/AA"
+                        inputMode="numeric"
+                      />
+                    </div>
+                    <div>
+                      <label>Valor</label>
+                      <input
+                        value={formTodas.pedido_valor}
+                        onChange={(e) => updateTodas('pedido_valor', sanitizeValorComCentavos(e.target.value))}
+                        placeholder="1500 ou 1500,50"
+                        inputMode="decimal"
+                      />
+                      {formTodas.pedido_valor && (
+                        <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: -12, marginBottom: 18 }}>
+                          = {previewValorComCentavos(formTodas.pedido_valor)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginBottom: 16 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!formTodas.recalcular}
+                      onChange={(e) => updateTodas('recalcular', e.target.checked)}
+                      style={{ width: 'auto', margin: 0 }}
+                    />
+                    Recalcular o valor de cada parcela (valor do pedido ÷ {editandoTodas.parcela_total}) — só nas parcelas
+                    ainda não pagas
+                  </label>
+
+                  <div className="form-section-title">Programa de Fidelidade</div>
+                  <div className="form-grid">
+                    <div>
+                      <label>Programa</label>
+                      <input
+                        value={formTodas.fidelidade_programa}
+                        onChange={(e) => updateTodas('fidelidade_programa', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label>Status</label>
+                      <select
+                        value={formTodas.fidelidade_status}
+                        onChange={(e) => updateTodas('fidelidade_status', e.target.value)}
+                      >
+                        <option value="">—</option>
+                        <option value="Lançar">Lançar</option>
+                        <option value="Creditado">Creditado ✅</option>
+                      </select>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className="form-grid">
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label>Observações</label>
+                  <input value={formTodas.observacoes} onChange={(e) => updateTodas('observacoes', e.target.value)} />
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" disabled={salvandoTodas}>
+                  {salvandoTodas ? 'Salvando...' : 'Salvar em todas as parcelas'}
+                </button>
+              </div>
+            </form>
+          </div>
         )}
 
         <Rodape />

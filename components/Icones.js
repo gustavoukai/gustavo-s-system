@@ -66,3 +66,22 @@ export function BotaoApagarIcone({ onClick, title = 'Apagar' }) {
     </button>
   );
 }
+
+export function IconeOlhoAberto({ size = 22, color = '#565658' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3.5" fill={color} />
+    </svg>
+  );
+}
+
+export function IconeOlhoFechado({ size = 22, color = '#565658' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3.5" fill={color} />
+      <path d="M3 3l18 18" stroke={color} strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  );
+}
