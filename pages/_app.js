@@ -11,6 +11,7 @@ const TITULOS = {
   '/contas-a-pagar': 'Contas a Pagar',
   '/pagamentos': 'Pagamentos',
   '/cobrancas': 'Cobranças',
+  '/equipe': 'Equipe',
   '/recebimentos': 'Recebimentos',
   '/relatorios': 'Relatórios',
   '/backup-completo': 'Backup Completo',

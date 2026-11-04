@@ -10,6 +10,7 @@ const LINKS_BASE = [
   { href: '/clientes', label: 'Clientes' },
   { href: '/fornecedores', label: 'Fornecedores' },
   { href: '/cobrancas', label: 'Cobranças' },
+  { href: '/equipe', label: 'Equipe' },
 ];
 
 // Só quem pode operar/administrar vê estas quatro (visualizante não).

@@ -999,3 +999,24 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 - **Cobranças — editar parcelada**: ao clicar no lápis de uma cobrança com mais de uma parcela, abre uma pergunta: editar só aquela parcela, ou a cobrança como um todo. "Como um todo" abre uma janela com categoria, pedido, fidelidade e observações, valendo para todas as parcelas (com a opção de recalcular o valor das parcelas ainda não pagas).
 - **Cobranças — planilha**: botão **"Baixar planilha (Excel)"** nas listas (tela inicial, por projeto, por fornecedor e por período) gera um .xlsx só com as cobranças visíveis: projeto, cliente/fornecedor, categoria, parcela, valor e previsão.
 - **Correção**: o lápis de editar cobrança nas telas "por fornecedor" e "por período" não abria o formulário; agora abre.
+
+---
+
+## PARTE 58 — Seção Equipe (Horário e Deslocamento)
+
+**Esta entrega vem SÓ com os arquivos que mudaram** (veja a lista no fim). Antes dela, suba a Parte 57 (pacote completo).
+
+1. **Supabase → SQL Editor → New query**: cole e rode `supabase-setup-parte58.sql` (uma vez só).
+2. **GitHub → Add file → Upload files**: extraia o zip, selecione TUDO que está dentro da pasta extraída (Ctrl+A) e arraste. Confira que os nomes aparecem com a pasta (ex: `components/EquipeHorario.js`) e clique em **Commit changes**.
+3. Espere o deploy na Vercel ficar **Ready**.
+
+**Arquivos desta entrega:** `README.md`, `supabase-setup-parte58.sql`, `components/CalendarioMes.js`, `components/EquipeDeslocamento.js`, `components/EquipeHorario.js`, `components/SeletorPeriodoEquipe.js`, `components/Nav.js`, `lib/horas.js`, `pages/equipe.js`, `pages/_app.js`, `styles/globals.css`.
+
+**Como funciona a nova aba "Equipe" (aparece no menu para todos os níveis):**
+- **Horário** e **Deslocamento** (cada um abre o seu cadastro) — Operador e Admin também têm o botão **Usuário**.
+- Nas duas telas: escolha o **Ano** (2026 a 2030; o botão **+ Criar ano** adiciona o seguinte), o **Mês** e o **Dia**. À direita aparece o calendário do mês (dias com registro ficam em verde; clicar num dia também seleciona ele). O seletor de Dia mostra só os dias que existem naquele mês.
+- **Horário**: ao escolher o dia abre a linha com Início, Fim, Início, Fim (digite só os números, os dois pontos entram sozinhos) e o Total calculado automaticamente. **Salvar** / **Cancelar**. Cada dia salvo vira uma linha com lápis (editar) e lixeira (apagar, com confirmação). No fim, o resumo: dias trabalhados e horas trabalhadas. Escolher um dia que já foi salvo abre ele para edição.
+- **Deslocamento**: Origem, Destino, VT (quadradinho), KM e Uber. Preencher um bloqueia os outros dois. Cada deslocamento salvo vira uma linha com editar/apagar (pode haver mais de um por dia). Resumo do mês: total de VTs, de KMs e de Uber.
+- **Reembolso do mês** (abaixo da lista): VT × valor de cada VT, KM × valor de cada KM, Uber, e o **total a reembolsar**. Os valores de cada VT e de cada KM só o **Admin** altera, pelo botão **Editar valores** dentro dessa caixa. (Atenção: mudar o valor recalcula também os meses anteriores.)
+- **Usuário** (Operador/Admin): escolha a pessoa e ative **Horário** e/ou **Deslocamento** (se ativar os dois, aparecem um embaixo do outro). Operador e Admin podem editar o que está lá.
+- Cada pessoa só vê e edita os próprios registros; só Operador e Admin enxergam os dos outros.

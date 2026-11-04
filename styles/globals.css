@@ -714,3 +714,85 @@ table.data-table {
   background-color: #fbe2b8 !important;
   border-color: #e8821e !important;
 }
+
+/* ---- Seção Equipe ---- */
+.equipe-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.equipe-principal {
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.equipe-lateral {
+  flex: 0 0 290px;
+}
+
+.equipe-linha {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.calendario {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.calendario h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.calendario-grade {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendario-cab {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px 0;
+}
+
+.calendario .cal-dia {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  border-radius: 6px;
+  font-size: 12px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.calendario .cal-dia:hover {
+  background: #eef2f0;
+  color: var(--ink);
+}
+
+.calendario .cal-dia.cal-dia-fds {
+  color: var(--muted);
+}
+
+.calendario .cal-dia.cal-dia-marcado {
+  background: #c7e6cf;
+  color: #1e6b3a;
+  font-weight: 700;
+}
+
+.calendario .cal-dia.cal-dia-selecionado {
+  outline: 2px solid var(--primary);
+}
