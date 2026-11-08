@@ -59,6 +59,7 @@ function formatDataBR(isoDate) {
 
 export default function Funcionarios() {
   const { loading, role } = useAuth();
+  const podeVerRH = role === 'admin' || role === 'socio';
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -71,7 +72,7 @@ export default function Funcionarios() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!loading && role !== 'admin' && typeof window !== 'undefined') {
+    if (!loading && !podeVerRH && typeof window !== 'undefined') {
       window.location.href = '/dashboard';
     }
   }, [loading, role]);
@@ -82,7 +83,7 @@ export default function Funcionarios() {
   }
 
   useEffect(() => {
-    if (!loading && role === 'admin') loadItems();
+    if (!loading && podeVerRH) loadItems();
   }, [loading, role]);
 
   function updateField(field, value) {
@@ -251,7 +252,7 @@ export default function Funcionarios() {
     return new Date(value).toLocaleString('pt-BR');
   }
 
-  if (loading || role !== 'admin') {
+  if (loading || !podeVerRH) {
     return (
       <div className="page-center">
         <p className="loading-text">Carregando...</p>

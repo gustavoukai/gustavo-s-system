@@ -9,20 +9,24 @@ import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 const ROLES = [
   { valor: 'visualizante', label: 'Visualizante' },
   { valor: 'operador', label: 'Operador' },
+  { valor: 'socio', label: 'Sócio' },
   { valor: 'admin', label: 'Administrador' },
 ];
 
 const emptyForm = { nome: '', email: '', senha: '', role: 'visualizante' };
 
 const PERMISSOES = [
-  { area: 'Home, Dados do Escritório, Projetos, Clientes, Fornecedores, Cobranças', visualizante: 'Ver, cadastrar e editar', operador: 'Ver, cadastrar e editar', admin: 'Ver, cadastrar e editar' },
-  { area: 'Contas a Pagar, Pagamentos, Recebimentos, Relatórios', visualizante: 'Sem acesso', operador: 'Ver, cadastrar e editar', admin: 'Ver, cadastrar e editar' },
-  { area: 'Apagar registros (qualquer seção)', visualizante: 'Não pode', operador: 'Não pode', admin: 'Pode' },
-  { area: 'Backups', visualizante: 'Sem acesso', operador: 'Sem acesso', admin: 'Acesso total' },
-  { area: 'Dados do Escritório (edição)', visualizante: 'Não pode editar', operador: 'Não pode editar', admin: 'Pode editar' },
-  { area: 'Usuários / Log de Acessos', visualizante: 'Sem acesso', operador: 'Sem acesso', admin: 'Acesso total' },
-  { area: 'Avisos de pagamento/cobrança na Home', visualizante: 'Não recebe', operador: 'Recebe', admin: 'Recebe' },
-  { area: 'Aviso de aniversário na Home', visualizante: 'Recebe', operador: 'Recebe', admin: 'Recebe' },
+  { area: 'Home, Dados do Escritório (ver), Projetos, Clientes, Fornecedores, Cobranças, Equipe', visualizante: 'Ver, cadastrar e editar', operador: 'Ver, cadastrar e editar', socio: 'Ver, cadastrar e editar', admin: 'Ver, cadastrar e editar' },
+  { area: 'Contas a Pagar, Pagamentos, Recebimentos, Relatórios, Checklist Financeiro', visualizante: 'Sem acesso', operador: 'Ver, cadastrar e editar', socio: 'Ver, cadastrar e editar', admin: 'Ver, cadastrar e editar' },
+  { area: 'Apagar registros (qualquer seção)', visualizante: 'Não pode', operador: 'Não pode', socio: 'Pode', admin: 'Pode' },
+  { area: 'Dados do Escritório (edição)', visualizante: 'Não pode editar', operador: 'Não pode editar', socio: 'Pode editar', admin: 'Pode editar' },
+  { area: 'RH (funcionários)', visualizante: 'Sem acesso', operador: 'Sem acesso', socio: 'Acesso total', admin: 'Acesso total' },
+  { area: 'Equipe: relatórios dos outros usuários', visualizante: 'Só os próprios', operador: 'Ver e editar todos', socio: 'Ver e editar todos', admin: 'Ver e editar todos' },
+  { area: 'Equipe: valores de VT e KM', visualizante: 'Só ver', operador: 'Só ver', socio: 'Só ver', admin: 'Pode alterar' },
+  { area: 'Usuários, Log de Acessos, Backups', visualizante: 'Sem acesso', operador: 'Sem acesso', socio: 'Sem acesso', admin: 'Acesso total' },
+  { area: 'Avisos de pagamento/cobrança na Home', visualizante: 'Não recebe', operador: 'Recebe', socio: 'Recebe', admin: 'Recebe' },
+  { area: 'Avisos de atividade do Checklist na Home', visualizante: 'Não recebe', operador: 'Não recebe', socio: 'Recebe', admin: 'Recebe' },
+  { area: 'Aviso de aniversário na Home', visualizante: 'Recebe', operador: 'Recebe', socio: 'Recebe', admin: 'Recebe' },
 ];
 
 export default function Usuarios() {
@@ -373,6 +377,7 @@ export default function Usuarios() {
                   <th>Área</th>
                   <th>Visualizante</th>
                   <th>Operador</th>
+                  <th>Sócio</th>
                   <th>Admin</th>
                 </tr>
               </thead>
@@ -382,6 +387,7 @@ export default function Usuarios() {
                     <td>{p.area}</td>
                     <td>{p.visualizante}</td>
                     <td>{p.operador}</td>
+                    <td>{p.socio}</td>
                     <td>{p.admin}</td>
                   </tr>
                 ))}

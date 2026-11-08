@@ -1020,3 +1020,25 @@ Me mande uma mensagem descrevendo em que passo você travou (pode até ser um pr
 - **Reembolso do mês** (abaixo da lista): VT × valor de cada VT, KM × valor de cada KM, Uber, e o **total a reembolsar**. Os valores de cada VT e de cada KM só o **Admin** altera, pelo botão **Editar valores** dentro dessa caixa. (Atenção: mudar o valor recalcula também os meses anteriores.)
 - **Usuário** (Operador/Admin): escolha a pessoa e ative **Horário** e/ou **Deslocamento** (se ativar os dois, aparecem um embaixo do outro). Operador e Admin podem editar o que está lá.
 - Cada pessoa só vê e edita os próprios registros; só Operador e Admin enxergam os dos outros.
+
+---
+
+## PARTE 59 — Novo nível de usuário: Sócio
+
+Entrega só com os arquivos que mudaram: `README.md`, `supabase-setup-parte59.sql`, `lib/useAuth.js`, `components/Nav.js`, `pages/dashboard.js`, `pages/funcionarios.js`, `pages/dados-escritorio.js`, `pages/equipe.js`, `pages/usuarios.js`.
+
+1. **Supabase → SQL Editor → New query**: cole e rode `supabase-setup-parte59.sql`. No fim ele mostra uma tabelinha com dois números: **`politicas_com_socio`** (deve ser maior que zero, na casa de dezenas) e **`faltando_ajustar_deve_ser_zero`** (tem que ser **0**). Se o segundo não for 0, tire um print e me mande.
+2. **GitHub → Add file → Upload files**: extraia o zip, arraste tudo que está dentro da pasta extraída e dê Commit (os nomes devem aparecer com a pasta, ex: `pages/usuarios.js`).
+3. Espere o deploy na Vercel ficar **Ready**.
+4. Para dar o nível a alguém: **Usuários → lápis de editar → Nível → Sócio → Salvar**.
+
+**O que o Sócio pode (fica entre Operador e Administrador):**
+- Tudo que o Operador já pode.
+- **Apagar registros** em qualquer seção (o Operador não apaga).
+- **Editar os Dados do Escritório**.
+- Acessar o **RH** (funcionários, salários e dados bancários).
+- Receber na Home os **avisos de atividade do Checklist**.
+
+**Continua só do Administrador:** gerenciar Usuários (cadastrar, editar nível, redefinir senha, apagar), Log de Acessos, Backups / Backup Sistema, e os valores de VT e KM da Equipe.
+
+**Atenção:** como gerenciar usuários é só do Administrador, mantenha pelo menos uma conta Administrador. Se todo mundo virar Sócio, ninguém mais consegue cadastrar usuários nem mudar níveis.

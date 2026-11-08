@@ -102,7 +102,7 @@ export default function DadosEscritorio() {
 
         <div className="toolbar">
           <h1>Dados do Escritório</h1>
-          {role === 'admin' && !editando && (
+          {(role === 'admin' || role === 'socio') && !editando && (
             <button className="btn-secondary" onClick={abrirEdicao}>
               Editar
             </button>

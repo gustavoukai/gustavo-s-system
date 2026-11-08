@@ -22,8 +22,9 @@ const LINKS_RESTRITOS = [
   { href: '/relatorios', label: 'Relatórios' },
 ];
 
+const LINK_RH = { href: '/funcionarios', label: 'RH' };
+
 const LINKS_ADMIN = [
-  { href: '/funcionarios', label: 'RH' },
   { href: '/usuarios', label: 'Usuários' },
   { href: '/log-acessos', label: 'Log de Acessos' },
   { href: '/backups', label: 'Backups' },
@@ -35,6 +36,7 @@ export default function Nav() {
   const { role } = useAuth();
 
   let links = role === 'visualizante' ? LINKS_BASE : [...LINKS_BASE, ...LINKS_RESTRITOS];
+  if (role === 'admin' || role === 'socio') links = [...links, LINK_RH];
   if (role === 'admin') links = [...links, ...LINKS_ADMIN];
 
   async function handleLogout() {

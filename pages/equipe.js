@@ -15,7 +15,7 @@ export default function Equipe() {
   const [verDeslocamento, setVerDeslocamento] = useState(false);
 
   const meuId = session?.user?.id;
-  const ehGestor = role === 'admin' || role === 'operador';
+  const ehGestor = role === 'admin' || role === 'socio' || role === 'operador';
   const ehAdmin = role === 'admin';
 
   useEffect(() => {

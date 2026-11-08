@@ -11,6 +11,7 @@ import Rodape from '../components/Rodape';
 const ROLE_LABELS = {
   admin: 'Administrador',
   operador: 'Operador',
+  socio: 'Sócio',
   visualizante: 'Visualizante',
 };
 
@@ -107,7 +108,7 @@ export default function Dashboard() {
       }
 
       // Avisos do Checklist Financeiro só para o admin.
-      if (roleAtual === 'admin') {
+      if (roleAtual === 'admin' || roleAtual === 'socio') {
         const { data: avisos } = await supabase
           .from('checklist_financeiro_avisos')
           .select('id, descricao, criado_em')
@@ -137,7 +138,7 @@ export default function Dashboard() {
 
   const role = profile?.role || 'visualizante';
   const nomeExibicao = profile?.nome || profile?.email;
-  const canEdit = role === 'admin' || role === 'operador';
+  const canEdit = role === 'admin' || role === 'socio' || role === 'operador';
 
   return (
     <div className="dashboard">
