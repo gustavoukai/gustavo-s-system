@@ -1062,3 +1062,19 @@ Entrega só com os arquivos que mudaram: `README.md`, `supabase-setup-parte59.sq
 - **Notas** (só para o nível **Sócio** — nem o Admin vê): botão **+ Criar** com título e texto livre; cada nota mostra quem criou e quando, e tem editar/apagar. Por padrão todos os Sócios veem e editam; marcando "Nota particular", só quem criou vê.
 - **Campos com memória** (Pagamento, Recebedor e Pagador em Contas a Pagar): agora a lista de sugestões é própria do sistema. Com a lista aberta, passe o mouse sobre uma sugestão (sem clicar) e aperte **Delete** para esquecê-la. Isso não apaga nenhuma conta; se você digitar de novo o mesmo texto e salvar, ele volta a ser memorizado.
 - **Correção do menu do Visualizante**: as seções restritas apareciam por um instante ao trocar de tela. O menu agora só mostra o que o nível permite desde o primeiro momento, e as telas restritas não mostram mais nada do conteúdo antes de mandar o Visualizante de volta para a Home.
+
+---
+
+## PARTE 61 — Notas para Admin/Operador, conta do pagamento, menus expansíveis e ordem por data
+
+**Arquivos desta entrega:** `README.md`, `supabase-setup-parte61.sql`, `components/MenuExpansivel.js`, `components/Nav.js`, `pages/cobrancas.js`, `pages/notas.js`, `pages/usuarios.js`.
+
+1. **Supabase → SQL Editor → New query**: rode `supabase-setup-parte61.sql` (uma vez só), **antes** de subir os arquivos.
+2. **GitHub → Add file → Upload files**: extraia o zip, arraste tudo que está dentro da pasta extraída e dê Commit (os nomes devem aparecer com a pasta, ex: `pages/cobrancas.js`).
+3. Espere o deploy na Vercel ficar **Ready**.
+
+**O que mudou:**
+- **Notas** agora aparece também para **Operador** e **Admin** (além do Sócio). Nota normal: todos esses níveis veem e editam; nota "particular": só quem criou vê. O Visualizante continua sem acesso. A tabela de permissões em Usuários foi atualizada.
+- **Cobranças — campo "Conta"** na parte de Pagamento (ao lado de Valor, Status, Data e Previsão): indica em qual conta bancária o pagamento aconteceu. É um campo com memória: sugere as contas já usadas (inclusive os "Pagadores" de Contas a Pagar, como "PJ - Bradesco") e, com a lista aberta, passar o mouse numa sugestão e apertar **Delete** esquece ela. O valor também aparece na caixa de cada cobrança ("Pagamento conta").
+- **Ver por Fornecedor** (e **Ver por Cliente**): em vez de uma lista fixa e gigante, agora é um **menu expansível** com busca — clique, digite parte do nome e escolha.
+- **Ordem das cobranças** nas telas por projeto, por fornecedor, por período e nos novos filtros (cliente, status, programa de fidelidade): da data mais antiga para a mais recente, usando a data do pagamento ou, se não houver, a previsão. Cobranças sem nenhuma data ficam no início da lista. (A lista de destaques da Home continua ordenada pela previsão mais próxima.)

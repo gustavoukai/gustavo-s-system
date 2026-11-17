@@ -23,7 +23,7 @@ export default function Notas() {
   const [erro, setErro] = useState('');
 
   const meuId = session?.user?.id;
-  const podeVer = role === 'socio';
+  const podeVer = role === 'admin' || role === 'socio' || role === 'operador';
 
   useEffect(() => {
     if (!loading && !podeVer && typeof window !== 'undefined') window.location.href = '/dashboard';
@@ -162,7 +162,7 @@ export default function Notas() {
                 onChange={(e) => setForm((p) => ({ ...p, privada: e.target.checked }))}
                 style={{ width: 'auto', margin: 0 }}
               />
-              Nota particular (só eu posso ver). Sem marcar, todos os Sócios veem e podem editar.
+              Nota particular (só eu posso ver). Sem marcar, Admin, Sócios e Operadores veem e podem editar.
             </label>
 
             <div className="form-actions">

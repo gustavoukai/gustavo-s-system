@@ -21,6 +21,7 @@ const PERMISSOES = [
   { area: 'Apagar registros (qualquer seção)', visualizante: 'Não pode', operador: 'Não pode', socio: 'Pode', admin: 'Pode' },
   { area: 'Dados do Escritório (edição)', visualizante: 'Não pode editar', operador: 'Não pode editar', socio: 'Pode editar', admin: 'Pode editar' },
   { area: 'RH (funcionários)', visualizante: 'Sem acesso', operador: 'Sem acesso', socio: 'Acesso total', admin: 'Acesso total' },
+  { area: 'Notas', visualizante: 'Sem acesso', operador: 'Ver, criar e editar', socio: 'Ver, criar e editar', admin: 'Ver, criar e editar' },
   { area: 'Equipe: relatórios dos outros usuários', visualizante: 'Só os próprios', operador: 'Ver e editar todos', socio: 'Ver e editar todos', admin: 'Ver e editar todos' },
   { area: 'Equipe: valores de VT e KM', visualizante: 'Só ver', operador: 'Só ver', socio: 'Só ver', admin: 'Pode alterar' },
   { area: 'Usuários, Log de Acessos, Backups', visualizante: 'Sem acesso', operador: 'Sem acesso', socio: 'Sem acesso', admin: 'Acesso total' },

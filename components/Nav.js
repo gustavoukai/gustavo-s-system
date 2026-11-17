@@ -40,7 +40,7 @@ export default function Nav() {
   let links = [...LINKS_BASE];
   if (role && role !== 'visualizante') links = [...links, ...LINKS_RESTRITOS];
   if (role === 'admin' || role === 'socio') links = [...links, LINK_RH];
-  if (role === 'socio') links = [...links, LINK_NOTAS];
+  if (role === 'admin' || role === 'socio' || role === 'operador') links = [...links, LINK_NOTAS];
   if (role === 'admin') links = [...links, ...LINKS_ADMIN];
 
   async function handleLogout() {

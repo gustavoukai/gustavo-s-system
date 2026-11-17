@@ -4,6 +4,8 @@ import { useAuth } from '../lib/useAuth';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
+import CampoComMemoria from '../components/CampoComMemoria';
+import MenuExpansivel from '../components/MenuExpansivel';
 import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import { formatDataCurta, sanitizeValorComCentavos, previewValorComCentavos, parseValorComCentavos } from '../lib/masks';
 import {
@@ -50,6 +52,7 @@ const emptyForm = {
   pagamento_status: '',
   pagamento_data: '',
   pagamento_previsao: '',
+  pagamento_conta: '',
   nf: '',
   nf_numero: '',
   nf_emissao: '',
@@ -74,6 +77,8 @@ export default function Cobrancas() {
   const [pagamentoAuto, setPagamentoAuto] = useState(false);
   const [escolhaEdicao, setEscolhaEdicao] = useState(null);
   const [clientes, setClientes] = useState([]);
+  const [contasMemorizadas, setContasMemorizadas] = useState([]);
+  const [contasExcluidas, setContasExcluidas] = useState([]);
   const [filtroAtual, setFiltroAtual] = useState(null);
   const [editandoTodas, setEditandoTodas] = useState(null);
   const [formTodas, setFormTodas] = useState({});
@@ -88,6 +93,68 @@ export default function Cobrancas() {
   async function loadClientes() {
     const { data } = await supabase.from('clientes').select('id, nome').order('nome');
     setClientes(data || []);
+  }
+
+  // ---- Memória do campo "Conta" (Delete esquece a sugestão) ----
+  async function loadContasPagamento() {
+    const { data: dasCobrancas } = await supabase
+      .from('cobrancas')
+      .select('pagamento_conta')
+      .not('pagamento_conta', 'is', null);
+    const { data: dasContas } = await supabase.from('contas_pagar').select('pagador').not('pagador', 'is', null);
+    const { data: excluidas } = await supabase
+      .from('sugestoes_excluidas')
+      .select('valor')
+      .eq('campo', 'cobrancas.pagamento_conta');
+    const todas = [
+      ...(dasCobrancas || []).map((x) => x.pagamento_conta),
+      ...(dasContas || []).map((x) => x.pagador),
+    ]
+      .filter(Boolean)
+      .map((v) => v.trim())
+      .filter(Boolean);
+    setContasMemorizadas([...new Set(todas)]);
+    setContasExcluidas((excluidas || []).map((e) => e.valor));
+  }
+
+  function getSugestoesConta() {
+    return contasMemorizadas
+      .filter((v) => !contasExcluidas.some((e) => e.toLowerCase() === v.toLowerCase()))
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  async function excluirSugestaoConta(valor) {
+    setContasExcluidas((prev) => [...prev, valor]);
+    await supabase.from('sugestoes_excluidas').insert([{ campo: 'cobrancas.pagamento_conta', valor }]);
+  }
+
+  // Ao salvar: se a conta digitada tinha sido "esquecida", ela volta a ser memorizada.
+  async function atualizarMemoriaConta() {
+    const v = (form.pagamento_conta || '').trim();
+    if (v) {
+      const igual = contasExcluidas.find((e) => e.toLowerCase() === v.toLowerCase());
+      if (igual) {
+        await supabase.from('sugestoes_excluidas').delete().eq('campo', 'cobrancas.pagamento_conta').eq('valor', igual);
+      }
+    }
+    loadContasPagamento();
+  }
+
+  // Ordena pelas datas, da mais antiga para a mais recente: usa a data do pagamento e,
+  // se não houver, a previsão. Cobranças sem nenhuma data ficam no início da lista.
+  function dataParaOrdenar(item) {
+    return parseDataCurtaParaData(item.pagamento_data) || parseDataCurtaParaData(item.pagamento_previsao);
+  }
+
+  function ordenarPorData(lista) {
+    return [...lista].sort((a, b) => {
+      const dataA = dataParaOrdenar(a);
+      const dataB = dataParaOrdenar(b);
+      if (!dataA && !dataB) return (a.parcela_atual || 0) - (b.parcela_atual || 0);
+      if (!dataA) return -1;
+      if (!dataB) return 1;
+      return dataA - dataB || (a.parcela_atual || 0) - (b.parcela_atual || 0);
+    });
   }
 
   async function loadDestaques() {
@@ -130,6 +197,7 @@ export default function Cobrancas() {
       loadFornecedores();
       loadDestaques();
       loadClientes();
+      loadContasPagamento();
     }
   }, [loading]);
 
@@ -139,7 +207,7 @@ export default function Cobrancas() {
       .select('*, fornecedores(nome, categorias, vendedor, telefone_vendedor, financeiro, telefone_financeiro)')
       .eq('projeto_id', projetoId)
       .order('created_at', { ascending: true });
-    setCobrancas(data || []);
+    setCobrancas(ordenarPorData(data || []));
   }
 
   async function loadCobrancasPorFornecedor(fornecedorId) {
@@ -148,15 +216,7 @@ export default function Cobrancas() {
       .select('*, projetos(numero_projeto, nome)')
       .eq('fornecedor_id', fornecedorId)
       .order('created_at', { ascending: true });
-    const ordenadas = (data || []).sort((a, b) => {
-      const dataA = parseDataCurtaParaData(a.pagamento_previsao);
-      const dataB = parseDataCurtaParaData(b.pagamento_previsao);
-      if (!dataA && !dataB) return 0;
-      if (!dataA) return 1;
-      if (!dataB) return -1;
-      return dataA - dataB;
-    });
-    setCobrancas(ordenadas);
+    setCobrancas(ordenarPorData(data || []));
   }
 
   function somarMesesData(dataStr, meses) {
@@ -212,8 +272,7 @@ export default function Cobrancas() {
       return previsao && previsao >= dataInicio && previsao <= dataFim;
     });
 
-    filtradas.sort((a, b) => parseDataCurtaParaData(a.pagamento_previsao) - parseDataCurtaParaData(b.pagamento_previsao));
-    setCobrancas(filtradas);
+    setCobrancas(ordenarPorData(filtradas));
   }
 
   function abrirProjeto(projeto) {
@@ -301,6 +360,7 @@ export default function Cobrancas() {
       pagamento_status: item.pagamento_status || '',
       pagamento_data: item.pagamento_data || '',
       pagamento_previsao: item.pagamento_previsao || '',
+      pagamento_conta: item.pagamento_conta || '',
       nf: item.nf || '',
       nf_numero: item.nf_numero || '',
       nf_emissao: item.nf_emissao || '',
@@ -399,6 +459,7 @@ export default function Cobrancas() {
       pagamento_status: form.pagamento_status || null,
       pagamento_data: form.pagamento_data || null,
       pagamento_previsao: form.pagamento_previsao || null,
+      pagamento_conta: form.pagamento_conta || null,
       nf: form.nf || null,
       nf_numero: form.nf_numero || null,
       nf_emissao: form.nf_emissao || null,
@@ -474,20 +535,11 @@ export default function Cobrancas() {
       // A sincronização com Recebimentos não deve travar o cadastro principal.
     }
 
+    await atualizarMemoriaConta();
+
     setSaving(false);
     handleCancelar();
     recarregarListaAtual();
-  }
-
-  function ordenarPorPrevisao(lista) {
-    return [...lista].sort((a, b) => {
-      const dataA = parseDataCurtaParaData(a.pagamento_previsao);
-      const dataB = parseDataCurtaParaData(b.pagamento_previsao);
-      if (!dataA && !dataB) return 0;
-      if (!dataA) return 1;
-      if (!dataB) return -1;
-      return dataA - dataB;
-    });
   }
 
   // Visualizações novas: por cliente, por status de pagamento e por programa de fidelidade.
@@ -512,7 +564,7 @@ export default function Cobrancas() {
     }
 
     const { data } = await consulta;
-    setCobrancas(ordenarPorPrevisao(data || []));
+    setCobrancas(ordenarPorData(data || []));
   }
 
   function abrirFiltro(tipo, valor, titulo) {
@@ -954,6 +1006,7 @@ export default function Cobrancas() {
           <div><strong>Pedido valor:</strong> {item.pedido_valor != null ? `R$ ${Number(item.pedido_valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}</div>
           <div><strong>Pagamento valor:</strong> {item.pagamento_valor != null ? `R$ ${Number(item.pagamento_valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}</div>
           <div><strong>Pagamento data:</strong> {item.pagamento_data || '—'}</div>
+          <div><strong>Pagamento conta:</strong> {item.pagamento_conta || '—'}</div>
           <div>
             <strong>NF:</strong> {item.nf || '—'} {nfIncompleta && <AlertaTriangulo title="NF marcada como Sim, mas número e emissão ainda não foram preenchidos" />}
           </div>
@@ -1107,29 +1160,12 @@ export default function Cobrancas() {
                 Voltar
               </button>
             </div>
-
-            <TabelaRolavel>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Fornecedor</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fornecedores.map((f) => (
-                    <tr key={f.id}>
-                      <td>{f.nome}</td>
-                      <td>
-                        <button className="btn-editar" onClick={() => abrirFornecedor(f)}>
-                          Abrir
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </TabelaRolavel>
+            <MenuExpansivel
+              opcoes={fornecedores.map((f) => ({ value: f.id, label: f.nome }))}
+              placeholder="Selecione um fornecedor..."
+              textoBusca="Buscar fornecedor..."
+              onSelecionar={(id) => abrirFornecedor(fornecedores.find((f) => f.id === id))}
+            />
           </>
         )}
 
@@ -1352,6 +1388,16 @@ export default function Cobrancas() {
                       inputMode="numeric"
                     />
                   </div>
+                  <div>
+                    <label>Conta</label>
+                    <CampoComMemoria
+                      value={form.pagamento_conta}
+                      onChange={(v) => updateField('pagamento_conta', v)}
+                      sugestoes={getSugestoesConta()}
+                      onExcluir={excluirSugestaoConta}
+                      placeholder="Ex.: PJ - Bradesco"
+                    />
+                  </div>
                 </div>
 
                 <div className="form-section-title">Nota Fiscal</div>
@@ -1468,28 +1514,15 @@ export default function Cobrancas() {
                 Voltar
               </button>
             </div>
-            <TabelaRolavel>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clientes.map((cl) => (
-                    <tr key={cl.id}>
-                      <td>{cl.nome}</td>
-                      <td>
-                        <button className="btn-editar" onClick={() => abrirFiltro('cliente', cl.id, `Cobranças do cliente ${cl.nome}`)}>
-                          Abrir
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </TabelaRolavel>
+            <MenuExpansivel
+              opcoes={clientes.map((cl) => ({ value: cl.id, label: cl.nome }))}
+              placeholder="Selecione um cliente..."
+              textoBusca="Buscar cliente..."
+              onSelecionar={(id) => {
+                const cl = clientes.find((x) => x.id === id);
+                abrirFiltro('cliente', cl.id, `Cobranças do cliente ${cl.nome}`);
+              }}
+            />
           </>
         )}
 
