@@ -1078,3 +1078,14 @@ Entrega só com os arquivos que mudaram: `README.md`, `supabase-setup-parte59.sq
 - **Cobranças — campo "Conta"** na parte de Pagamento (ao lado de Valor, Status, Data e Previsão): indica em qual conta bancária o pagamento aconteceu. É um campo com memória: sugere as contas já usadas (inclusive os "Pagadores" de Contas a Pagar, como "PJ - Bradesco") e, com a lista aberta, passar o mouse numa sugestão e apertar **Delete** esquece ela. O valor também aparece na caixa de cada cobrança ("Pagamento conta").
 - **Ver por Fornecedor** (e **Ver por Cliente**): em vez de uma lista fixa e gigante, agora é um **menu expansível** com busca — clique, digite parte do nome e escolha.
 - **Ordem das cobranças** nas telas por projeto, por fornecedor, por período e nos novos filtros (cliente, status, programa de fidelidade): da data mais antiga para a mais recente, usando a data do pagamento ou, se não houver, a previsão. Cobranças sem nenhuma data ficam no início da lista. (A lista de destaques da Home continua ordenada pela previsão mais próxima.)
+
+---
+
+## PARTE 62 — Menu expansível também em "Ver por Projeto"
+
+**Arquivos desta entrega:** `README.md`, `pages/cobrancas.js`. Não tem SQL.
+
+1. **GitHub → Add file → Upload files**: extraia o zip, arraste tudo que está dentro da pasta extraída e dê Commit (o nome deve aparecer com a pasta: `pages/cobrancas.js`).
+2. Espere o deploy na Vercel ficar **Ready**.
+
+**O que mudou:** em Cobranças → **Ver por Projeto**, a lista fixa de projetos virou um **menu expansível com busca**: clique, digite parte do número ou do nome do projeto e escolha. Agora "Ver por Projeto", "Ver por Fornecedor" e "Ver por Cliente" funcionam do mesmo jeito.

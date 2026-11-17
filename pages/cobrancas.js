@@ -1124,31 +1124,12 @@ export default function Cobrancas() {
                 Voltar
               </button>
             </div>
-
-            <TabelaRolavel>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Número</th>
-                    <th>Nome do projeto</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projetos.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.numero_projeto}</td>
-                      <td>{p.nome}</td>
-                      <td>
-                        <button className="btn-editar" onClick={() => abrirProjeto(p)}>
-                          Abrir
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </TabelaRolavel>
+            <MenuExpansivel
+              opcoes={projetos.map((p) => ({ value: p.id, label: `${p.numero_projeto} - ${p.nome}` }))}
+              placeholder="Selecione um projeto..."
+              textoBusca="Buscar por número ou nome do projeto..."
+              onSelecionar={(id) => abrirProjeto(projetos.find((p) => p.id === id))}
+            />
           </>
         )}
 
