@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
-import { useAuth } from '../lib/useAuth';
+import { useAuth, limparCacheAuth } from '../lib/useAuth';
 
 const LINKS_BASE = [
   { href: '/dashboard', label: 'Home' },
@@ -23,6 +23,7 @@ const LINKS_RESTRITOS = [
 ];
 
 const LINK_RH = { href: '/funcionarios', label: 'RH' };
+const LINK_NOTAS = { href: '/notas', label: 'Notas' };
 
 const LINKS_ADMIN = [
   { href: '/usuarios', label: 'Usuários' },
@@ -35,12 +36,16 @@ export default function Nav() {
   const router = useRouter();
   const { role } = useAuth();
 
-  let links = role === 'visualizante' ? LINKS_BASE : [...LINKS_BASE, ...LINKS_RESTRITOS];
+  // Enquanto o nível não é conhecido, mostra só o básico (nunca as seções restritas).
+  let links = [...LINKS_BASE];
+  if (role && role !== 'visualizante') links = [...links, ...LINKS_RESTRITOS];
   if (role === 'admin' || role === 'socio') links = [...links, LINK_RH];
+  if (role === 'socio') links = [...links, LINK_NOTAS];
   if (role === 'admin') links = [...links, ...LINKS_ADMIN];
 
   async function handleLogout() {
     await supabase.auth.signOut();
+    limparCacheAuth();
     router.push('/login');
   }
 

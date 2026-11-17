@@ -117,7 +117,7 @@ export default function Relatorios() {
     return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  if (loading) {
+  if (loading || role === 'visualizante') {
     return (
       <div className="page-center">
         <p className="loading-text">Carregando...</p>

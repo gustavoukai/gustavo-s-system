@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import Rodape from '../components/Rodape';
+import { limparCacheAuth } from '../lib/useAuth';
 import { IconeOlhoAberto, IconeOlhoFechado } from '../components/Icones';
 
 export default function Login() {
@@ -16,6 +17,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    limparCacheAuth();
 
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,

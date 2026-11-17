@@ -5,6 +5,7 @@ import { useBloqueiaVisualizante } from '../lib/acessoRestrito';
 import Nav from '../components/Nav';
 import Rodape from '../components/Rodape';
 import TabelaRolavel from '../components/TabelaRolavel';
+import CampoComMemoria from '../components/CampoComMemoria';
 import { BotaoEditarIcone, BotaoApagarIcone } from '../components/Icones';
 import {
   formatParcela,
@@ -72,6 +73,7 @@ export default function ContasAPagar() {
   const [mesSelecionado, setMesSelecionado] = useState(() => new Date().getMonth() + 1);
   const [items, setItems] = useState([]);
   const [todasContas, setTodasContas] = useState([]);
+  const [excluidas, setExcluidas] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -109,6 +111,7 @@ export default function ContasAPagar() {
     if (!loading) {
       loadAnos();
       loadTodasContas();
+      loadExcluidas();
     }
   }, [loading]);
 
@@ -117,18 +120,45 @@ export default function ContasAPagar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anoSelecionado, mesSelecionado]);
 
-  const sugestoesPagamento = useMemo(
-    () => [...new Set(todasContas.map((c) => c.pagamento).filter(Boolean))],
-    [todasContas]
-  );
-  const sugestoesRecebedor = useMemo(
-    () => [...new Set(todasContas.map((c) => c.recebedor).filter(Boolean))],
-    [todasContas]
-  );
-  const sugestoesPagador = useMemo(
-    () => [...new Set(todasContas.map((c) => c.pagador).filter(Boolean))],
-    [todasContas]
-  );
+  function sugestoesDe(campo) {
+    const ocultas = new Set(
+      excluidas.filter((e) => e.campo === `contas_pagar.${campo}`).map((e) => e.valor.toLowerCase())
+    );
+    return [...new Set(todasContas.map((c) => c[campo]).filter(Boolean))]
+      .filter((v) => !ocultas.has(v.toLowerCase()))
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  const sugestoesPagamento = useMemo(() => sugestoesDe('pagamento'), [todasContas, excluidas]);
+  const sugestoesRecebedor = useMemo(() => sugestoesDe('recebedor'), [todasContas, excluidas]);
+  const sugestoesPagador = useMemo(() => sugestoesDe('pagador'), [todasContas, excluidas]);
+
+  async function loadExcluidas() {
+    const { data } = await supabase.from('sugestoes_excluidas').select('campo, valor');
+    setExcluidas(data || []);
+  }
+
+  async function excluirSugestao(campo, valor) {
+    const chave = `contas_pagar.${campo}`;
+    setExcluidas((prev) => [...prev, { campo: chave, valor }]);
+    await supabase.from('sugestoes_excluidas').insert([{ campo: chave, valor }]);
+  }
+
+  // Se você digitar de novo um valor que tinha esquecido, ele volta a ser memorizado.
+  async function reativarSugestoes() {
+    const alvos = [
+      ['pagamento', form.pagamento],
+      ['recebedor', form.recebedor],
+      ['pagador', form.pagador],
+    ];
+    const remover = excluidas.filter((e) =>
+      alvos.some(([campo, v]) => v && e.campo === `contas_pagar.${campo}` && e.valor.toLowerCase() === v.trim().toLowerCase())
+    );
+    for (const r of remover) {
+      await supabase.from('sugestoes_excluidas').delete().eq('campo', r.campo).eq('valor', r.valor);
+    }
+    if (remover.length > 0) loadExcluidas();
+  }
 
   async function handleCriarAno() {
     const proximoAno = anos.length > 0 ? Math.max(...anos) + 1 : new Date().getFullYear();
@@ -297,6 +327,8 @@ export default function ContasAPagar() {
       // A sincronização com Pagamentos não deve travar o cadastro principal.
     }
 
+    await reativarSugestoes();
+
     setSaving(false);
     handleCancelar();
     loadItems();
@@ -357,7 +389,7 @@ export default function ContasAPagar() {
     return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  if (loading) {
+  if (loading || role === 'visualizante') {
     return (
       <div className="page-center">
         <p className="loading-text">Carregando...</p>
@@ -459,16 +491,12 @@ export default function ContasAPagar() {
                 <div className="form-grid">
                   <div>
                     <label>Pagamento</label>
-                    <input
-                      list="lista-pagamento"
+                    <CampoComMemoria
                       value={form.pagamento}
-                      onChange={(e) => updateField('pagamento', e.target.value)}
+                      onChange={(v) => updateField('pagamento', v)}
+                      sugestoes={sugestoesPagamento}
+                      onExcluir={(v) => excluirSugestao('pagamento', v)}
                     />
-                    <datalist id="lista-pagamento">
-                      {sugestoesPagamento.map((v) => (
-                        <option key={v} value={v} />
-                      ))}
-                    </datalist>
                   </div>
 
                   <div>
@@ -499,30 +527,22 @@ export default function ContasAPagar() {
 
                   <div>
                     <label>Recebedor</label>
-                    <input
-                      list="lista-recebedor"
+                    <CampoComMemoria
                       value={form.recebedor}
-                      onChange={(e) => updateField('recebedor', e.target.value)}
+                      onChange={(v) => updateField('recebedor', v)}
+                      sugestoes={sugestoesRecebedor}
+                      onExcluir={(v) => excluirSugestao('recebedor', v)}
                     />
-                    <datalist id="lista-recebedor">
-                      {sugestoesRecebedor.map((v) => (
-                        <option key={v} value={v} />
-                      ))}
-                    </datalist>
                   </div>
 
                   <div>
                     <label>Pagador</label>
-                    <input
-                      list="lista-pagador"
+                    <CampoComMemoria
                       value={form.pagador}
-                      onChange={(e) => updateField('pagador', e.target.value)}
+                      onChange={(v) => updateField('pagador', v)}
+                      sugestoes={sugestoesPagador}
+                      onExcluir={(v) => excluirSugestao('pagador', v)}
                     />
-                    <datalist id="lista-pagador">
-                      {sugestoesPagador.map((v) => (
-                        <option key={v} value={v} />
-                      ))}
-                    </datalist>
                   </div>
 
                   <div>

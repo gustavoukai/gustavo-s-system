@@ -13,6 +13,7 @@ import {
   statusCor,
   formatParcelaLabel,
   calcPercentual,
+  PROGRAMAS_FIDELIDADE,
 } from '../lib/cobrancaHelpers';
 
 // Divide o valor do pedido pelo nº de parcelas (só quando há mais de 1 parcela).
@@ -72,6 +73,8 @@ export default function Cobrancas() {
   const [formularioAvulso, setFormularioAvulso] = useState(false);
   const [pagamentoAuto, setPagamentoAuto] = useState(false);
   const [escolhaEdicao, setEscolhaEdicao] = useState(null);
+  const [clientes, setClientes] = useState([]);
+  const [filtroAtual, setFiltroAtual] = useState(null);
   const [editandoTodas, setEditandoTodas] = useState(null);
   const [formTodas, setFormTodas] = useState({});
   const [salvandoTodas, setSalvandoTodas] = useState(false);
@@ -81,6 +84,11 @@ export default function Cobrancas() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [destaques, setDestaques] = useState([]);
+
+  async function loadClientes() {
+    const { data } = await supabase.from('clientes').select('id, nome').order('nome');
+    setClientes(data || []);
+  }
 
   async function loadDestaques() {
     const { data } = await supabase
@@ -121,6 +129,7 @@ export default function Cobrancas() {
       loadProjetos();
       loadFornecedores();
       loadDestaques();
+      loadClientes();
     }
   }, [loading]);
 
@@ -470,6 +479,57 @@ export default function Cobrancas() {
     recarregarListaAtual();
   }
 
+  function ordenarPorPrevisao(lista) {
+    return [...lista].sort((a, b) => {
+      const dataA = parseDataCurtaParaData(a.pagamento_previsao);
+      const dataB = parseDataCurtaParaData(b.pagamento_previsao);
+      if (!dataA && !dataB) return 0;
+      if (!dataA) return 1;
+      if (!dataB) return -1;
+      return dataA - dataB;
+    });
+  }
+
+  // Visualizações novas: por cliente, por status de pagamento e por programa de fidelidade.
+  async function carregarFiltro(filtro) {
+    if (!filtro) return;
+    const selecao =
+      '*, projetos(numero_projeto, nome), fornecedores(nome, categorias, vendedor, telefone_vendedor, financeiro, telefone_financeiro)';
+    let consulta = supabase.from('cobrancas').select(selecao);
+
+    if (filtro.tipo === 'cliente') {
+      const { data: projetosDoCliente } = await supabase.from('projetos').select('id').eq('cliente_id', filtro.valor);
+      const ids = (projetosDoCliente || []).map((p) => p.id);
+      if (ids.length === 0) {
+        setCobrancas([]);
+        return;
+      }
+      consulta = consulta.in('projeto_id', ids).eq('fornecedor_tipo', 'cliente');
+    } else if (filtro.tipo === 'status') {
+      consulta = consulta.eq('pagamento_status', filtro.valor);
+    } else if (filtro.tipo === 'programa') {
+      consulta = consulta.ilike('fidelidade_programa', `%${filtro.valor}%`);
+    }
+
+    const { data } = await consulta;
+    setCobrancas(ordenarPorPrevisao(data || []));
+  }
+
+  function abrirFiltro(tipo, valor, titulo) {
+    const filtro = { tipo, valor, titulo };
+    setFiltroAtual(filtro);
+    setCobrancas([]);
+    setView('filtrado');
+    carregarFiltro(filtro);
+  }
+
+  function voltarFiltro() {
+    const tipo = filtroAtual?.tipo;
+    setFiltroAtual(null);
+    setCobrancas([]);
+    setView(tipo === 'cliente' ? 'clientes' : tipo === 'status' ? 'status' : 'programas');
+  }
+
   // Gera a planilha Excel (.xlsx) com as cobranças que estão visíveis na tela.
   async function baixarPlanilha(lista) {
     const modulo = await import('xlsx');
@@ -492,7 +552,7 @@ export default function Cobrancas() {
       return Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1899, 11, 30)) / 86400000);
     }
 
-    const linhas = [['Projeto', 'Cliente / Fornecedor', 'Categoria', 'Parcela', 'Valor', 'Previsão']];
+    const linhas = [['Projeto', 'Cliente / Fornecedor', 'Categoria', 'Parcela', 'Valor', 'Previsão', 'Status de pagamento']];
     lista.forEach((item) => {
       linhas.push([
         nomeProjeto(item),
@@ -501,6 +561,7 @@ export default function Cobrancas() {
         item.parcela_total ? formatParcelaLabel(item.parcela_atual, item.parcela_total) : '',
         item.pagamento_valor != null ? Number(item.pagamento_valor) : null,
         serialExcel(item.pagamento_previsao),
+        item.pagamento_status || '',
       ]);
     });
 
@@ -511,7 +572,7 @@ export default function Cobrancas() {
       const celulaData = planilha[XLSX.utils.encode_cell({ r, c: 5 })];
       if (celulaData) celulaData.z = 'dd/mm/yy';
     }
-    planilha['!cols'] = [{ wch: 34 }, { wch: 28 }, { wch: 14 }, { wch: 9 }, { wch: 16 }, { wch: 12 }];
+    planilha['!cols'] = [{ wch: 34 }, { wch: 28 }, { wch: 14 }, { wch: 9 }, { wch: 16 }, { wch: 12 }, { wch: 20 }];
 
     const livro = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(livro, planilha, 'Cobranças');
@@ -533,6 +594,7 @@ export default function Cobrancas() {
     if (view === 'projeto' && projetoAtual) loadCobrancasPorProjeto(projetoAtual.id);
     else if (view === 'fornecedor' && fornecedorAtual) loadCobrancasPorFornecedor(fornecedorAtual.id);
     else if (view === 'periodo') loadCobrancasPorPeriodo(periodoInicio, periodoFim);
+    else if (view === 'filtrado' && filtroAtual) carregarFiltro(filtroAtual);
     loadDestaques();
   }
 
@@ -560,6 +622,7 @@ export default function Cobrancas() {
       fidelidade_programa: it.fidelidade_programa || '',
       fidelidade_status: it.fidelidade_status || '',
       observacoes: it.observacoes || '',
+      parcelas: String(it.parcela_total),
       recalcular: false,
     });
     setErroTodas('');
@@ -570,29 +633,71 @@ export default function Cobrancas() {
     setFormTodas((prev) => ({ ...prev, [field]: value }));
   }
 
+  function alterarParcelasTodas(valor) {
+    const digitos = valor.replace(/\D/g, '').slice(0, 2);
+    setFormTodas((prev) => ({
+      ...prev,
+      parcelas: digitos,
+      // ao mudar o número de parcelas, sugere recalcular o valor de cada uma
+      recalcular: digitos && Number(digitos) !== editandoTodas?.parcela_total ? true : prev.recalcular,
+    }));
+  }
+
   async function salvarTodas(e) {
     e.preventDefault();
     if (!formTodas.categoria) {
       setErroTodas('Escolha a Categoria.');
       return;
     }
+
+    const base = editandoTodas;
+    const totalAtual = base.parcela_total;
+    const novoTotal = Math.max(parseInt(formTodas.parcelas, 10) || totalAtual, 1);
+
+    // Se o número de parcelas diminuir, confere quais vão ser apagadas.
+    let parcelasParaApagar = [];
+    if (novoTotal < totalAtual) {
+      if (!canDelete) {
+        setErroTodas('Só o Administrador ou o Sócio podem reduzir o número de parcelas.');
+        return;
+      }
+      const { data: todas } = await supabase
+        .from('cobrancas')
+        .select('id, parcela_atual, pagamento_status')
+        .eq('grupo_id', base.grupo_id);
+      parcelasParaApagar = (todas || []).filter((p) => p.parcela_atual > novoTotal);
+      const paga = parcelasParaApagar.find((p) => p.pagamento_status === 'PAGO');
+      if (paga) {
+        setErroTodas(
+          `A parcela ${paga.parcela_atual}/${totalAtual} já está paga e não pode ser removida. Use ${paga.parcela_atual} parcelas ou mais.`
+        );
+        return;
+      }
+      if (!confirm(`Isso vai apagar as parcelas ${novoTotal + 1} a ${totalAtual}. Deseja continuar?`)) return;
+    }
+
     setSalvandoTodas(true);
     setErroTodas('');
 
-    const base = editandoTodas;
     const pedidoNumero = formTodas.pedido_valor ? parseValorComCentavos(formTodas.pedido_valor) : null;
+    const camposComuns = {
+      categoria: formTodas.categoria,
+      pedido_salvo: formTodas.pedido_salvo || null,
+      pedido_numero: formTodas.pedido_numero || null,
+      pedido_data: formTodas.pedido_data || null,
+      pedido_valor: pedidoNumero,
+      fidelidade_programa: formTodas.fidelidade_programa || null,
+      fidelidade_status: formTodas.fidelidade_status || null,
+      observacoes: formTodas.observacoes || null,
+    };
 
+    // 1) Atualiza as parcelas que já existem (inclui o novo total e o novo percentual)
     const { error: updateError } = await supabase
       .from('cobrancas')
       .update({
-        categoria: formTodas.categoria,
-        pedido_salvo: formTodas.pedido_salvo || null,
-        pedido_numero: formTodas.pedido_numero || null,
-        pedido_data: formTodas.pedido_data || null,
-        pedido_valor: pedidoNumero,
-        fidelidade_programa: formTodas.fidelidade_programa || null,
-        fidelidade_status: formTodas.fidelidade_status || null,
-        observacoes: formTodas.observacoes || null,
+        ...camposComuns,
+        parcela_total: novoTotal,
+        percentual: calcPercentual(novoTotal),
         atualizado_em: new Date().toISOString(),
       })
       .eq('grupo_id', base.grupo_id);
@@ -603,22 +708,67 @@ export default function Cobrancas() {
       return;
     }
 
-    // Recalcula o valor de cada parcela ainda não paga (pedido ÷ nº de parcelas).
+    // 2) Apaga as parcelas que sobraram
+    if (parcelasParaApagar.length > 0) {
+      await supabase
+        .from('cobrancas')
+        .delete()
+        .in('id', parcelasParaApagar.map((p) => p.id));
+    }
+
+    // 3) Cria as parcelas novas (seguindo o status e a previsão da última parcela)
+    if (novoTotal > totalAtual) {
+      const { data: ultima } = await supabase
+        .from('cobrancas')
+        .select('*')
+        .eq('grupo_id', base.grupo_id)
+        .eq('parcela_atual', totalAtual)
+        .maybeSingle();
+      const modelo = ultima || base;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const novas = [];
+      for (let i = totalAtual + 1; i <= novoTotal; i++) {
+        novas.push({
+          ...camposComuns,
+          projeto_id: modelo.projeto_id,
+          fornecedor_tipo: modelo.fornecedor_tipo,
+          fornecedor_id: modelo.fornecedor_id,
+          grupo_id: base.grupo_id,
+          parcela_atual: i,
+          parcela_total: novoTotal,
+          percentual: calcPercentual(novoTotal),
+          pagamento_status: modelo.pagamento_status === 'PAGO' ? 'COBRAR' : modelo.pagamento_status,
+          pagamento_previsao: somarMesesData(modelo.pagamento_previsao, i - totalAtual),
+          created_by: session?.user?.id || null,
+        });
+      }
+      const { error: insertError } = await supabase.from('cobrancas').insert(novas);
+      if (insertError) {
+        setSalvandoTodas(false);
+        setErroTodas(`As parcelas existentes foram atualizadas, mas não foi possível criar as novas: ${insertError.message}`);
+        return;
+      }
+    }
+
+    // 4) Recalcula o valor de cada parcela ainda não paga (pedido ÷ nº de parcelas)
     if (formTodas.recalcular && pedidoNumero != null) {
       const { data: parcelas } = await supabase
         .from('cobrancas')
         .select('id, parcela_atual, pagamento_status')
         .eq('grupo_id', base.grupo_id);
-      const n = base.parcela_total;
       const totalCentavos = Math.round(pedidoNumero * 100);
       for (const parcela of parcelas || []) {
         if (parcela.pagamento_status === 'PAGO') continue;
-        const valor = (Math.floor(totalCentavos / n) + (parcela.parcela_atual === n ? totalCentavos % n : 0)) / 100;
+        const valor =
+          (Math.floor(totalCentavos / novoTotal) + (parcela.parcela_atual === novoTotal ? totalCentavos % novoTotal : 0)) / 100;
         await supabase.from('cobrancas').update({ pagamento_valor: valor }).eq('id', parcela.id);
       }
     }
 
-    // Mantém os Recebimentos em dia (a categoria aparece lá também).
+    // 5) Mantém os Recebimentos em dia (a categoria e o nº de parcelas aparecem lá também).
     try {
       const { data: atualizadas } = await supabase.from('cobrancas').select('*').eq('grupo_id', base.grupo_id);
       for (const linha of atualizadas || []) {
@@ -690,6 +840,7 @@ export default function Cobrancas() {
     if (view === 'fornecedor') loadCobrancasPorFornecedor(fornecedorAtual.id);
     if (view === 'menu') loadDestaques();
     if (view === 'periodo') loadCobrancasPorPeriodo(periodoInicio, periodoFim);
+    if (view === 'filtrado') carregarFiltro(filtroAtual);
   }
 
   const categoriaOpcoes =
@@ -743,11 +894,14 @@ export default function Cobrancas() {
       <div className="cobranca-box" style={{ backgroundColor: style.backgroundColor, color: style.color }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-            {mostrarFornecedorInfo && (
+            {(mostrarFornecedorInfo || (view !== 'projeto' && item.projetos)) && (
               <h3 style={{ fontSize: 19, margin: 0 }}>
-                {item.fornecedor_tipo === 'cliente' ? 'Cliente' : item.fornecedores?.nome || '(fornecedor)'}
-                {(view === 'fornecedor' || view === 'periodo' || view === 'menu') && item.projetos && (
-                  <> – Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}</>
+                {mostrarFornecedorInfo &&
+                  (item.fornecedor_tipo === 'cliente' ? 'Cliente' : item.fornecedores?.nome || '(fornecedor)')}
+                {view !== 'projeto' && item.projetos && (
+                  <>
+                    {mostrarFornecedorInfo ? ' – ' : ''}Projeto: {item.projetos.numero_projeto} - {item.projetos.nome}
+                  </>
                 )}
               </h3>
             )}
@@ -848,6 +1002,24 @@ export default function Cobrancas() {
                 onClick={() => setView('fornecedores')}
               >
                 Ver por Fornecedor
+              </button>
+              <button
+                style={{ width: 'auto', padding: '14px 24px', background: '#5f7f86' }}
+                onClick={() => setView('clientes')}
+              >
+                Ver por Cliente
+              </button>
+              <button
+                style={{ width: 'auto', padding: '14px 24px', background: '#7a6a9a' }}
+                onClick={() => setView('status')}
+              >
+                Ver por Status de Pagamento
+              </button>
+              <button
+                style={{ width: 'auto', padding: '14px 24px', background: '#a07a3c' }}
+                onClick={() => setView('programas')}
+              >
+                Ver por Programa de Fidelidade
               </button>
               <button
                 style={{ width: 'auto', padding: '14px 24px', background: 'var(--accent)' }}
@@ -986,7 +1158,7 @@ export default function Cobrancas() {
           </>
         )}
 
-        {canEdit && showForm && (view === 'projeto' || view === 'menu' || view === 'fornecedor' || view === 'periodo') && (
+        {canEdit && showForm && (view === 'projeto' || view === 'menu' || view === 'fornecedor' || view === 'periodo' || view === 'filtrado') && (
               <form
                 className="section-card"
                 onSubmit={handleSubmit}
@@ -1288,6 +1460,144 @@ export default function Cobrancas() {
           </div>
         )}
 
+        {view === 'clientes' && (
+          <>
+            <div className="toolbar">
+              <h1>Cobranças por Cliente</h1>
+              <button className="btn-secondary" onClick={voltarParaMenu}>
+                Voltar
+              </button>
+            </div>
+            <TabelaRolavel>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientes.map((cl) => (
+                    <tr key={cl.id}>
+                      <td>{cl.nome}</td>
+                      <td>
+                        <button className="btn-editar" onClick={() => abrirFiltro('cliente', cl.id, `Cobranças do cliente ${cl.nome}`)}>
+                          Abrir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TabelaRolavel>
+          </>
+        )}
+
+        {view === 'status' && (
+          <>
+            <div className="toolbar">
+              <h1>Cobranças por Status de Pagamento</h1>
+              <button className="btn-secondary" onClick={voltarParaMenu}>
+                Voltar
+              </button>
+            </div>
+            <TabelaRolavel>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Significado</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PAGAMENTO_STATUS_OPTIONS.map((s) => (
+                    <tr key={s.codigo}>
+                      <td>
+                        <span className="tag" style={statusCor(s.codigo)}>
+                          {s.codigo}
+                        </span>
+                      </td>
+                      <td>{s.texto}</td>
+                      <td>
+                        <button className="btn-editar" onClick={() => abrirFiltro('status', s.codigo, `Cobranças com status ${s.codigo}`)}>
+                          Abrir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TabelaRolavel>
+          </>
+        )}
+
+        {view === 'programas' && (
+          <>
+            <div className="toolbar">
+              <h1>Cobranças por Programa de Fidelidade</h1>
+              <button className="btn-secondary" onClick={voltarParaMenu}>
+                Voltar
+              </button>
+            </div>
+            <TabelaRolavel>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Programa</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PROGRAMAS_FIDELIDADE.map((programa) => (
+                    <tr key={programa}>
+                      <td>{programa}</td>
+                      <td>
+                        <button
+                          className="btn-editar"
+                          onClick={() => abrirFiltro('programa', programa, `Cobranças do programa ${programa}`)}
+                        >
+                          Abrir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TabelaRolavel>
+          </>
+        )}
+
+        {view === 'filtrado' && filtroAtual && (
+          <>
+            <div className="toolbar">
+              <h1>{filtroAtual.titulo}</h1>
+              <button className="btn-secondary" onClick={voltarFiltro}>
+                Voltar
+              </button>
+            </div>
+
+            <LegendaStatusPagamento />
+
+            {cobrancas.length > 0 && !showForm && (
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ marginBottom: 14 }}
+                onClick={() => baixarPlanilha(cobrancas)}
+              >
+                ⬇ Baixar planilha (Excel)
+              </button>
+            )}
+
+            {showForm ? null : cobrancas.length === 0 ? (
+              <p className="empty-hint">Nenhuma cobrança encontrada.</p>
+            ) : (
+              cobrancas.map((item) => <CobrancaBox key={item.id} item={item} mostrarFornecedorInfo />)
+            )}
+          </>
+        )}
+
         {view === 'fornecedor' && fornecedorAtual && (
           <>
             <div className="toolbar">
@@ -1446,6 +1756,19 @@ export default function Cobrancas() {
                     ))}
                   </select>
                 </div>
+                <div>
+                  <label>Quantidade de parcelas</label>
+                  <input
+                    value={formTodas.parcelas}
+                    onChange={(e) => alterarParcelasTodas(e.target.value)}
+                    inputMode="numeric"
+                    style={{ marginBottom: 4 }}
+                  />
+                  <p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 14 }}>
+                    Aumentar cria parcelas novas no fim (seguindo o status e a previsão da última). Diminuir apaga as últimas,
+                    desde que ainda não estejam pagas.
+                  </p>
+                </div>
               </div>
 
               {!(editandoTodas.fornecedor_tipo === 'cliente' && formTodas.categoria === 'Assessoria') && (
@@ -1495,7 +1818,7 @@ export default function Cobrancas() {
                       onChange={(e) => updateTodas('recalcular', e.target.checked)}
                       style={{ width: 'auto', margin: 0 }}
                     />
-                    Recalcular o valor de cada parcela (valor do pedido ÷ {editandoTodas.parcela_total}) — só nas parcelas
+                    Recalcular o valor de cada parcela (valor do pedido ÷ {formTodas.parcelas || editandoTodas.parcela_total}) — só nas parcelas
                     ainda não pagas
                   </label>
 

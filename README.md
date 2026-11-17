@@ -1042,3 +1042,23 @@ Entrega só com os arquivos que mudaram: `README.md`, `supabase-setup-parte59.sq
 **Continua só do Administrador:** gerenciar Usuários (cadastrar, editar nível, redefinir senha, apagar), Log de Acessos, Backups / Backup Sistema, e os valores de VT e KM da Equipe.
 
 **Atenção:** como gerenciar usuários é só do Administrador, mantenha pelo menos uma conta Administrador. Se todo mundo virar Sócio, ninguém mais consegue cadastrar usuários nem mudar níveis.
+
+---
+
+## PARTE 60 — Cobranças (novos filtros, parcelas, planilha), Notas, memória de campos, Home e correção do menu
+
+**Arquivos desta entrega:** `README.md`, `supabase-setup-parte60.sql`, `lib/useAuth.js`, `lib/cobrancaHelpers.js`, `components/Nav.js`, `components/CampoComMemoria.js`, `pages/cobrancas.js`, `pages/contas-a-pagar.js`, `pages/dashboard.js`, `pages/login.js`, `pages/notas.js`, `pages/_app.js`, `pages/recebimentos.js`, `pages/relatorios.js`, `pages/pagamentos.js`, `pages/checklist-financeiro.js`.
+
+1. **Supabase → SQL Editor → New query**: rode `supabase-setup-parte60.sql` (uma vez só).
+2. **GitHub → Add file → Upload files**: extraia o zip, arraste tudo que está dentro da pasta extraída e dê Commit (os nomes devem aparecer com a pasta, ex: `pages/notas.js`).
+3. Espere o deploy na Vercel ficar **Ready**.
+
+**O que mudou:**
+- **Cobranças — editar a cobrança inteira**: a janela agora tem o campo **Quantidade de parcelas**. Aumentar cria parcelas novas no fim (copiando o status da última parcela, ou "COBRAR" se ela estiver paga, com a previsão avançando um mês por parcela). Diminuir apaga as últimas parcelas, mas só se nenhuma delas já estiver paga, e só o Admin ou o Sócio podem reduzir (pede confirmação). Ao mudar o número, a opção de recalcular o valor das parcelas ainda não pagas já vem marcada.
+- **Planilha do Excel**: nova coluna **Status de pagamento** (por último).
+- **Cobranças — novas formas de ver**: **Ver por Cliente** (cobranças cobradas do cliente, nos projetos dele), **Ver por Status de Pagamento** e **Ver por Programa de Fidelidade**. Todas ordenadas pela previsão mais próxima, com o botão da planilha e a edição normal das cobranças.
+- **Correção**: na tela "Ver por Fornecedor" o nome do projeto não aparecia em cada cobrança; agora aparece.
+- **Home (Admin, Sócio e Operador)**: botão **✔ Marcar como visto** ao lado de cada conta a pagar (as que vencem nos próximos dias e as já vencidas); a conta some da Home para todo mundo.
+- **Notas** (só para o nível **Sócio** — nem o Admin vê): botão **+ Criar** com título e texto livre; cada nota mostra quem criou e quando, e tem editar/apagar. Por padrão todos os Sócios veem e editam; marcando "Nota particular", só quem criou vê.
+- **Campos com memória** (Pagamento, Recebedor e Pagador em Contas a Pagar): agora a lista de sugestões é própria do sistema. Com a lista aberta, passe o mouse sobre uma sugestão (sem clicar) e aperte **Delete** para esquecê-la. Isso não apaga nenhuma conta; se você digitar de novo o mesmo texto e salvar, ele volta a ser memorizado.
+- **Correção do menu do Visualizante**: as seções restritas apareciam por um instante ao trocar de tela. O menu agora só mostra o que o nível permite desde o primeiro momento, e as telas restritas não mostram mais nada do conteúdo antes de mandar o Visualizante de volta para a Home.

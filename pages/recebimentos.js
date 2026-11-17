@@ -131,7 +131,7 @@ export default function Recebimentos() {
 
   const mesesComItens = [...new Set(itens.map((i) => i.mes))].sort((a, b) => b - a);
 
-  if (loading) {
+  if (loading || role === 'visualizante') {
     return (
       <div className="page-center">
         <p className="loading-text">Carregando...</p>

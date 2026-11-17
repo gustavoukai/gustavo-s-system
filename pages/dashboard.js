@@ -92,9 +92,10 @@ export default function Dashboard() {
       if (roleAtual !== 'visualizante') {
         const { data: contas } = await supabase
           .from('contas_pagar')
-          .select('id, pagamento, ano, mes, dia_vencimento, status, valor_previsto');
-        setContasProximas(getContasProximasDoVencimento(contas));
-        setContasAtrasadas(getContasAtrasadas(contas));
+          .select('id, pagamento, ano, mes, dia_vencimento, status, valor_previsto, aviso_lido');
+        const contasNaoVistas = (contas || []).filter((conta) => !conta.aviso_lido);
+        setContasProximas(getContasProximasDoVencimento(contasNaoVistas));
+        setContasAtrasadas(getContasAtrasadas(contasNaoVistas));
 
         const { data: cobrancasData } = await supabase
           .from('cobrancas')
@@ -163,7 +164,8 @@ export default function Dashboard() {
           <div className="section-card" style={{ borderLeft: '4px solid var(--primary)' }}>
             <h2>💰 Contas a pagar nos próximos 7 dias</h2>
             {contasProximas.map((conta) => (
-              <p key={conta.id} style={{ margin: '6px 0' }}>
+              <div key={conta.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '6px 0' }}>
+                <p style={{ margin: 0 }}>
                 {conta.pagamento || '(sem descrição)'}
                 {conta.valor_previsto != null
                   ? ` — ${Number(conta.valor_previsto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
@@ -171,6 +173,16 @@ export default function Dashboard() {
                 {mensagemVencimento(conta.diffDias)} ({String(conta.dia_vencimento).padStart(2, '0')}/
                 {String(conta.mes).padStart(2, '0')})
               </p>
+                {canEdit && (
+                  <button
+                    className="btn-secondary"
+                    style={{ whiteSpace: 'nowrap' }}
+                    onClick={() => marcarAvisoComoVisto('contas_pagar', conta.id, setContasProximas)}
+                  >
+                    ✔ Marcar como visto
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -179,7 +191,8 @@ export default function Dashboard() {
           <div className="section-card" style={{ borderLeft: '4px solid var(--danger)' }}>
             <h2>⚠️ Contas a pagar vencidas, ainda não pagas</h2>
             {contasAtrasadas.map((conta) => (
-              <p key={conta.id} style={{ margin: '6px 0' }}>
+              <div key={conta.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, margin: '6px 0' }}>
+                <p style={{ margin: 0 }}>
                 {conta.pagamento || '(sem descrição)'}
                 {conta.valor_previsto != null
                   ? ` — ${Number(conta.valor_previsto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
@@ -187,6 +200,16 @@ export default function Dashboard() {
                 {mensagemAtraso(conta.diffDias)} ({String(conta.dia_vencimento).padStart(2, '0')}/
                 {String(conta.mes).padStart(2, '0')})
               </p>
+                {canEdit && (
+                  <button
+                    className="btn-secondary"
+                    style={{ whiteSpace: 'nowrap' }}
+                    onClick={() => marcarAvisoComoVisto('contas_pagar', conta.id, setContasAtrasadas)}
+                  >
+                    ✔ Marcar como visto
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
