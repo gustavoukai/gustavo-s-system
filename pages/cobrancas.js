@@ -988,11 +988,15 @@ export default function Cobrancas() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            {item.pagamento_previsao && (
-              <p style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>
-                Pagamento previsão: {item.pagamento_previsao}
-              </p>
-            )}
+            {item.pagamento_status === 'PAGO'
+              ? item.pagamento_data && (
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>Pagamento data: {item.pagamento_data}</p>
+                )
+              : item.pagamento_previsao && (
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>
+                    Pagamento previsão: {item.pagamento_previsao}
+                  </p>
+                )}
             {canEdit && (
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <BotaoEditarIcone onClick={() => iniciarEdicao(item)} />

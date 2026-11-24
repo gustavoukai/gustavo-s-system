@@ -1105,3 +1105,14 @@ Entrega só com os arquivos que mudaram: `README.md`, `supabase-setup-parte59.sq
 - **Filtro por status "Pago"**: ordena do mais recente para o mais antigo (cobranças sem nenhuma data ficam no início, antes da mais recente). Os outros status continuam do mais antigo para o mais recente.
 - **Conta → Recebedor**: o que você preenche em "Conta" na cobrança agora vai sozinho para o campo **Recebedor** do recebimento. Se você editar o Recebedor direto em Recebimentos e depois salvar a cobrança de novo com uma Conta preenchida, a Conta volta a valer.
 - **Recebimentos — Ordenar por**: seletor novo com **Data** (o padrão de sempre), **Projeto**, **Fornecedor**, **Cliente** (o cliente do projeto), **Categoria** e **Recebedor**. A ordenação vale dentro de cada mês, e os totais por mês continuam. Itens sem a informação do critério ficam no fim.
+
+---
+
+## PARTE 64 — Data do pagamento no destaque das cobranças pagas
+
+**Arquivos desta entrega:** `README.md`, `pages/cobrancas.js`. Não tem SQL.
+
+1. **GitHub → Add file → Upload files**: extraia o zip, arraste tudo que está dentro da pasta extraída e dê Commit (o nome deve aparecer com a pasta: `pages/cobrancas.js`).
+2. Espere o deploy na Vercel ficar **Ready**.
+
+**O que mudou:** no quadro de cada cobrança, o destaque do canto superior direito agora mostra a **data do pagamento** quando o status é **PAGO** (em vez da previsão). Nas cobranças com outros status, continua aparecendo a **previsão de pagamento**. Isso vale em todas as telas de cobranças, não só no filtro por status "Pago".
