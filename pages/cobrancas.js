@@ -53,6 +53,7 @@ const emptyForm = {
   pagamento_data: '',
   pagamento_previsao: '',
   pagamento_conta: '',
+  percentual: '',
   nf: '',
   nf_numero: '',
   nf_emissao: '',
@@ -93,6 +94,14 @@ export default function Cobrancas() {
   async function loadClientes() {
     const { data } = await supabase.from('clientes').select('id, nome').order('nome');
     setClientes(data || []);
+  }
+
+  // Sugestão de percentual a partir do valor da parcela e do valor do pedido.
+  function sugestaoPercentual() {
+    const pedido = form.pedido_valor ? parseValorComCentavos(form.pedido_valor) : null;
+    const valor = form.pagamento_valor ? parseValorComCentavos(form.pagamento_valor) : null;
+    if (!pedido || !valor) return null;
+    return Math.round((valor / pedido) * 10000) / 100;
   }
 
   // ---- Memória do campo "Conta" (Delete esquece a sugestão) ----
@@ -144,6 +153,18 @@ export default function Cobrancas() {
   // se não houver, a previsão. Cobranças sem nenhuma data ficam no início da lista.
   function dataParaOrdenar(item) {
     return parseDataCurtaParaData(item.pagamento_data) || parseDataCurtaParaData(item.pagamento_previsao);
+  }
+
+  // Para o status "Pago": do mais recente para o mais antigo (sem data fica no início).
+  function ordenarPorDataDesc(lista) {
+    return [...lista].sort((a, b) => {
+      const dataA = dataParaOrdenar(a);
+      const dataB = dataParaOrdenar(b);
+      if (!dataA && !dataB) return (a.parcela_atual || 0) - (b.parcela_atual || 0);
+      if (!dataA) return -1;
+      if (!dataB) return 1;
+      return dataB - dataA || (a.parcela_atual || 0) - (b.parcela_atual || 0);
+    });
   }
 
   function ordenarPorData(lista) {
@@ -361,6 +382,7 @@ export default function Cobrancas() {
       pagamento_data: item.pagamento_data || '',
       pagamento_previsao: item.pagamento_previsao || '',
       pagamento_conta: item.pagamento_conta || '',
+      percentual: item.percentual != null ? String(item.percentual).replace('.', ',') : '',
       nf: item.nf || '',
       nf_numero: item.nf_numero || '',
       nf_emissao: item.nf_emissao || '',
@@ -460,6 +482,7 @@ export default function Cobrancas() {
       pagamento_data: form.pagamento_data || null,
       pagamento_previsao: form.pagamento_previsao || null,
       pagamento_conta: form.pagamento_conta || null,
+      percentual: form.percentual ? parseFloat(String(form.percentual).replace(',', '.')) || null : null,
       nf: form.nf || null,
       nf_numero: form.nf_numero || null,
       nf_emissao: form.nf_emissao || null,
@@ -564,7 +587,8 @@ export default function Cobrancas() {
     }
 
     const { data } = await consulta;
-    setCobrancas(ordenarPorData(data || []));
+    const ehStatusPago = filtro.tipo === 'status' && filtro.valor === 'PAGO';
+    setCobrancas(ehStatusPago ? ordenarPorDataDesc(data || []) : ordenarPorData(data || []));
   }
 
   function abrirFiltro(tipo, valor, titulo) {
@@ -749,7 +773,9 @@ export default function Cobrancas() {
       .update({
         ...camposComuns,
         parcela_total: novoTotal,
-        percentual: calcPercentual(novoTotal),
+        // só refaz os percentuais (100% ÷ nº de parcelas) se o número de parcelas mudou;
+        // senão mantém os percentuais ajustados à mão em cada parcela
+        ...(novoTotal !== totalAtual ? { percentual: calcPercentual(novoTotal) } : {}),
         atualizado_em: new Date().toISOString(),
       })
       .eq('grupo_id', base.grupo_id);
@@ -875,6 +901,8 @@ export default function Cobrancas() {
       percentual: cobranca.percentual,
       valor: cobranca.pagamento_valor,
       nf_numero: cobranca.nf_numero,
+      // a conta em que o pagamento aconteceu vira o Recebedor do recebimento
+      ...((cobranca.pagamento_conta || '').trim() ? { recebedor: cobranca.pagamento_conta.trim() } : {}),
       atualizado_em: new Date().toISOString(),
     };
 
@@ -987,7 +1015,7 @@ export default function Cobrancas() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 6 }}>
           <p style={{ margin: 0, fontWeight: 700 }}>
             Categoria: {item.categoria} — Parcela {formatParcelaLabel(item.parcela_atual, item.parcela_total)}
-            {item.percentual != null ? ` (${item.percentual}%)` : ''}
+            {item.percentual != null ? ` (${String(item.percentual).replace('.', ',')}%)` : ''}
           </p>
           {item.pagamento_status && (
             <p style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>
@@ -1379,6 +1407,31 @@ export default function Cobrancas() {
                       placeholder="Ex.: PJ - Bradesco"
                     />
                   </div>
+                  {editingId && (
+                    <div>
+                      <label>Percentual desta parcela (%)</label>
+                      <input
+                        value={form.percentual}
+                        onChange={(e) => updateField('percentual', e.target.value.replace(/[^\d,]/g, '').slice(0, 6))}
+                        placeholder="Ex.: 40"
+                        inputMode="decimal"
+                        style={{ marginBottom: 4 }}
+                      />
+                      {sugestaoPercentual() != null && (
+                        <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 0 }}>
+                          Pelo valor informado: {String(sugestaoPercentual()).replace('.', ',')}% do pedido.{' '}
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            style={{ padding: '2px 8px', fontSize: 11 }}
+                            onClick={() => updateField('percentual', String(sugestaoPercentual()).replace('.', ','))}
+                          >
+                            Usar
+                          </button>
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-section-title">Nota Fiscal</div>

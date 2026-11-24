@@ -1089,3 +1089,19 @@ Entrega só com os arquivos que mudaram: `README.md`, `supabase-setup-parte59.sq
 2. Espere o deploy na Vercel ficar **Ready**.
 
 **O que mudou:** em Cobranças → **Ver por Projeto**, a lista fixa de projetos virou um **menu expansível com busca**: clique, digite parte do número ou do nome do projeto e escolha. Agora "Ver por Projeto", "Ver por Fornecedor" e "Ver por Cliente" funcionam do mesmo jeito.
+
+---
+
+## PARTE 63 — Percentual por parcela, ordem do "Pago", Conta nos Recebimentos e ordenação de Recebimentos
+
+**Arquivos desta entrega:** `README.md`, `supabase-setup-parte63.sql`, `pages/cobrancas.js`, `pages/recebimentos.js`.
+
+1. **Supabase → SQL Editor → New query**: rode `supabase-setup-parte63.sql` (uma vez só). Ele preenche o Recebedor dos recebimentos que já existem com a Conta da cobrança correspondente (só onde o Recebedor está vazio).
+2. **GitHub → Add file → Upload files**: extraia o zip, arraste tudo que está dentro da pasta extraída e dê Commit (os nomes devem aparecer com a pasta, ex: `pages/cobrancas.js`).
+3. Espere o deploy na Vercel ficar **Ready**.
+
+**O que mudou:**
+- **Percentual por parcela**: ao editar uma parcela, há um campo novo **"Percentual desta parcela (%)"**, onde você digita o valor que quiser (ex.: 40 para um sinal). Se o valor da parcela e o valor do pedido estiverem preenchidos, aparece uma sugestão ("Pelo valor informado: X% do pedido") com o botão **Usar**. O percentual aparece no título da caixa da cobrança e nos Recebimentos. Na edição da **cobrança inteira**, os percentuais que você ajustou ficam como estão; eles só voltam a ser 100% ÷ nº de parcelas se você mudar a quantidade de parcelas.
+- **Filtro por status "Pago"**: ordena do mais recente para o mais antigo (cobranças sem nenhuma data ficam no início, antes da mais recente). Os outros status continuam do mais antigo para o mais recente.
+- **Conta → Recebedor**: o que você preenche em "Conta" na cobrança agora vai sozinho para o campo **Recebedor** do recebimento. Se você editar o Recebedor direto em Recebimentos e depois salvar a cobrança de novo com uma Conta preenchida, a Conta volta a valer.
+- **Recebimentos — Ordenar por**: seletor novo com **Data** (o padrão de sempre), **Projeto**, **Fornecedor**, **Cliente** (o cliente do projeto), **Categoria** e **Recebedor**. A ordenação vale dentro de cada mês, e os totais por mês continuam. Itens sem a informação do critério ficam no fim.

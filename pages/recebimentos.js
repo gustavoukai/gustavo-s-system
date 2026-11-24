@@ -35,6 +35,7 @@ export default function Recebimentos() {
   const [mesesSelecionados, setMesesSelecionados] = useState(() => [new Date().getMonth() + 1]);
   const [itens, setItens] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [ordem, setOrdem] = useState('data');
   const [linhaSelecionada, setLinhaSelecionada] = useState(null);
   const [form, setForm] = useState(emptyEdit);
   const [saving, setSaving] = useState(false);
@@ -51,7 +52,7 @@ export default function Recebimentos() {
     }
     const { data } = await supabase
       .from('recebimentos')
-      .select('*, projetos(numero_projeto, nome), fornecedores(nome)')
+      .select('*, projetos(numero_projeto, nome, clientes(nome)), fornecedores(nome)')
       .eq('ano', anoSelecionado)
       .in('mes', mesesSelecionados);
     setItens(data || []);
@@ -129,6 +130,37 @@ export default function Recebimentos() {
     return new Date(ano, Number(m) - 1, Number(d)).getTime();
   }
 
+  const criteriosOrdem = [
+    ['data', 'Data (mais recente primeiro)'],
+    ['projeto', 'Projeto'],
+    ['fornecedor', 'Fornecedor'],
+    ['cliente', 'Cliente'],
+    ['categoria', 'Categoria'],
+    ['recebedor', 'Recebedor'],
+  ];
+
+  function textoParaOrdenar(item, criterio) {
+    if (criterio === 'projeto') return item.projetos ? `${item.projetos.numero_projeto} ${item.projetos.nome}` : '';
+    if (criterio === 'fornecedor') return item.fornecedor_tipo === 'cliente' ? '' : item.fornecedores?.nome || '';
+    if (criterio === 'cliente') return item.projetos?.clientes?.nome || '';
+    if (criterio === 'categoria') return item.categoria || '';
+    if (criterio === 'recebedor') return item.recebedor || '';
+    return '';
+  }
+
+  // Dentro de cada mês: pelo critério escolhido (vazios no fim) e, em empate, pela data mais recente.
+  function compararRecebimentos(a, b) {
+    if (ordem !== 'data') {
+      const textoA = textoParaOrdenar(a, ordem);
+      const textoB = textoParaOrdenar(b, ordem);
+      if (textoA && !textoB) return -1;
+      if (!textoA && textoB) return 1;
+      const resultado = textoA.localeCompare(textoB, 'pt-BR', { sensitivity: 'base' });
+      if (resultado !== 0) return resultado;
+    }
+    return parseDataCurtaOrdenar(b.data) - parseDataCurtaOrdenar(a.data);
+  }
+
   const mesesComItens = [...new Set(itens.map((i) => i.mes))].sort((a, b) => b - a);
 
   if (loading || role === 'visualizante') {
@@ -183,6 +215,16 @@ export default function Recebimentos() {
               />
             </div>
           )}
+          <div>
+            <label>Ordenar por</label>
+            <select value={ordem} onChange={(e) => setOrdem(e.target.value)}>
+              {criteriosOrdem.map(([valor, rotulo]) => (
+                <option key={valor} value={valor}>
+                  {rotulo}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {anoSelecionado && mesesSelecionados.length > 0 && (
@@ -193,7 +235,7 @@ export default function Recebimentos() {
               mesesComItens.map((mes) => {
                 const itensDoMes = itens
                   .filter((i) => i.mes === mes)
-                  .sort((a, b) => parseDataCurtaOrdenar(b.data) - parseDataCurtaOrdenar(a.data));
+                  .sort(compararRecebimentos);
                 const totalMes = itensDoMes.reduce((soma, i) => soma + (Number(i.valor) || 0), 0);
 
                 return (
